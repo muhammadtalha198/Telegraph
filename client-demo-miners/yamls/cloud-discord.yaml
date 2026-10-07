@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 139003
+slug: cloud-discord
+protocol: generic
+name: Discord Cloud Status
+description: >
+  Discord cloud resource status. Intent CLOUD_RESOURCE_USAGE.
+
+base_url: https://discordstatus.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://discordstatus.com/
+  website: https://discordstatus.com
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/summary.json
+    method: GET
+    description: Query for intent CLOUD_RESOURCE_USAGE via Discord Cloud Status.
+    intents: [CLOUD_RESOURCE_USAGE]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: components
+  supported_intents:
+    - CLOUD_RESOURCE_USAGE
+
+on_chain:
+  description: Stores signal for CLOUD_RESOURCE_USAGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

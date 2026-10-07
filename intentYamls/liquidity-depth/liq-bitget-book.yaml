@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 190136
+slug: liq-bitget-book
+protocol: generic
+name: "Liq Bitget Book"
+description: "Semantic V2 miner for LIQUIDITY_DEPTH_VERIFY. Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools. Capture pin answers: Must return the live bid/ask order book (depth levels) for the pair asked."
+
+base_url: https://api.bitget.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.bitget.com/
+  website: https://api.bitget.com
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/spot/market/orderbook
+    method: GET
+    description: Query for intent LIQUIDITY_DEPTH_VERIFY via Liq Bitget Book.
+    intents: [LIQUIDITY_DEPTH_VERIFY]
+    params:
+      query:
+        required:
+          - name: symbol
+            type: string
+            intents: ["*"]
+            description: symbol
+          - name: type
+            type: string
+            intents: ["*"]
+            description: type
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: limit
+
+input_schema:
+  type: object
+  required: [symbol, type, limit]
+  properties:
+    symbol: {type: string, description: "symbol", default: "BTCUSDT"}
+    type: {type: string, description: "type", default: "step0"}
+    limit: {type: string, description: "limit", default: "50"}
+
+semantics:
+  signal_mapping:
+    label_field: data
+  supported_intents:
+    - LIQUIDITY_DEPTH_VERIFY
+
+on_chain:
+  description: Stores signal for LIQUIDITY_DEPTH_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

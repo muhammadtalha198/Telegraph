@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 141002
+slug: cyield-llama-eth
+protocol: generic
+name: DefiLlama ETH Yield Chart
+description: >
+  DefiLlama chart yield proxy via coin price. Intent CRYPTO_YIELD_RATE.
+
+base_url: https://coins.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/docs/api
+  website: https://defillama.com
+
+endpoints:
+  - path: /query
+    external_path: /prices/current/{coins}
+    method: GET
+    description: Query for intent CRYPTO_YIELD_RATE via DefiLlama ETH Yield Chart.
+    intents: [CRYPTO_YIELD_RATE]
+    params:
+      path:
+        required:
+          - name: coins
+            type: string
+            intents: ["*"]
+            description: Coins
+
+input_schema:
+  type: object
+  required: [coins]
+  properties:
+    coins: {type: string, description: Coins, default: "coingecko:ethereum"}
+
+semantics:
+  signal_mapping:
+    label_field: coins
+  supported_intents:
+    - CRYPTO_YIELD_RATE
+
+on_chain:
+  description: Stores signal for CRYPTO_YIELD_RATE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

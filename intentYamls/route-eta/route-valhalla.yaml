@@ -1,0 +1,84 @@
+version: "1"
+kind: miner
+id: 170113
+slug: route-valhalla
+protocol: generic
+name: Valhalla OSM.de
+description: >
+  Valhalla OSM.de -> eta_seconds.
+  Intent ROUTE_ETA - Round Two Batch 7.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://valhalla.github.io/valhalla/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/route-valhalla
+    method: GET
+    description: Query for intent ROUTE_ETA via Valhalla OSM.de.
+    intents: [ROUTE_ETA]
+    params:
+      query:
+        required:
+          - name: origin_lat
+            type: string
+            intents: ["*"]
+            description: origin_lat
+          - name: origin_lon
+            type: string
+            intents: ["*"]
+            description: origin_lon
+          - name: dest_lat
+            type: string
+            intents: ["*"]
+            description: dest_lat
+          - name: dest_lon
+            type: string
+            intents: ["*"]
+            description: dest_lon
+
+input_schema:
+  type: object
+  required: [origin_lat, origin_lon, dest_lat, dest_lon]
+  properties:
+    origin_lat: {type: string, description: "origin_lat", default: "52.5200"}
+    origin_lon: {type: string, description: "origin_lon", default: "13.4050"}
+    dest_lat: {type: string, description: "dest_lat", default: "52.5163"}
+    dest_lon: {type: string, description: "dest_lon", default: "13.3777"}
+
+semantics:
+  signal_mapping:
+    label_field: eta_seconds
+  supported_intents:
+    - ROUTE_ETA
+
+on_chain:
+  description: Stores signal for ROUTE_ETA.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

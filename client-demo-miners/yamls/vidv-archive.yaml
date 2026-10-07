@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 129005
+slug: vidv-archive
+protocol: generic
+name: Archive Video Meta
+description: >
+  Archive.org video metadata verify. Intent VIDEO_VERIFICATION.
+
+base_url: https://archive.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://archive.org/services/docs/api/metadata.html
+  website: https://archive.org
+
+endpoints:
+  - path: /query
+    external_path: /metadata/{item}
+    method: GET
+    description: Query for intent VIDEO_VERIFICATION via Archive Video Meta.
+    intents: [VIDEO_VERIFICATION]
+    params:
+      path:
+        required:
+          - name: item
+            type: string
+            intents: ["*"]
+            description: Item
+
+input_schema:
+  type: object
+  required: [item]
+  properties:
+    item: {type: string, description: Item, default: "night_of_the_living_dead"}
+
+semantics:
+  signal_mapping:
+    label_field: metadata
+  supported_intents:
+    - VIDEO_VERIFICATION
+
+on_chain:
+  description: Stores signal for VIDEO_VERIFICATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

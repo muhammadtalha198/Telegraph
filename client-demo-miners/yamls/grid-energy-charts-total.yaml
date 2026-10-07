@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 66008
+slug: grid-energy-charts-total
+protocol: generic
+name: Energy-Charts Total Power
+description: >
+  Energy-Charts total power Germany. Intent GRID_POWER_PRICE.
+
+base_url: https://api.energy-charts.info
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.energy-charts.info/
+  website: https://api.energy-charts.info/
+
+endpoints:
+  - path: /query
+    external_path: /total_power
+    method: GET
+    description: Query for intent GRID_POWER_PRICE via Energy-Charts Total Power.
+    intents: [GRID_POWER_PRICE]
+    params:
+      query:
+        required:
+          - name: country
+            type: string
+            intents: ["*"]
+            description: Country code
+
+input_schema:
+  type: object
+  required: [country]
+  properties:
+    country: {type: string, description: Country code, default: "de"}
+
+semantics:
+  signal_mapping:
+    label_field: unix_seconds
+  supported_intents:
+    - GRID_POWER_PRICE
+
+on_chain:
+  description: Stores signal for GRID_POWER_PRICE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 162008
+slug: tts-archive
+protocol: generic
+name: Archive TTS Audio Meta
+description: >
+  Archive.org audio TTS metadata. Intent TEXT_TO_SPEECH.
+
+base_url: https://archive.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://archive.org/services/docs/api/metadata.html
+  website: https://archive.org
+
+endpoints:
+  - path: /query
+    external_path: /metadata/{item}
+    method: GET
+    description: Query for intent TEXT_TO_SPEECH via Archive TTS Audio Meta.
+    intents: [TEXT_TO_SPEECH]
+    params:
+      path:
+        required:
+          - name: item
+            type: string
+            intents: ["*"]
+            description: Item
+
+input_schema:
+  type: object
+  required: [item]
+  properties:
+    item: {type: string, description: Item, default: "nasa"}
+
+semantics:
+  signal_mapping:
+    label_field: metadata
+  supported_intents:
+    - TEXT_TO_SPEECH
+
+on_chain:
+  description: Stores signal for TEXT_TO_SPEECH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

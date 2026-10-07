@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 58009
+slug: flight-taf-lax
+protocol: generic
+name: AviationWeather TAF KLAX
+description: >
+  AviationWeather TAF KLAX. Intent FLIGHT_AVAILABILITY.
+
+base_url: https://aviationweather.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://aviationweather.gov/data/api/
+  website: https://aviationweather.gov/
+
+endpoints:
+  - path: /query
+    external_path: /api/data/taf
+    method: GET
+    description: Query for intent FLIGHT_AVAILABILITY via AviationWeather TAF KLAX.
+    intents: [FLIGHT_AVAILABILITY]
+    params:
+      query:
+        required:
+          - name: ids
+            type: string
+            intents: ["*"]
+            description: ICAO id
+          - name: format
+            type: string
+            intents: ["*"]
+            description: Format
+
+input_schema:
+  type: object
+  required: [ids, format]
+  properties:
+    ids: {type: string, description: ICAO id, default: "KLAX"}
+    format: {type: string, description: Format, default: "json"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - FLIGHT_AVAILABILITY
+
+on_chain:
+  description: Stores signal for FLIGHT_AVAILABILITY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

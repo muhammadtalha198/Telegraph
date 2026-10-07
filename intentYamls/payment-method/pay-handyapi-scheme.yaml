@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 91025
+slug: pay-handyapi-scheme
+protocol: generic
+name: HandyAPI Card Scheme
+description: >
+  HandyAPI BIN lookup → scheme_code (askable bin param).
+  Intent PAYMENT_METHOD_VERIFY — Usman truth-spec miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.handyapi.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/bin-handy
+    method: GET
+    description: Query for intent PAYMENT_METHOD_VERIFY via HandyAPI Card Scheme.
+    intents: [PAYMENT_METHOD_VERIFY]
+    params:
+      query:
+        required:
+          - name: bin
+            type: string
+            intents: ["*"]
+            description: Card BIN / IIN
+
+input_schema:
+  type: object
+  required: [bin]
+  properties:
+    bin: {type: string, description: "Card BIN / IIN", default: "45717360"}
+
+semantics:
+  signal_mapping:
+    label_field: scheme_code
+  supported_intents:
+    - PAYMENT_METHOD_VERIFY
+
+on_chain:
+  description: Stores signal for PAYMENT_METHOD_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

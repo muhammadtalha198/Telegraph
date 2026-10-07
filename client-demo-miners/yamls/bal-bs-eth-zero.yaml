@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 47002
+slug: bal-bs-eth-zero
+protocol: generic
+name: Blockscout Ethereum Zero Balance
+description: >
+  Blockscout address balance on Ethereum Zero. Intent WALLET_BALANCE_CHECK.
+
+base_url: https://eth.blockscout.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://eth.blockscout.com/api-docs
+  website: https://eth.blockscout.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/addresses/{address}
+    method: GET
+    description: Query for intent WALLET_BALANCE_CHECK via Blockscout Ethereum Zero Balance.
+    intents: [WALLET_BALANCE_CHECK]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: Wallet address
+
+input_schema:
+  type: object
+  required: [address]
+  properties:
+    address: {type: string, description: Address, default: "0x0000000000000000000000000000000000000000"}
+
+semantics:
+  signal_mapping:
+    label_field: coin_balance
+  supported_intents:
+    - WALLET_BALANCE_CHECK
+
+on_chain:
+  description: Stores signal for WALLET_BALANCE_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

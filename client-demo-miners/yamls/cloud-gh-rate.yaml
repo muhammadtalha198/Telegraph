@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 139008
+slug: cloud-gh-rate
+protocol: generic
+name: GitHub Rate Limit
+description: >
+  GitHub API rate limit cloud usage. Intent CLOUD_RESOURCE_USAGE.
+
+base_url: https://api.github.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.github.com/en/rest
+  website: https://github.com
+
+endpoints:
+  - path: /query
+    external_path: /rate_limit
+    method: GET
+    description: Query for intent CLOUD_RESOURCE_USAGE via GitHub Rate Limit.
+    intents: [CLOUD_RESOURCE_USAGE]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: rate
+  supported_intents:
+    - CLOUD_RESOURCE_USAGE
+
+on_chain:
+  description: Stores signal for CLOUD_RESOURCE_USAGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

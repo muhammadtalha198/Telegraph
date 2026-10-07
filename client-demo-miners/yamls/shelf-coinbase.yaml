@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 92008
+slug: shelf-coinbase
+protocol: generic
+name: Coinbase BTC-USD Spot
+description: >
+  Coinbase spot price shelf. Intent LIVE_SHELF_PRICE.
+
+base_url: https://api.coinbase.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.cdp.coinbase.com/
+  website: https://www.coinbase.com
+
+endpoints:
+  - path: /query
+    external_path: /v2/prices/{pair}/spot
+    method: GET
+    description: Query for intent LIVE_SHELF_PRICE via Coinbase BTC-USD Spot.
+    intents: [LIVE_SHELF_PRICE]
+    params:
+      path:
+        required:
+          - name: pair
+            type: string
+            intents: ["*"]
+            description: Pair
+
+input_schema:
+  type: object
+  required: [pair]
+  properties:
+    pair: {type: string, description: Pair, default: "BTC-USD"}
+
+semantics:
+  signal_mapping:
+    label_field: data
+  supported_intents:
+    - LIVE_SHELF_PRICE
+
+on_chain:
+  description: Stores signal for LIVE_SHELF_PRICE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

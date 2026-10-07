@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 170058
+slug: upt-checkhost
+protocol: generic
+name: check-host.net HTTP
+description: >
+  check-host.net HTTP -> is_up (1 if the URL answers with status < 500, else 0).
+  Intent SERVER_UPTIME_MONITOR - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://check-host.net/about/api
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/is-up
+    method: GET
+    description: Query for intent SERVER_UPTIME_MONITOR via check-host.net HTTP.
+    intents: [SERVER_UPTIME_MONITOR]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Probe network id
+          - name: url
+            type: string
+            intents: ["*"]
+            description: URL to probe
+
+input_schema:
+  type: object
+  required: [venue, url]
+  properties:
+    venue: {type: string, description: "Probe network id", default: "checkhost"}
+    url: {type: string, description: "URL to probe", default: "https://example.com/"}
+
+semantics:
+  signal_mapping:
+    label_field: is_up
+  supported_intents:
+    - SERVER_UPTIME_MONITOR
+
+on_chain:
+  description: Stores signal for SERVER_UPTIME_MONITOR.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

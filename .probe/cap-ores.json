@@ -1,0 +1,86 @@
+{
+  "enwiki": {
+    "models": {
+      "articletopic": {
+        "version": "1.3.0"
+      }
+    }, 
+    "scores": {
+      "1255566234": {
+        "articletopic": {
+          "score": {
+            "prediction": [
+              "STEM.STEM*"
+            ], 
+            "probability": {
+              "Culture.Biography.Biography*": 0.023337998600995547, 
+              "Culture.Biography.Women": 0.0008587532627441876, 
+              "Culture.Food and drink": 0.00015049887424900538, 
+              "Culture.Internet culture": 0.02141700062110038, 
+              "Culture.Linguistics": 0.00543146225075812, 
+              "Culture.Literature": 0.0036986441544583845, 
+              "Culture.Media.Books": 0.0008659177931944992, 
+              "Culture.Media.Entertainment": 0.0005971330183874749, 
+              "Culture.Media.Films": 0.00018755456539177576, 
+              "Culture.Media.Media*": 0.11129983530427379, 
+              "Culture.Media.Music": 0.00029807054105394475, 
+              "Culture.Media.Radio": 0.0001579063119811148, 
+              "Culture.Media.Software": 0.03885993643268805, 
+              "Culture.Media.Television": 0.00045097533666825507, 
+              "Culture.Media.Video games": 5.547829416497733e-05, 
+              "Culture.Performing arts": 0.00031452195326586843, 
+              "Culture.Philosophy and religion": 0.0008921852822073528, 
+              "Culture.Sports": 0.0020499058645234085, 
+              "Culture.Visual arts.Architecture": 0.00018618331170212188, 
+              "Culture.Visual arts.Comics and Anime": 0.0001239570552776667, 
+              "Culture.Visual arts.Fashion": 0.00014704176568611414, 
+              "Culture.Visual arts.Visual arts*": 0.0032095168321656224, 
+              "Geography.Geographical": 0.0013545927523090778, 
+              "Geography.Regions.Africa.Africa*": 0.002254799448557715, 
+              "Geography.Regions.Africa.Central Africa": 0.00013023179631682218, 
+              "Geography.Regions.Africa.Eastern Africa": 0.00014916474504537421, 
+              "Geography.Regions.Africa.Northern Africa": 0.00010474953805266698, 
+              "Geography.Regions.Africa.Southern Africa": 0.0015597402519075814, 
+              "Geography.Regions.Africa.Western Africa": 0.00020348553698196106, 
+              "Geography.Regions.Americas.Central America": 0.00015656501498753566, 
+              "Geography.Regions.Americas.North America": 0.0038081453628179877, 
+              "Geography.Regions.Americas.South America": 0.00026837591278266397, 
+              "Geography.Regions.Asia.Asia*": 0.001938700103316522, 
+              "Geography.Regions.Asia.Central Asia": 0.00014410349118868524, 
+              "Geography.Regions.Asia.East Asia": 0.0010484246474814737, 
+              "Geography.Regions.Asia.North Asia": 0.00018646684334036056, 
+              "Geography.Regions.Asia.South Asia": 0.00013735103102399302, 
+              "Geography.Regions.Asia.Southeast Asia": 0.00015854377230151677, 
+              "Geography.Regions.Asia.West Asia": 0.0002944928586615552, 
+              "Geography.Regions.Europe.Eastern Europe": 0.0008978829020688332, 
+              "Geography.Regions.Europe.Europe*": 0.0259900388173656, 
+              "Geography.Regions.Europe.Northern Europe": 0.003235147917490968, 
+              "Geography.Regions.Europe.Southern Europe": 0.001901016207838889, 
+              "Geography.Regions.Europe.Western Europe": 0.006521408627276152, 
+              "Geography.Regions.Oceania": 0.006177119477299436, 
+              "History and Society.Business and economics": 0.020837047707296302, 
+              "History and Society.Education": 0.003164569967638319, 
+              "History and Society.History": 0.0005423441308489582, 
+              "History and Society.Military and warfare": 0.0010786849855064133, 
+              "History and Society.Politics and government": 0.022251975014156686, 
+              "History and Society.Society": 0.01009660317023065, 
+              "History and Society.Transportation": 0.0005473013602667234, 
+              "STEM.Biology": 0.0006984546353876675, 
+              "STEM.Chemistry": 0.0015121386699429643, 
+              "STEM.Computing": 0.29416429337188005, 
+              "STEM.Earth and environment": 0.00411414491826917, 
+              "STEM.Engineering": 0.0023615959701721433, 
+              "STEM.Libraries & Information": 0.009799146217962235, 
+              "STEM.Mathematics": 0.008419777509572086, 
+              "STEM.Medicine & Health": 0.00855274234499345, 
+              "STEM.Physics": 0.0006926143238981632, 
+              "STEM.STEM*": 0.9911669290220491, 
+              "STEM.Space": 0.002079397422148819, 
+              "STEM.Technology": 0.4981718975137947
+            }
+          }
+        }
+      }
+    }
+  }
+}

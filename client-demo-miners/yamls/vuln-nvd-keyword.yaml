@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 73008
+slug: vuln-nvd-keyword
+protocol: generic
+name: NVD CVE Keyword
+description: >
+  NVD CVE search by keyword. Intent VULNERABILITY_TRIAGE.
+
+base_url: https://services.nvd.nist.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://nvd.nist.gov/developers
+  website: https://nvd.nist.gov/
+
+endpoints:
+  - path: /query
+    external_path: /rest/json/cves/2.0
+    method: GET
+    description: Query for intent VULNERABILITY_TRIAGE via NVD CVE Keyword.
+    intents: [VULNERABILITY_TRIAGE]
+    params:
+      query:
+        required:
+          - name: keywordSearch
+            type: string
+            intents: ["*"]
+            description: Keyword
+          - name: resultsPerPage
+            type: string
+            intents: ["*"]
+            description: Results
+
+input_schema:
+  type: object
+  required: [keywordSearch, resultsPerPage]
+  properties:
+    keywordSearch: {type: string, description: Keyword, default: "log4j"}
+    resultsPerPage: {type: string, description: Results, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: vulnerabilities
+  supported_intents:
+    - VULNERABILITY_TRIAGE
+
+on_chain:
+  description: Stores signal for VULNERABILITY_TRIAGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

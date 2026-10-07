@@ -1,0 +1,75 @@
+version: "1"
+kind: miner
+id: 57001
+slug: route-osrm-mia-nyc
+protocol: generic
+name: OSRM Miami to NYC
+description: >
+  OSRM driving route Miami→NYC. Intent ROUTE_ETA.
+
+base_url: http://router.project-osrm.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://project-osrm.org/
+  website: https://project-osrm.org/
+
+endpoints:
+  - path: /query
+    external_path: /route/v1/driving/{coords}
+    method: GET
+    description: Query for intent ROUTE_ETA via OSRM Miami to NYC.
+    intents: [ROUTE_ETA]
+    params:
+      path:
+        required:
+          - name: coords
+            type: string
+            intents: ["*"]
+            description: lon,lat;lon,lat
+      query:
+        required:
+          - name: overview
+            type: string
+            intents: ["*"]
+            description: overview
+
+input_schema:
+  type: object
+  required: [coords, overview]
+  properties:
+    coords: {type: string, description: Coords, default: "-80.1918,25.7617;-73.9857,40.7484"}
+    overview: {type: string, description: Overview, default: "false"}
+
+semantics:
+  signal_mapping:
+    label_field: routes
+  supported_intents:
+    - ROUTE_ETA
+
+on_chain:
+  description: Stores signal for ROUTE_ETA.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

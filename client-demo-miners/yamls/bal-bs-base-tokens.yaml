@@ -1,0 +1,75 @@
+version: "1"
+kind: miner
+id: 47010
+slug: bal-bs-base-tokens
+protocol: generic
+name: Blockscout Base Token Balances
+description: >
+  Blockscout Base token balances. Intent WALLET_BALANCE_CHECK.
+
+base_url: https://base.blockscout.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://base.blockscout.com/api-docs
+  website: https://base.blockscout.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/addresses/{address}/tokens
+    method: GET
+    description: Query for intent WALLET_BALANCE_CHECK via Blockscout Base Token Balances.
+    intents: [WALLET_BALANCE_CHECK]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: Wallet address
+      query:
+        required:
+          - name: type
+            type: string
+            intents: ["*"]
+            description: Token type ERC-20
+
+input_schema:
+  type: object
+  required: [address, type]
+  properties:
+    address: {type: string, description: Address, default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}
+    type: {type: string, description: Token type, default: "ERC-20"}
+
+semantics:
+  signal_mapping:
+    label_field: items
+  supported_intents:
+    - WALLET_BALANCE_CHECK
+
+on_chain:
+  description: Stores signal for WALLET_BALANCE_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

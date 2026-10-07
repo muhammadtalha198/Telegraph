@@ -1,0 +1,78 @@
+version: "1"
+kind: miner
+id: 180401
+slug: tts-google
+protocol: generic
+name: Google Translate TTS
+description: >
+  Google Translate TTS -> audio_b64 for pinned (q,lang). Intent TEXT_TO_SPEECH (NON-DETERMINISTIC / adapter). Venue `google` is this miner\'s distinct TTS engine. Shared pin must match peers.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.telegraphprotocol.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/tts
+    method: GET
+    description: Query for intent TEXT_TO_SPEECH via Google Translate TTS.
+    intents: [TEXT_TO_SPEECH]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Bound TTS engine id
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Text to synthesize
+          - name: lang
+            type: string
+            intents: ["*"]
+            description: Language / locale code
+
+input_schema:
+  type: object
+  required: [q, lang]
+  properties:
+    venue: {type: string, description: "Bound TTS engine", default: "google"}
+    q: {type: string, description: "Text to speak", default: "The quick brown fox"}
+    lang: {type: string, description: "Language code", default: "en"}
+
+semantics:
+  signal_mapping:
+    label_field: audio_b64
+  supported_intents:
+    - TEXT_TO_SPEECH
+
+on_chain:
+  description: Stores signal for TEXT_TO_SPEECH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

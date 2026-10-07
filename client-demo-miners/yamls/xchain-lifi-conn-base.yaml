@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 89005
+slug: xchain-lifi-conn-base
+protocol: generic
+name: LI.FI Connections ETH-BASE
+description: >
+  LI.FI connections Ethereum to Base. Intent CROSS_CHAIN_STATE_VERIFY.
+
+base_url: https://li.quest
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.li.fi/
+  website: https://li.fi
+
+endpoints:
+  - path: /query
+    external_path: /v1/connections
+    method: GET
+    description: Query for intent CROSS_CHAIN_STATE_VERIFY via LI.FI Connections ETH-BASE.
+    intents: [CROSS_CHAIN_STATE_VERIFY]
+    params:
+      query:
+        required:
+          - name: fromChain
+            type: string
+            intents: ["*"]
+            description: From chain
+          - name: toChain
+            type: string
+            intents: ["*"]
+            description: To chain
+
+input_schema:
+  type: object
+  required: [fromChain, toChain]
+  properties:
+    fromChain: {type: string, description: From chain, default: "1"}
+    toChain: {type: string, description: To chain, default: "8453"}
+
+semantics:
+  signal_mapping:
+    label_field: connections
+  supported_intents:
+    - CROSS_CHAIN_STATE_VERIFY
+
+on_chain:
+  description: Stores signal for CROSS_CHAIN_STATE_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

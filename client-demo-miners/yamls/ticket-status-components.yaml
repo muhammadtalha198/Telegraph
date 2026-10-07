@@ -1,0 +1,60 @@
+version: "1"
+kind: miner
+id: 65010
+slug: ticket-status-components
+protocol: generic
+name: GitHub Status Components
+description: >
+  GitHub status components for ticket routing. Intent CUSTOMER_TICKET_RESOLUTION.
+
+base_url: https://www.githubstatus.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.githubstatus.com/api
+  website: https://www.githubstatus.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/components.json
+    method: GET
+    description: Query for intent CUSTOMER_TICKET_RESOLUTION via GitHub Status Components.
+    intents: [CUSTOMER_TICKET_RESOLUTION]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: components
+  supported_intents:
+    - CUSTOMER_TICKET_RESOLUTION
+
+on_chain:
+  description: Stores signal for CUSTOMER_TICKET_RESOLUTION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

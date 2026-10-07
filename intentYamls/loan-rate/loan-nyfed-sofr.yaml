@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190085
+slug: loan-nyfed-sofr
+protocol: generic
+name: "Loan Nyfed Sofr"
+description: "Semantic V2 miner for LOAN_INTEREST_RATE_QUOTE. PACK READY - only 8 candidates; 6 keyless. Policy/benchmark rates and the US mortgage survey are what exist keyless; true per-lender APR quotes are not public APIs. Distinct publishers: 8. Capture pin answers: Must satisfy catalog intent LOAN_INTEREST_RATE_QUOTE via upstream NY Fed SOFR"
+
+base_url: https://markets.newyorkfed.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://markets.newyorkfed.org/
+  website: https://markets.newyorkfed.org
+
+endpoints:
+  - path: /query
+    external_path: /api/rates/secured/sofr/last/1.json
+    method: GET
+    description: Query for intent LOAN_INTEREST_RATE_QUOTE via Loan Nyfed Sofr.
+    intents: [LOAN_INTEREST_RATE_QUOTE]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - LOAN_INTEREST_RATE_QUOTE
+
+on_chain:
+  description: Stores signal for LOAN_INTEREST_RATE_QUOTE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

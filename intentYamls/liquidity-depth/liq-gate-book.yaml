@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190141
+slug: liq-gate-book
+protocol: generic
+name: "Liq Gate Book"
+description: "Semantic V2 miner for LIQUIDITY_DEPTH_VERIFY. Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools. Capture pin answers: Must return the live bid/ask order book (depth levels) for the pair asked."
+
+base_url: https://api.gateio.ws
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.gateio.ws/
+  website: https://api.gateio.ws
+
+endpoints:
+  - path: /query
+    external_path: /api/v4/spot/order_book
+    method: GET
+    description: Query for intent LIQUIDITY_DEPTH_VERIFY via Liq Gate Book.
+    intents: [LIQUIDITY_DEPTH_VERIFY]
+    params:
+      query:
+        required:
+          - name: currency_pair
+            type: string
+            intents: ["*"]
+            description: currency_pair
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: limit
+
+input_schema:
+  type: object
+  required: [currency_pair, limit]
+  properties:
+    currency_pair: {type: string, description: "currency_pair", default: "BTC_USDT"}
+    limit: {type: string, description: "limit", default: "50"}
+
+semantics:
+  signal_mapping:
+    label_field: data
+  supported_intents:
+    - LIQUIDITY_DEPTH_VERIFY
+
+on_chain:
+  description: Stores signal for LIQUIDITY_DEPTH_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

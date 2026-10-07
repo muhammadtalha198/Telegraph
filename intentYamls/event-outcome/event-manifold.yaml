@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 190123
+slug: event-manifold
+protocol: generic
+name: "Event Manifold"
+description: "Semantic V2 miner for EVENT_OUTCOME_RESOLUTION. Resolves objective real-world event outcomes for prediction markets and conditional contracts using quorum oracles. Capture pin answers: Must state the settled result of the real-world event asked (who won / final outcome)."
+
+base_url: https://api.manifold.markets
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.manifold.markets/
+  website: https://api.manifold.markets
+
+endpoints:
+  - path: /query
+    external_path: /v0/search-markets
+    method: GET
+    description: Query for intent EVENT_OUTCOME_RESOLUTION via Event Manifold.
+    intents: [EVENT_OUTCOME_RESOLUTION]
+    params:
+      query:
+        required:
+          - name: term
+            type: string
+            intents: ["*"]
+            description: term
+          - name: filter
+            type: string
+            intents: ["*"]
+            description: filter
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: limit
+
+input_schema:
+  type: object
+  required: [term, filter, limit]
+  properties:
+    term: {type: string, description: "term", default: "presidential election"}
+    filter: {type: string, description: "filter", default: "resolved"}
+    limit: {type: string, description: "limit", default: "5"}
+
+semantics:
+  signal_mapping:
+    label_field: events
+  supported_intents:
+    - EVENT_OUTCOME_RESOLUTION
+
+on_chain:
+  description: Stores signal for EVENT_OUTCOME_RESOLUTION (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

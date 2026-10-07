@@ -1,0 +1,70 @@
+version: "1"
+kind: miner
+id: 91022
+slug: cyield-llama-apy
+protocol: generic
+name: DefiLlama Pool APY
+description: >
+  DefiLlama yields chart → latest apy for pool id.
+  Intent CRYPTO_YIELD_RATE — Usman truth-spec miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.telegraphprotocol.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/yield-apy
+    method: GET
+    description: Query for intent CRYPTO_YIELD_RATE via DefiLlama Pool APY.
+    intents: [CRYPTO_YIELD_RATE]
+    params:
+      query:
+        required:
+          - name: pool
+            type: string
+            intents: ["*"]
+            description: DefiLlama pool id
+
+input_schema:
+  type: object
+  required: [pool]
+  properties:
+    pool:
+      {type: string, description: "DefiLlama pool id", default: "747c1d2a-c668-4682-b9f9-296708a3dd90"}
+
+semantics:
+  signal_mapping:
+    label_field: apy
+  supported_intents:
+    - CRYPTO_YIELD_RATE
+
+on_chain:
+  description: Stores signal for CRYPTO_YIELD_RATE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,83 @@
+version: "1"
+kind: miner
+id: 75009
+slug: fact-ddg-pop
+protocol: generic
+name: DuckDuckGo Population
+description: >
+  DuckDuckGo instant answer population claim. Intent FACT_CHECK.
+
+base_url: https://api.duckduckgo.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://duckduckgo.com/api
+  website: https://duckduckgo.com/
+
+endpoints:
+  - path: /query
+    external_path: /
+    method: GET
+    description: Query for intent FACT_CHECK via DuckDuckGo Population.
+    intents: [FACT_CHECK]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Query
+          - name: format
+            type: string
+            intents: ["*"]
+            description: Format
+          - name: no_html
+            type: string
+            intents: ["*"]
+            description: No HTML
+          - name: skip_disambig
+            type: string
+            intents: ["*"]
+            description: Skip disambig
+
+input_schema:
+  type: object
+  required: [q, format, no_html, skip_disambig]
+  properties:
+    q: {type: string, description: Query, default: "world population"}
+    format: {type: string, description: Format, default: "json"}
+    no_html: {type: string, description: No HTML, default: "1"}
+    skip_disambig: {type: string, description: Skip disambig, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: Abstract
+  supported_intents:
+    - FACT_CHECK
+
+on_chain:
+  description: Stores signal for FACT_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

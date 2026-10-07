@@ -1,0 +1,82 @@
+version: "1"
+kind: miner
+id: 190037
+slug: route-bebop-quote
+protocol: generic
+name: "Route Bebop Quote"
+description: "Semantic V2 miner for OPTIMAL_EXECUTION_ROUTE. Determines optimal multi-venue order execution routing to minimize slippage, exchange fees, and market impact. Capture pin answers: Must convey the best swap route / output amount for the trade asked."
+
+base_url: https://api.bebop.xyz
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.bebop.xyz/
+  website: https://api.bebop.xyz
+
+endpoints:
+  - path: /query
+    external_path: /pmm/ethereum/v3/quote
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE via Route Bebop Quote.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: buy_tokens
+            type: string
+            intents: ["*"]
+            description: buy_tokens
+          - name: sell_tokens
+            type: string
+            intents: ["*"]
+            description: sell_tokens
+          - name: sell_amounts
+            type: string
+            intents: ["*"]
+            description: sell_amounts
+          - name: taker_address
+            type: string
+            intents: ["*"]
+            description: taker_address
+
+input_schema:
+  type: object
+  required: [buy_tokens, sell_tokens, sell_amounts, taker_address]
+  properties:
+    buy_tokens: {type: string, description: "buy_tokens", default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
+    sell_tokens: {type: string, description: "sell_tokens", default: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"}
+    sell_amounts: {type: string, description: "sell_amounts", default: "1000000000000000000"}
+    taker_address: {type: string, description: "taker_address", default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}
+
+semantics:
+  signal_mapping:
+    label_field: estimate
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores signal for OPTIMAL_EXECUTION_ROUTE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

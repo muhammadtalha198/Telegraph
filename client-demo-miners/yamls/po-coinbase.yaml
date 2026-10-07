@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 118010
+slug: po-coinbase
+protocol: generic
+name: Coinbase PO Spot
+description: >
+  Coinbase spot PO value verify. Intent PURCHASE_ORDER_VERIFY.
+
+base_url: https://api.coinbase.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.cdp.coinbase.com/
+  website: https://www.coinbase.com
+
+endpoints:
+  - path: /query
+    external_path: /v2/prices/{pair}/spot
+    method: GET
+    description: Query for intent PURCHASE_ORDER_VERIFY via Coinbase PO Spot.
+    intents: [PURCHASE_ORDER_VERIFY]
+    params:
+      path:
+        required:
+          - name: pair
+            type: string
+            intents: ["*"]
+            description: Pair
+
+input_schema:
+  type: object
+  required: [pair]
+  properties:
+    pair: {type: string, description: Pair, default: "ETH-USD"}
+
+semantics:
+  signal_mapping:
+    label_field: data
+  supported_intents:
+    - PURCHASE_ORDER_VERIFY
+
+on_chain:
+  description: Stores signal for PURCHASE_ORDER_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

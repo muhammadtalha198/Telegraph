@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 190151
+slug: ocm-trezor-blockbook
+protocol: generic
+name: "Ocm Trezor Blockbook"
+description: "Semantic V2 miner for ONCHAIN_METRIC_VERIFY. Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain. Capture pin answers: Must return the on-chain value asked (address balance / token balance / tx state)."
+
+base_url: https://btc1.trezor.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://btc1.trezor.io/
+  website: https://btc1.trezor.io
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/address/{btc_address}
+    method: GET
+    description: Query for intent ONCHAIN_METRIC_VERIFY via Ocm Trezor Blockbook.
+    intents: [ONCHAIN_METRIC_VERIFY]
+    params:
+      path:
+        required:
+          - name: btc_address
+            type: string
+            intents: ["*"]
+            description: btc address
+      query:
+        required:
+          - name: details
+            type: string
+            intents: ["*"]
+            description: details
+
+input_schema:
+  type: object
+  required: [btc_address, details]
+  properties:
+    btc_address: {type: string, description: "btc_address", default: "1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa"}
+    details: {type: string, description: "details", default: "basic"}
+
+semantics:
+  signal_mapping:
+    label_field: coin_balance
+  supported_intents:
+    - ONCHAIN_METRIC_VERIFY
+
+on_chain:
+  description: Stores signal for ONCHAIN_METRIC_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

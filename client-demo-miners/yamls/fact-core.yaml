@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 75006
+slug: fact-core
+protocol: generic
+name: CORE Works
+description: >
+  CORE academic works for evidence. Intent FACT_CHECK.
+
+base_url: https://api.core.ac.uk
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://core.ac.uk/services/api
+  website: https://core.ac.uk/
+
+endpoints:
+  - path: /query
+    external_path: /v3/search/works
+    method: GET
+    description: Query for intent FACT_CHECK via CORE Works.
+    intents: [FACT_CHECK]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Query
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: Limit
+
+input_schema:
+  type: object
+  required: [q, limit]
+  properties:
+    q: {type: string, description: Query, default: "vaccine efficacy"}
+    limit: {type: string, description: Limit, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: results
+  supported_intents:
+    - FACT_CHECK
+
+on_chain:
+  description: Stores signal for FACT_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

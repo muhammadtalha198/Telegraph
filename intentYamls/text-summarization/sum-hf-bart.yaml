@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 180201
+slug: sum-hf-bart
+protocol: generic
+name: HF BART-large-CNN
+description: >
+  HF BART-large-CNN -> summary_text for pinned q. Intent TEXT_SUMMARIZATION (NON-DETERMINISTIC / adapter). Venue `hf-bart` is this miner\'s distinct summarizer. Shared pin must match peers.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.telegraphprotocol.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/summarize
+    method: GET
+    description: Query for intent TEXT_SUMMARIZATION via HF BART-large-CNN.
+    intents: [TEXT_SUMMARIZATION]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Bound summarizer id
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Source document text
+
+input_schema:
+  type: object
+  required: [q]
+  properties:
+    venue: {type: string, description: "Bound summarizer", default: "hf-bart"}
+    q: {type: string, description: "Source document", default: "The quick brown fox jumps over the lazy dog. This pangram contains every letter of the English alphabet at least once. It is often used to display fonts and test keyboards."}
+
+semantics:
+  signal_mapping:
+    label_field: summary_text
+  supported_intents:
+    - TEXT_SUMMARIZATION
+
+on_chain:
+  description: Stores signal for TEXT_SUMMARIZATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

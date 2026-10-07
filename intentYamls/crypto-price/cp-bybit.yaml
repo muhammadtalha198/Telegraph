@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190068
+slug: cp-bybit
+protocol: generic
+name: "Cp Bybit"
+description: "Semantic V2 miner for CRYPTO_PRICE. PACK READY - meets 10 candidates; 22 keyless. Distinct operators. Quote asset differs (USD vs USDT) by ~0.1%, inside the 1.5% tolerance. Capture pin answers: Must satisfy catalog intent CRYPTO_PRICE via upstream Bybit"
+
+base_url: https://api.bybit.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.bybit.com/
+  website: https://api.bybit.com
+
+endpoints:
+  - path: /query
+    external_path: /v5/market/tickers
+    method: GET
+    description: Query for intent CRYPTO_PRICE via Cp Bybit.
+    intents: [CRYPTO_PRICE]
+    params:
+      query:
+        required:
+          - name: category
+            type: string
+            intents: ["*"]
+            description: category
+          - name: symbol
+            type: string
+            intents: ["*"]
+            description: symbol
+
+input_schema:
+  type: object
+  required: [category, symbol]
+  properties:
+    category: {type: string, description: "category", default: "spot"}
+    symbol: {type: string, description: "symbol", default: "BTCUSDT"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CRYPTO_PRICE
+
+on_chain:
+  description: Stores signal for CRYPTO_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

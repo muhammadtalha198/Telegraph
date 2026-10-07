@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 170004
+slug: yld-frax
+protocol: generic
+name: Frax sfrxETH APR
+description: >
+  Frax sfrxETH APR -> apy_bps for the pinned pool. Venue `frax` is bound to this miner
+  (distinct source). Shared question pin is `pool` only — Usman pins one pool
+  for the round; DefiLlama answers every pool so each specialist is rankable
+  vs yld-defillama on the same pin. Intent CRYPTO_YIELD_RATE.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 300
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.telegraphprotocol.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/yield-rate
+    method: GET
+    description: Query for intent CRYPTO_YIELD_RATE via Frax sfrxETH APR.
+    intents: [CRYPTO_YIELD_RATE]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Bound publisher id for this miner (not the shared pin)
+          - name: pool
+            type: string
+            intents: ["*"]
+            description: "Pool key: steth, reth, sfrxeth, ethx, aave-v3-usdc-eth, compound-v3-usdc-eth"
+
+input_schema:
+  type: object
+  # Shared Usman pin = pool only. venue is miner identity (default), not the question.
+  required: [pool]
+  properties:
+    venue: {type: string, description: "Bound publisher id", default: "frax"}
+    pool: {type: string, description: "Pool key: steth, reth, sfrxeth, ethx, aave-v3-usdc-eth, compound-v3-usdc-eth", default: "sfrxeth"}
+
+semantics:
+  signal_mapping:
+    label_field: apy_bps
+  supported_intents:
+    - CRYPTO_YIELD_RATE
+
+on_chain:
+  description: Stores signal for CRYPTO_YIELD_RATE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

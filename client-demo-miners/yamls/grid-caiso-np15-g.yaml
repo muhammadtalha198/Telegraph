@@ -1,0 +1,84 @@
+version: "1"
+kind: miner
+id: 93137
+slug: grid-caiso-np15-g
+protocol: generic
+name: CAISO NP15 DAM LMP G
+description: >
+  CAISO OASIS PRC_LMP peer (same LMP quantity).
+  Intent GRID_POWER_PRICE — scale peers for Usman ranking.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.telegraphprotocol.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /caiso/lmp
+    method: GET
+    description: Query for intent GRID_POWER_PRICE via CAISO NP15 DAM LMP G.
+    intents: [GRID_POWER_PRICE]
+    params:
+      query:
+        required:
+          - name: node
+            type: string
+            intents: ["*"]
+            description: CAISO pricing node
+          - name: market
+            type: string
+            intents: ["*"]
+            description: DAM or RTM
+          - name: startdatetime
+            type: string
+            intents: ["*"]
+            description: OASIS start
+          - name: enddatetime
+            type: string
+            intents: ["*"]
+            description: OASIS end
+
+input_schema:
+  type: object
+  required: [node, market, startdatetime, enddatetime]
+  properties:
+    node: {type: string, description: "CAISO pricing node", default: "TH_NP15_GEN-APND"}
+    market: {type: string, description: "DAM or RTM", default: "DAM"}
+    startdatetime: {type: string, description: "OASIS start", default: "20260920T07:00-0000"}
+    enddatetime: {type: string, description: "OASIS end", default: "20260920T08:00-0000"}
+
+semantics:
+  signal_mapping:
+    label_field: lmp_usd_per_mwh_milli
+  supported_intents:
+    - GRID_POWER_PRICE
+
+on_chain:
+  description: Stores signal for GRID_POWER_PRICE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

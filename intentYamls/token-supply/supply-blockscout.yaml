@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190164
+slug: supply-blockscout
+protocol: generic
+name: "Supply Blockscout"
+description: "Semantic V2 miner for TOKEN_TOTAL_SUPPLY_VERIFY. Verifies token circulating supply, burnt token balances, and total minted token counts on-chain. Capture pin answers: Must return the token's total supply (minted/circulating count)."
+
+base_url: https://eth.blockscout.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://eth.blockscout.com/
+  website: https://eth.blockscout.com
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/tokens/{address}
+    method: GET
+    description: Query for intent TOKEN_TOTAL_SUPPLY_VERIFY via Supply Blockscout.
+    intents: [TOKEN_TOTAL_SUPPLY_VERIFY]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: address
+
+input_schema:
+  type: object
+  required: [address]
+  properties:
+    address: {type: string, description: "address", default: "0x514910771AF9Ca656af840dff83E8264EcF986CA"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - TOKEN_TOTAL_SUPPLY_VERIFY
+
+on_chain:
+  description: Stores signal for TOKEN_TOTAL_SUPPLY_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

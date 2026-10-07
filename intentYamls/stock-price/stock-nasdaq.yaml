@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190095
+slug: stock-nasdaq
+protocol: generic
+name: "Stock Nasdaq"
+description: "Semantic V2 miner for STOCK_PRICE. PACK READY - meets 10 candidates; 4 keyless. Capture pin answers: Must satisfy catalog intent STOCK_PRICE via upstream Nasdaq.com"
+
+base_url: https://api.nasdaq.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.nasdaq.com/
+  website: https://api.nasdaq.com
+
+endpoints:
+  - path: /query
+    external_path: /api/quote/BTC/info
+    method: GET
+    description: Query for intent STOCK_PRICE via Stock Nasdaq.
+    intents: [STOCK_PRICE]
+    params:
+      query:
+        required:
+          - name: assetclass
+            type: string
+            intents: ["*"]
+            description: assetclass
+
+input_schema:
+  type: object
+  required: [assetclass]
+  properties:
+    assetclass: {type: string, description: "assetclass", default: "stocks"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - STOCK_PRICE
+
+on_chain:
+  description: Stores signal for STOCK_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

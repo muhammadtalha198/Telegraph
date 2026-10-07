@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 129007
+slug: vidv-crossref
+protocol: generic
+name: Crossref Video Verify
+description: >
+  Crossref video forensics works. Intent VIDEO_VERIFICATION.
+
+base_url: https://api.crossref.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.crossref.org/documentation/retrieve-metadata/
+  website: https://www.crossref.org
+
+endpoints:
+  - path: /query
+    external_path: /works
+    method: GET
+    description: Query for intent VIDEO_VERIFICATION via Crossref Video Verify.
+    intents: [VIDEO_VERIFICATION]
+    params:
+      query:
+        required:
+          - name: query
+            type: string
+            intents: ["*"]
+            description: Query
+          - name: rows
+            type: string
+            intents: ["*"]
+            description: Rows
+
+input_schema:
+  type: object
+  required: [query, rows]
+  properties:
+    query: {type: string, description: Query, default: "video forensics"}
+    rows: {type: string, description: Rows, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: message
+  supported_intents:
+    - VIDEO_VERIFICATION
+
+on_chain:
+  description: Stores signal for VIDEO_VERIFICATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

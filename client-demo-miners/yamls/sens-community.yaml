@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 79003
+slug: sens-community
+protocol: generic
+name: Sensor.Community Live
+description: >
+  sensor.community static live measurements. Intent SENSOR_TELEMETRY_VERIFY.
+
+base_url: https://data.sensor.community
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://sensor.community/en/
+  website: https://sensor.community
+
+endpoints:
+  - path: /query
+    external_path: /static/v2/data.json
+    method: GET
+    description: Query for intent SENSOR_TELEMETRY_VERIFY via Sensor.Community Live.
+    intents: [SENSOR_TELEMETRY_VERIFY]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - SENSOR_TELEMETRY_VERIFY
+
+on_chain:
+  description: Stores signal for SENSOR_TELEMETRY_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190160
+slug: filing-sec-submissions
+protocol: generic
+name: "Filing Sec Submissions"
+description: "Semantic V2 miner for REGULATORY_FILING_MONITOR. Parses statutory regulatory filings, 10-K/10-Q disclosures, and disclosure updates from financial oversight portals. Capture pin answers: Must return the company's regulatory filings (10-K/10-Q etc.) with dates/links."
+
+base_url: https://data.sec.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://data.sec.gov/
+  website: https://data.sec.gov
+
+endpoints:
+  - path: /query
+    external_path: /submissions/CIK0000320193.json
+    method: GET
+    description: Query for intent REGULATORY_FILING_MONITOR via Filing Sec Submissions.
+    intents: [REGULATORY_FILING_MONITOR]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - REGULATORY_FILING_MONITOR
+
+on_chain:
+  description: Stores signal for REGULATORY_FILING_MONITOR (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

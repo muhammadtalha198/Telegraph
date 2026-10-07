@@ -1,0 +1,82 @@
+version: "1"
+kind: miner
+id: 190098
+slug: wx-7timer
+protocol: generic
+name: "Wx 7timer"
+description: "Semantic V2 miner for WEATHER_CHECK. PACK READY - meets 10 candidates; 7 keyless. Open-Meteo model variants share a host - count as 1 source if you enforce one-publisher-per-miner. Capture pin answers: Must satisfy catalog intent WEATHER_CHECK via upstream 7Timer"
+
+base_url: http://www.7timer.info
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: http://www.7timer.info/
+  website: http://www.7timer.info
+
+endpoints:
+  - path: /query
+    external_path: /bin/api.pl
+    method: GET
+    description: Query for intent WEATHER_CHECK via Wx 7timer.
+    intents: [WEATHER_CHECK]
+    params:
+      query:
+        required:
+          - name: lon
+            type: string
+            intents: ["*"]
+            description: lon
+          - name: lat
+            type: string
+            intents: ["*"]
+            description: lat
+          - name: product
+            type: string
+            intents: ["*"]
+            description: product
+          - name: output
+            type: string
+            intents: ["*"]
+            description: output
+
+input_schema:
+  type: object
+  required: [lon, lat, product, output]
+  properties:
+    lon: {type: string, description: "lon", default: "13.41"}
+    lat: {type: string, description: "lat", default: "52.52"}
+    product: {type: string, description: "product", default: "civil"}
+    output: {type: string, description: "output", default: "json"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - WEATHER_CHECK
+
+on_chain:
+  description: Stores signal for WEATHER_CHECK (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

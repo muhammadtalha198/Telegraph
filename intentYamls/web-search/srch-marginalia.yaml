@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 170081
+slug: srch-marginalia
+protocol: generic
+name: Marginalia Search
+description: >
+  Marginalia Search -> top1_domain_match (1 if the top result is on expected_domain, else 0).
+  Intent WEB_SEARCH - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://about.marginalia-search.com/article/api/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/top1-match
+    method: GET
+    description: Query for intent WEB_SEARCH via Marginalia Search.
+    intents: [WEB_SEARCH]
+    params:
+      query:
+        required:
+          - name: query
+            type: string
+            intents: ["*"]
+            description: Search query
+          - name: expected_domain
+            type: string
+            intents: ["*"]
+            description: Domain expected at rank 1
+
+input_schema:
+  type: object
+  required: [query, expected_domain]
+  properties:
+    query: {type: string, description: "Search query", default: "wikipedia"}
+    expected_domain: {type: string, description: "Domain expected at rank 1", default: "wikipedia.org"}
+
+semantics:
+  signal_mapping:
+    label_field: top1_domain_match
+  supported_intents:
+    - WEB_SEARCH
+
+on_chain:
+  description: Stores signal for WEB_SEARCH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

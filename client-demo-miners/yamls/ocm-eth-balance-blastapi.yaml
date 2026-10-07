@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 93107
+slug: ocm-eth-balance-blastapi
+protocol: generic
+name: ETH Balance via BlastAPI
+description: >
+  eth_getBalance pinned to blastapi.
+  Intent ONCHAIN_METRIC_VERIFY — scale peers for Usman ranking.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.telegraphprotocol.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/eth-balance
+    method: GET
+    description: Query for intent ONCHAIN_METRIC_VERIFY via ETH Balance via BlastAPI.
+    intents: [ONCHAIN_METRIC_VERIFY]
+    params:
+      query:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: ETH address
+          - name: block
+            type: string
+            intents: ["*"]
+            description: Block tag
+          - name: rpc
+            type: string
+            intents: ["*"]
+            description: Preferred RPC alias
+
+input_schema:
+  type: object
+  required: [address, block, rpc]
+  properties:
+    address: {type: string, description: "ETH address", default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}
+    block: {type: string, description: "Block tag", default: "latest"}
+    rpc: {type: string, description: "Preferred RPC alias", default: "blastapi"}
+
+semantics:
+  signal_mapping:
+    label_field: value_gwei
+  supported_intents:
+    - ONCHAIN_METRIC_VERIFY
+
+on_chain:
+  description: Stores signal for ONCHAIN_METRIC_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

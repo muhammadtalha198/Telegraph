@@ -1,0 +1,71 @@
+version: "1"
+kind: miner
+id: 34001
+slug: ipgeo-ipapi
+protocol: generic
+name: IP-API Geolocation
+description: >
+  ip-api.com JSON geolocation. Intent IP_GEOLOCATION. Direct Request shows ip.
+
+base_url: http://ip-api.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://ip-api.com/docs/api:json
+  website: https://ip-api.com/
+
+endpoints:
+  - path: /query
+    external_path: /json/{ip}
+    method: GET
+    description: IP geolocation for intent IP_GEOLOCATION via IP-API Geolocation.
+    intents: [IP_GEOLOCATION]
+    params:
+      path:
+        required:
+          - name: ip
+            type: string
+            intents: ["*"]
+            description: IPv4/IPv6 address
+
+input_schema:
+  type: object
+  required: [ip]
+  properties:
+    ip:
+      type: string
+      description: IP address
+      default: "8.8.8.8"
+
+semantics:
+  signal_mapping:
+    label_field: city
+  supported_intents:
+    - IP_GEOLOCATION
+
+on_chain:
+  description: Stores geo signal for IP_GEOLOCATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result label
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,81 @@
+version: "1"
+kind: miner
+id: 33003
+slug: wx-wttr
+protocol: generic
+name: wttr.in Weather Check
+description: >
+  wttr.in JSON weather. Intent WEATHER_CHECK. Direct Request shows location (city or lat,lon).
+
+base_url: https://wttr.in
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://github.com/chubin/wttr.in
+  website: https://wttr.in/
+
+endpoints:
+  - path: /query
+    external_path: /{location}
+    method: GET
+    description: Current weather for intent WEATHER_CHECK via wttr.in Weather Check.
+    intents: [WEATHER_CHECK]
+    params:
+      path:
+        required:
+          - name: location
+            type: string
+            intents: ["*"]
+            description: City name or lat,lon
+      query:
+        required:
+          - name: format
+            type: string
+            intents: ["*"]
+            description: Response format (use j1)
+
+input_schema:
+  type: object
+  required: [location, format]
+  properties:
+    location:
+      type: string
+      description: City or coordinates
+      default: "Miami"
+    format:
+      type: string
+      description: wttr format
+      default: "j1"
+
+semantics:
+  signal_mapping:
+    label_field: current_condition
+  supported_intents:
+    - WEATHER_CHECK
+
+on_chain:
+  description: Stores weather signal for WEATHER_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result label
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

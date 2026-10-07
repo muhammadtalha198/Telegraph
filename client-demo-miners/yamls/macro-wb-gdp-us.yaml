@@ -1,0 +1,85 @@
+version: "1"
+kind: miner
+id: 39001
+slug: macro-wb-gdp-us
+protocol: generic
+name: World Bank US GDP
+description: >
+  World Bank GDP current US$. Intent MACRO_ECONOMIC_INDICATOR.
+
+base_url: https://api.worldbank.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://datahelpdesk.worldbank.org/knowledgebase/articles/889392
+  website: https://data.worldbank.org/
+
+endpoints:
+  - path: /query
+    external_path: /v2/country/{country}/indicator/NY.GDP.MKTP.CD
+    method: GET
+    description: Query for intent MACRO_ECONOMIC_INDICATOR via World Bank US GDP.
+    intents: [MACRO_ECONOMIC_INDICATOR]
+    params:
+      path:
+        required:
+          - name: country
+            type: string
+            intents: ["*"]
+            description: ISO country code
+      query:
+        required:
+          - name: format
+            type: string
+            intents: ["*"]
+            description: json
+          - name: per_page
+            type: string
+            intents: ["*"]
+            description: page size
+          - name: MRV
+            type: string
+            intents: ["*"]
+            description: most recent values
+
+input_schema:
+  type: object
+  required: [country, format, per_page, MRV]
+  properties:
+    country: {type: string, description: Country ISO, default: "US"}
+    format: {type: string, description: Format, default: "json"}
+    per_page: {type: string, description: Per page, default: "1"}
+    MRV: {type: string, description: MRV, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "1"
+  supported_intents:
+    - MACRO_ECONOMIC_INDICATOR
+
+on_chain:
+  description: Stores signal for MACRO_ECONOMIC_INDICATOR.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

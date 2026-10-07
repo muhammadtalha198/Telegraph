@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190124
+slug: fx-hexarate
+protocol: generic
+name: "Fx Hexarate"
+description: "Semantic V2 miner for FX_NOW. Provides real-time institutional foreign exchange mid-market rates, spreads, and currency conversion quotes. Capture pin answers: Must return the current exchange rate between the two currencies asked."
+
+base_url: https://hexarate.paikama.co
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://hexarate.paikama.co/
+  website: https://hexarate.paikama.co
+
+endpoints:
+  - path: /query
+    external_path: /api/rates/latest/USD
+    method: GET
+    description: Query for intent FX_NOW via Fx Hexarate.
+    intents: [FX_NOW]
+    params:
+      query:
+        required:
+          - name: target
+            type: string
+            intents: ["*"]
+            description: target
+
+input_schema:
+  type: object
+  required: [target]
+  properties:
+    target: {type: string, description: "target", default: "EUR"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores signal for FX_NOW (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

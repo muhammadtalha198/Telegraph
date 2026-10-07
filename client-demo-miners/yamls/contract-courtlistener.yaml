@@ -1,0 +1,78 @@
+version: "1"
+kind: miner
+id: 64008
+slug: contract-courtlistener
+protocol: generic
+name: CourtListener Contract Search
+description: >
+  CourtListener opinions on contract obligations. Intent CONTRACT_OBLIGATION_AUDIT.
+
+base_url: https://www.courtlistener.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.courtlistener.com/api/
+  website: https://www.courtlistener.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/rest/v4/search/
+    method: GET
+    description: Query for intent CONTRACT_OBLIGATION_AUDIT via CourtListener Contract Search.
+    intents: [CONTRACT_OBLIGATION_AUDIT]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Query
+          - name: type
+            type: string
+            intents: ["*"]
+            description: Type
+          - name: page_size
+            type: string
+            intents: ["*"]
+            description: Page size
+
+input_schema:
+  type: object
+  required: [q, type, page_size]
+  properties:
+    q: {type: string, description: Query, default: "contract obligation"}
+    type: {type: string, description: Type, default: "o"}
+    page_size: {type: string, description: Page size, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: results
+  supported_intents:
+    - CONTRACT_OBLIGATION_AUDIT
+
+on_chain:
+  description: Stores signal for CONTRACT_OBLIGATION_AUDIT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

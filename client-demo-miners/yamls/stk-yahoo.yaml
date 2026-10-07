@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 170110
+slug: stk-yahoo
+protocol: generic
+name: Yahoo Finance Chart
+description: >
+  Yahoo Finance Chart -> last_cents.
+  Intent STOCK_PRICE - Round Two Batch 7.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://finance.yahoo.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/stock-last
+    method: GET
+    description: Query for intent STOCK_PRICE via Yahoo Finance Chart.
+    intents: [STOCK_PRICE]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: venue
+          - name: symbol
+            type: string
+            intents: ["*"]
+            description: symbol
+
+input_schema:
+  type: object
+  required: [venue, symbol]
+  properties:
+    venue: {type: string, description: "venue", default: "yahoo"}
+    symbol: {type: string, description: "symbol", default: "AAPL"}
+
+semantics:
+  signal_mapping:
+    label_field: last_cents
+  supported_intents:
+    - STOCK_PRICE
+
+on_chain:
+  description: Stores signal for STOCK_PRICE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

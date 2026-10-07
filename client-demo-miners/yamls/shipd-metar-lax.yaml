@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 99005
+slug: shipd-metar-lax
+protocol: generic
+name: METAR Delay LAX
+description: >
+  AviationWeather METAR LAX delay. Intent SHIPMENT_DELAY_RISK.
+
+base_url: https://aviationweather.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://aviationweather.gov/data/api/
+  website: https://aviationweather.gov
+
+endpoints:
+  - path: /query
+    external_path: /api/data/metar
+    method: GET
+    description: Query for intent SHIPMENT_DELAY_RISK via METAR Delay LAX.
+    intents: [SHIPMENT_DELAY_RISK]
+    params:
+      query:
+        required:
+          - name: ids
+            type: string
+            intents: ["*"]
+            description: ICAO
+          - name: format
+            type: string
+            intents: ["*"]
+            description: Format
+
+input_schema:
+  type: object
+  required: [ids, format]
+  properties:
+    ids: {type: string, description: ICAO, default: "KLAX"}
+    format: {type: string, description: Format, default: "json"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - SHIPMENT_DELAY_RISK
+
+on_chain:
+  description: Stores signal for SHIPMENT_DELAY_RISK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

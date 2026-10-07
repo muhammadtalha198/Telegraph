@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 76009
+slug: wxfv-nws
+protocol: generic
+name: NWS Grid Forecast Verify
+description: >
+  NWS gridpoint forecast for verify. Intent WEATHER_FORECAST_VERIFY.
+
+base_url: https://api.weather.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.weather.gov/documentation/services-web-api
+  website: https://www.weather.gov
+
+endpoints:
+  - path: /query
+    external_path: /gridpoints/MFL/91,63/forecast
+    method: GET
+    description: Query for intent WEATHER_FORECAST_VERIFY via NWS Grid Forecast Verify.
+    intents: [WEATHER_FORECAST_VERIFY]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: properties
+  supported_intents:
+    - WEATHER_FORECAST_VERIFY
+
+on_chain:
+  description: Stores signal for WEATHER_FORECAST_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

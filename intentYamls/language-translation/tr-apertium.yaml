@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190133
+slug: tr-apertium
+protocol: generic
+name: "Tr Apertium"
+description: "Semantic V2 miner for LANGUAGE_TRANSLATION. Translates multilingual text between source and target language pairs preserving semantic intent and idiom. Capture pin answers: Must return the text translated into the target language, preserving meaning."
+
+base_url: https://apertium.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://apertium.org/
+  website: https://apertium.org
+
+endpoints:
+  - path: /query
+    external_path: /apy/translate
+    method: GET
+    description: Query for intent LANGUAGE_TRANSLATION via Tr Apertium.
+    intents: [LANGUAGE_TRANSLATION]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: q
+          - name: langpair
+            type: string
+            intents: ["*"]
+            description: langpair
+
+input_schema:
+  type: object
+  required: [q, langpair]
+  properties:
+    q: {type: string, description: "q", default: "Thank you very much"}
+    langpair: {type: string, description: "langpair", default: "eng|spa"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - LANGUAGE_TRANSLATION
+
+on_chain:
+  description: Stores signal for LANGUAGE_TRANSLATION (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

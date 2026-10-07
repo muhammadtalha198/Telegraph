@@ -1,0 +1,78 @@
+version: "1"
+kind: miner
+id: 65003
+slug: ticket-gh-comments
+protocol: generic
+name: GitHub Issue Comments
+description: >
+  GitHub issue comment thread for resolution. Intent CUSTOMER_TICKET_RESOLUTION.
+
+base_url: https://api.github.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.github.com/en/rest/issues/comments
+  website: https://github.com/
+
+endpoints:
+  - path: /query
+    external_path: /repos/{owner}/{repo}/issues/{issue_number}/comments
+    method: GET
+    description: Query for intent CUSTOMER_TICKET_RESOLUTION via GitHub Issue Comments.
+    intents: [CUSTOMER_TICKET_RESOLUTION]
+    params:
+      path:
+        required:
+          - name: owner
+            type: string
+            intents: ["*"]
+            description: Owner
+          - name: repo
+            type: string
+            intents: ["*"]
+            description: Repo
+          - name: issue_number
+            type: string
+            intents: ["*"]
+            description: Issue number
+
+input_schema:
+  type: object
+  required: [owner, repo, issue_number]
+  properties:
+    owner: {type: string, description: Owner, default: "facebook"}
+    repo: {type: string, description: Repo, default: "react"}
+    issue_number: {type: string, description: Issue number, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - CUSTOMER_TICKET_RESOLUTION
+
+on_chain:
+  description: Stores signal for CUSTOMER_TICKET_RESOLUTION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

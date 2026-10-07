@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 142004
+slug: dns-google-ns
+protocol: generic
+name: DNS Google NS
+description: >
+  Google DNS-over-HTTPS Google NS. Intent DNS_RECORD_LOOKUP.
+
+base_url: https://dns.google
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://developers.google.com/speed/public-dns/docs/doh
+  website: https://dns.google
+
+endpoints:
+  - path: /query
+    external_path: /resolve
+    method: GET
+    description: Query for intent DNS_RECORD_LOOKUP via DNS Google NS.
+    intents: [DNS_RECORD_LOOKUP]
+    params:
+      query:
+        required:
+          - name: name
+            type: string
+            intents: ["*"]
+            description: Name
+          - name: type
+            type: string
+            intents: ["*"]
+            description: Type
+
+input_schema:
+  type: object
+  required: [name, type]
+  properties:
+    name: {type: string, description: Name, default: "example.com"}
+    type: {type: string, description: Type, default: "NS"}
+
+semantics:
+  signal_mapping:
+    label_field: Answer
+  supported_intents:
+    - DNS_RECORD_LOOKUP
+
+on_chain:
+  description: Stores signal for DNS_RECORD_LOOKUP.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

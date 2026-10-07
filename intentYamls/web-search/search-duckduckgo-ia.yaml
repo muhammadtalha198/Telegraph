@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 190102
+slug: search-duckduckgo-ia
+protocol: generic
+name: "Search Duckduckgo Ia"
+description: "Semantic V2 miner for WEB_SEARCH. PACK READY - only 9 candidates; 4 keyless. Keyless web-search is scarce; Brave/Google/Mojeek/Tavily/Jina need free keys (you already have JINA_API_KEY). Distinct publishers: 9. Capture pin answers: Must satisfy catalog intent WEB_SEARCH via upstream DuckDuckGo Instant Answer"
+
+base_url: https://api.duckduckgo.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.duckduckgo.com/
+  website: https://api.duckduckgo.com
+
+endpoints:
+  - path: /query
+    external_path: /
+    method: GET
+    description: Query for intent WEB_SEARCH via Search Duckduckgo Ia.
+    intents: [WEB_SEARCH]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: q
+          - name: format
+            type: string
+            intents: ["*"]
+            description: format
+          - name: no_html
+            type: string
+            intents: ["*"]
+            description: no_html
+
+input_schema:
+  type: object
+  required: [q, format, no_html]
+  properties:
+    q: {type: string, description: "q", default: "EUR"}
+    format: {type: string, description: "format", default: "json"}
+    no_html: {type: string, description: "no_html", default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - WEB_SEARCH
+
+on_chain:
+  description: Stores signal for WEB_SEARCH (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

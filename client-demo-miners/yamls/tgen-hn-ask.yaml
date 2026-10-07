@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 155002
+slug: tgen-hn-ask
+protocol: generic
+name: HN Ask Text Gen
+description: >
+  HN ask stories text generation. Intent TEXT_GENERATION.
+
+base_url: https://hacker-news.firebaseio.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://github.com/HackerNews/API
+  website: https://news.ycombinator.com
+
+endpoints:
+  - path: /query
+    external_path: /v0/askstories.json
+    method: GET
+    description: Query for intent TEXT_GENERATION via HN Ask Text Gen.
+    intents: [TEXT_GENERATION]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - TEXT_GENERATION
+
+on_chain:
+  description: Stores signal for TEXT_GENERATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

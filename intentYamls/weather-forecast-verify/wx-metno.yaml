@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190099
+slug: wx-metno
+protocol: generic
+name: "Wx Metno"
+description: "Semantic V2 miner for WEATHER_CHECK. PACK READY - meets 10 candidates; 7 keyless. Open-Meteo model variants share a host - count as 1 source if you enforce one-publisher-per-miner. Capture pin answers: Must satisfy catalog intent WEATHER_CHECK via upstream MET Norway"
+
+base_url: https://api.met.no
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.met.no/
+  website: https://api.met.no
+
+endpoints:
+  - path: /query
+    external_path: /weatherapi/locationforecast/2.0/compact
+    method: GET
+    description: Query for intent WEATHER_CHECK via Wx Metno.
+    intents: [WEATHER_CHECK]
+    params:
+      query:
+        required:
+          - name: lat
+            type: string
+            intents: ["*"]
+            description: lat
+          - name: lon
+            type: string
+            intents: ["*"]
+            description: lon
+
+input_schema:
+  type: object
+  required: [lat, lon]
+  properties:
+    lat: {type: string, description: "lat", default: "52.52"}
+    lon: {type: string, description: "lon", default: "13.41"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - WEATHER_CHECK
+
+on_chain:
+  description: Stores signal for WEATHER_CHECK (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190116
+slug: xfer-blockstream
+protocol: generic
+name: "Xfer Blockstream"
+description: "Semantic V2 miner for CRYPTO_TRANSFER_VERIFY. Verifies on-chain transaction status, gas fee burn, sender/recipient addresses, and block confirmations. Capture pin answers: Must return the on-chain status of the transaction (confirmed, block, parties/amounts)."
+
+base_url: https://blockstream.info
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://blockstream.info/
+  website: https://blockstream.info
+
+endpoints:
+  - path: /query
+    external_path: /api/tx/a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d
+    method: GET
+    description: Query for intent CRYPTO_TRANSFER_VERIFY via Xfer Blockstream.
+    intents: [CRYPTO_TRANSFER_VERIFY]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CRYPTO_TRANSFER_VERIFY
+
+on_chain:
+  description: Stores signal for CRYPTO_TRANSFER_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

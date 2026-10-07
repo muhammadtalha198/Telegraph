@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 136004
+slug: lang-bbc
+protocol: generic
+name: BBC Lang Source
+description: >
+  BBC RSS language source text. Intent LANGUAGE_GENERATION.
+
+base_url: https://feeds.bbci.co.uk
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.bbc.co.uk/news
+  website: https://www.bbc.co.uk
+
+endpoints:
+  - path: /query
+    external_path: /news/rss.xml
+    method: GET
+    description: Query for intent LANGUAGE_GENERATION via BBC Lang Source.
+    intents: [LANGUAGE_GENERATION]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: feed
+  supported_intents:
+    - LANGUAGE_GENERATION
+
+on_chain:
+  description: Stores signal for LANGUAGE_GENERATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

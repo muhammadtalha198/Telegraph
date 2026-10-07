@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 190083
+slug: grammar-grammarbot
+protocol: generic
+name: "Grammar Grammarbot"
+description: "Semantic V2 miner for GRAMMAR_SPELL_CHECK. PACK READY - only 5 candidates; 3 keyless. Keyless ceiling is ~2; the rest are free-key. Distinct publishers: 5. Capture pin answers: Must satisfy catalog intent GRAMMAR_SPELL_CHECK via upstream GrammarBot"
+
+base_url: https://api.grammarbot.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.grammarbot.io/
+  website: https://api.grammarbot.io
+
+endpoints:
+  - path: /query
+    external_path: /v2/check
+    method: GET
+    description: Query for intent GRAMMAR_SPELL_CHECK via Grammar Grammarbot.
+    intents: [GRAMMAR_SPELL_CHECK]
+    params:
+      query:
+        required:
+          - name: api_key
+            type: string
+            intents: ["*"]
+            description: api_key
+          - name: language
+            type: string
+            intents: ["*"]
+            description: language
+          - name: text
+            type: string
+            intents: ["*"]
+            description: text
+
+input_schema:
+  type: object
+  required: [api_key, language, text]
+  properties:
+    api_key: {type: string, description: "api_key", default: "guest"}
+    language: {type: string, description: "language", default: "en-US"}
+    text: {type: string, description: "text", default: "EUR"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - GRAMMAR_SPELL_CHECK
+
+on_chain:
+  description: Stores signal for GRAMMAR_SPELL_CHECK (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

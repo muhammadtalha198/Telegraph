@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 190153
+slug: route-jupiter
+protocol: generic
+name: "Route Jupiter"
+description: "Semantic V2 miner for OPTIMAL_EXECUTION_ROUTE. Determines optimal multi-venue order execution routing to minimize slippage, exchange fees, and market impact. Capture pin answers: Must return the best swap route / expected output amount for the trade asked."
+
+base_url: https://lite-api.jup.ag
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://lite-api.jup.ag/
+  website: https://lite-api.jup.ag
+
+endpoints:
+  - path: /query
+    external_path: /swap/v1/quote
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE via Route Jupiter.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: inputMint
+            type: string
+            intents: ["*"]
+            description: inputMint
+          - name: outputMint
+            type: string
+            intents: ["*"]
+            description: outputMint
+          - name: amount
+            type: string
+            intents: ["*"]
+            description: amount
+
+input_schema:
+  type: object
+  required: [inputMint, outputMint, amount]
+  properties:
+    inputMint: {type: string, description: "inputMint", default: "So11111111111111111111111111111111111111112"}
+    outputMint: {type: string, description: "outputMint", default: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"}
+    amount: {type: string, description: "amount", default: "1000000000"}
+
+semantics:
+  signal_mapping:
+    label_field: estimate
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores signal for OPTIMAL_EXECUTION_ROUTE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

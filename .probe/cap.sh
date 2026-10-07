@@ -1,0 +1,17 @@
+set -e
+c() { n="$1"; shift; curl -sS -m 40 -o "cap-$n.json" -w "$n=%{http_code}\n" "$@"; }
+c ddg "https://api.duckduckgo.com/?q=photosynthesis&format=json&no_html=1&skip_disambig=1"
+c wiki "https://en.wikipedia.org/api/rest_v1/page/summary/Photosynthesis"
+c openalex "https://api.openalex.org/works?search=photosynthesis&per-page=1"
+c stackex "https://api.stackexchange.com/2.3/search/advanced?order=desc&sort=relevance&q=reverse%20a%20list%20in%20python&site=stackoverflow&pagesize=1"
+c pubmed "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi?db=pubmed&term=crispr&retmode=json&retmax=1"
+c tpsent -X POST -d "text=I absolutely love this product, it works great" "https://text-processing.com/api/sentiment/"
+c tpphr -X POST -d "text=Machine learning models for natural language processing are improving rapidly" "https://text-processing.com/api/phrases/"
+c datamuse-ml "https://api.datamuse.com/words?ml=climate%20change&max=5"
+c datamuse-trg "https://api.datamuse.com/words?rel_trg=machine%20learning&max=5"
+c relwords "https://relatedwords.org/api/related?term=machine%20learning"
+c ores "https://ores.wikimedia.org/v3/scores/enwiki?models=articletopic&revids=1255566234"
+c sot -X POST -H "Content-Type: application/json" -d '{"engine":"Google","data":{"text":"Telegraph miner test","voice":"en-US"}}' "https://api.soundoftext.com/sounds"
+c ttsmp3 -X POST -d "msg=Telegraph miner test&lang=Brian&source=ttsmp3" "https://ttsmp3.com/makemp3_new.php"
+c voicevox "https://api.tts.quest/v3/voicevox/synthesis?text=konnichiwa&speaker=1"
+c wikidata "https://www.wikidata.org/w/api.php?action=wbsearchentities&search=photosynthesis&language=en&format=json&limit=1"

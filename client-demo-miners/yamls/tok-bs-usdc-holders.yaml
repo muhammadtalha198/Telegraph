@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 51005
+slug: tok-bs-usdc-holders
+protocol: generic
+name: Blockscout ETH USDC Holders
+description: >
+  Blockscout token /holders on ETH USDC Holders. Intent TOKEN_HOLDER_COUNT.
+
+base_url: https://eth.blockscout.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://eth.blockscout.com/api-docs
+  website: https://eth.blockscout.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/tokens/{address}/holders
+    method: GET
+    description: Query for intent TOKEN_HOLDER_COUNT via Blockscout ETH USDC Holders.
+    intents: [TOKEN_HOLDER_COUNT]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: Token contract address
+
+input_schema:
+  type: object
+  required: [address]
+  properties:
+    address: {type: string, description: Token address, default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
+
+semantics:
+  signal_mapping:
+    label_field: items
+  supported_intents:
+    - TOKEN_HOLDER_COUNT
+
+on_chain:
+  description: Stores signal for TOKEN_HOLDER_COUNT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

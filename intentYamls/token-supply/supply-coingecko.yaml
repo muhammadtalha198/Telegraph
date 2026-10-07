@@ -1,0 +1,92 @@
+version: "1"
+kind: miner
+id: 190097
+slug: supply-coingecko
+protocol: generic
+name: "Supply Coingecko"
+description: "Semantic V2 miner for TOKEN_TOTAL_SUPPLY_VERIFY. PACK READY - only 8 candidates; 7 keyless. LINK has a fixed 1e9 supply, so the golden value is exact. CryptoCompare path is a guess - verify. Distinct publishers: 8. Capture pin answers: Must satisfy catalog intent TOKEN_TOTAL_SUPPLY_VERIFY via upstream CoinGecko"
+
+base_url: https://api.coingecko.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.coingecko.com/
+  website: https://api.coingecko.com
+
+endpoints:
+  - path: /query
+    external_path: /api/v3/coins/ethereum
+    method: GET
+    description: Query for intent TOKEN_TOTAL_SUPPLY_VERIFY via Supply Coingecko.
+    intents: [TOKEN_TOTAL_SUPPLY_VERIFY]
+    params:
+      query:
+        required:
+          - name: localization
+            type: string
+            intents: ["*"]
+            description: localization
+          - name: tickers
+            type: string
+            intents: ["*"]
+            description: tickers
+          - name: market_data
+            type: string
+            intents: ["*"]
+            description: market_data
+          - name: community_data
+            type: string
+            intents: ["*"]
+            description: community_data
+          - name: developer_data
+            type: string
+            intents: ["*"]
+            description: developer_data
+          - name: sparkline
+            type: string
+            intents: ["*"]
+            description: sparkline
+
+input_schema:
+  type: object
+  required: [localization, tickers, market_data, community_data, developer_data, sparkline]
+  properties:
+    localization: {type: string, description: "localization", default: "false"}
+    tickers: {type: string, description: "tickers", default: "false"}
+    market_data: {type: string, description: "market_data", default: "true"}
+    community_data: {type: string, description: "community_data", default: "false"}
+    developer_data: {type: string, description: "developer_data", default: "false"}
+    sparkline: {type: string, description: "sparkline", default: "false"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - TOKEN_TOTAL_SUPPLY_VERIFY
+
+on_chain:
+  description: Stores signal for TOKEN_TOTAL_SUPPLY_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 135001
+slug: tw-masto-search
+protocol: generic
+name: Mastodon Search
+description: >
+  Mastodon public search Twitter-like. Intent TWITTER_SEARCH.
+
+base_url: https://mastodon.social
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.joinmastodon.org/methods/search/
+  website: https://mastodon.social
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/search
+    method: GET
+    description: Query for intent TWITTER_SEARCH via Mastodon Search.
+    intents: [TWITTER_SEARCH]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Query
+          - name: type
+            type: string
+            intents: ["*"]
+            description: Type
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: Limit
+
+input_schema:
+  type: object
+  required: [q, type, limit]
+  properties:
+    q: {type: string, description: Query, default: "bitcoin"}
+    type: {type: string, description: Type, default: "statuses"}
+    limit: {type: string, description: Limit, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: statuses
+  supported_intents:
+    - TWITTER_SEARCH
+
+on_chain:
+  description: Stores signal for TWITTER_SEARCH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

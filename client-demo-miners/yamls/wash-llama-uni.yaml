@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 80008
+slug: wash-llama-uni
+protocol: generic
+name: DefiLlama Uniswap Volume
+description: >
+  DefiLlama Uniswap volume summary. Intent WASH_TRADING_DETECTION.
+
+base_url: https://api.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/docs/api
+  website: https://defillama.com
+
+endpoints:
+  - path: /query
+    external_path: /summary/dexs/{protocol}
+    method: GET
+    description: Query for intent WASH_TRADING_DETECTION via DefiLlama Uniswap Volume.
+    intents: [WASH_TRADING_DETECTION]
+    params:
+      path:
+        required:
+          - name: protocol
+            type: string
+            intents: ["*"]
+            description: Protocol
+
+input_schema:
+  type: object
+  required: [protocol]
+  properties:
+    protocol: {type: string, description: Protocol, default: "uniswap"}
+
+semantics:
+  signal_mapping:
+    label_field: totalDataChart
+  supported_intents:
+    - WASH_TRADING_DETECTION
+
+on_chain:
+  description: Stores signal for WASH_TRADING_DETECTION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

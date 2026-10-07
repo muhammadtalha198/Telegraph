@@ -1,0 +1,102 @@
+version: "1"
+kind: miner
+id: 190094
+slug: stock-cnbc
+protocol: generic
+name: "Stock Cnbc"
+description: "Semantic V2 miner for STOCK_PRICE. PACK READY - meets 10 candidates; 4 keyless. Capture pin answers: Must satisfy catalog intent STOCK_PRICE via upstream CNBC"
+
+base_url: https://quote.cnbc.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://quote.cnbc.com/
+  website: https://quote.cnbc.com
+
+endpoints:
+  - path: /query
+    external_path: /quote-html-webservice/restQuote/symbolType/symbol
+    method: GET
+    description: Query for intent STOCK_PRICE via Stock Cnbc.
+    intents: [STOCK_PRICE]
+    params:
+      query:
+        required:
+          - name: symbols
+            type: string
+            intents: ["*"]
+            description: symbols
+          - name: requestMethod
+            type: string
+            intents: ["*"]
+            description: requestMethod
+          - name: noform
+            type: string
+            intents: ["*"]
+            description: noform
+          - name: partnerId
+            type: string
+            intents: ["*"]
+            description: partnerId
+          - name: fund
+            type: string
+            intents: ["*"]
+            description: fund
+          - name: exthrs
+            type: string
+            intents: ["*"]
+            description: exthrs
+          - name: output
+            type: string
+            intents: ["*"]
+            description: output
+          - name: events
+            type: string
+            intents: ["*"]
+            description: events
+
+input_schema:
+  type: object
+  required: [symbols, requestMethod, noform, partnerId, fund, exthrs, output, events]
+  properties:
+    symbols: {type: string, description: "symbols", default: "BTC"}
+    requestMethod: {type: string, description: "requestMethod", default: "itv"}
+    noform: {type: string, description: "noform", default: "1"}
+    partnerId: {type: string, description: "partnerId", default: "2"}
+    fund: {type: string, description: "fund", default: "1"}
+    exthrs: {type: string, description: "exthrs", default: "1"}
+    output: {type: string, description: "output", default: "json"}
+    events: {type: string, description: "events", default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - STOCK_PRICE
+
+on_chain:
+  description: Stores signal for STOCK_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

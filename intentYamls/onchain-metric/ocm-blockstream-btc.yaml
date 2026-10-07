@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190035
+slug: ocm-blockstream-btc
+protocol: generic
+name: "Ocm Blockstream BTC"
+description: "Semantic V2 miner for ONCHAIN_METRIC_VERIFY. Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain. Capture pin answers: Must convey the on-chain value asked (wallet/token balance or tx state) for the address given."
+
+base_url: https://blockstream.info
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://blockstream.info/
+  website: https://blockstream.info
+
+endpoints:
+  - path: /query
+    external_path: /api/address/{btc_address}
+    method: GET
+    description: Query for intent ONCHAIN_METRIC_VERIFY via Ocm Blockstream BTC.
+    intents: [ONCHAIN_METRIC_VERIFY]
+    params:
+      path:
+        required:
+          - name: btc_address
+            type: string
+            intents: ["*"]
+            description: btc address
+
+input_schema:
+  type: object
+  required: [btc_address]
+  properties:
+    btc_address: {type: string, description: "btc_address", default: "bc1qgdjqv0av3q56jvd82tkdjpy7gdp9ut8tlqmgrpmv24sq90ecnvqqjwvw97"}
+
+semantics:
+  signal_mapping:
+    label_field: coin_balance
+  supported_intents:
+    - ONCHAIN_METRIC_VERIFY
+
+on_chain:
+  description: Stores signal for ONCHAIN_METRIC_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

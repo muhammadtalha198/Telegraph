@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 190039
+slug: route-kyber-route
+protocol: generic
+name: "Route Kyber Route"
+description: "Semantic V2 miner for OPTIMAL_EXECUTION_ROUTE. Determines optimal multi-venue order execution routing to minimize slippage, exchange fees, and market impact. Capture pin answers: Must convey the best swap route / output amount for the trade asked."
+
+base_url: https://aggregator-api.kyberswap.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://aggregator-api.kyberswap.com/
+  website: https://aggregator-api.kyberswap.com
+
+endpoints:
+  - path: /query
+    external_path: /ethereum/api/v1/routes
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE via Route Kyber Route.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: tokenIn
+            type: string
+            intents: ["*"]
+            description: tokenIn
+          - name: tokenOut
+            type: string
+            intents: ["*"]
+            description: tokenOut
+          - name: amountIn
+            type: string
+            intents: ["*"]
+            description: amountIn
+
+input_schema:
+  type: object
+  required: [tokenIn, tokenOut, amountIn]
+  properties:
+    tokenIn: {type: string, description: "tokenIn", default: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"}
+    tokenOut: {type: string, description: "tokenOut", default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
+    amountIn: {type: string, description: "amountIn", default: "1000000000000000000"}
+
+semantics:
+  signal_mapping:
+    label_field: estimate
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores signal for OPTIMAL_EXECUTION_ROUTE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

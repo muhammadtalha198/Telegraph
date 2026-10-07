@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 125004
+slug: df-usgs
+protocol: generic
+name: USGS Media Deepfake Proxy
+description: >
+  USGS event imagery authenticity proxy. Intent DEEPFAKE_DETECTION.
+
+base_url: https://earthquake.usgs.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://earthquake.usgs.gov/fdsnws/event/1/
+  website: https://earthquake.usgs.gov
+
+endpoints:
+  - path: /query
+    external_path: /earthquakes/feed/v1.0/summary/significant_week.geojson
+    method: GET
+    description: Query for intent DEEPFAKE_DETECTION via USGS Media Deepfake Proxy.
+    intents: [DEEPFAKE_DETECTION]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: features
+  supported_intents:
+    - DEEPFAKE_DETECTION
+
+on_chain:
+  description: Stores signal for DEEPFAKE_DETECTION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

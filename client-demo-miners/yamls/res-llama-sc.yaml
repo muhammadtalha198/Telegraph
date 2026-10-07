@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 81001
+slug: res-llama-sc
+protocol: generic
+name: DefiLlama Stablecoins List
+description: >
+  DefiLlama pegged assets list. Intent ASSET_RESERVE_ATTESTATION.
+
+base_url: https://stablecoins.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/docs/api
+  website: https://defillama.com
+
+endpoints:
+  - path: /query
+    external_path: /stablecoins
+    method: GET
+    description: Query for intent ASSET_RESERVE_ATTESTATION via DefiLlama Stablecoins List.
+    intents: [ASSET_RESERVE_ATTESTATION]
+    params:
+      query:
+        required:
+          - name: includePrices
+            type: string
+            intents: ["*"]
+            description: Include prices
+
+input_schema:
+  type: object
+  required: [includePrices]
+  properties:
+    includePrices: {type: string, description: Include prices, default: "true"}
+
+semantics:
+  signal_mapping:
+    label_field: peggedAssets
+  supported_intents:
+    - ASSET_RESERVE_ATTESTATION
+
+on_chain:
+  description: Stores signal for ASSET_RESERVE_ATTESTATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

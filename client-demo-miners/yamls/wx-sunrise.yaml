@@ -1,0 +1,87 @@
+version: "1"
+kind: miner
+id: 33006
+slug: wx-sunrise
+protocol: generic
+name: Sunrise-Sunset Weather Check
+description: >
+  Sunrise/sunset times for a location. Intent WEATHER_CHECK. Direct Request shows lat + lng.
+
+base_url: https://api.sunrise-sunset.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://sunrise-sunset.org/api
+  website: https://sunrise-sunset.org/
+
+endpoints:
+  - path: /query
+    external_path: /json
+    method: GET
+    description: Current weather for intent WEATHER_CHECK via Sunrise-Sunset Weather Check.
+    intents: [WEATHER_CHECK]
+    params:
+      query:
+        required:
+          - name: lat
+            type: string
+            intents: ["*"]
+            description: Latitude
+          - name: lng
+            type: string
+            intents: ["*"]
+            description: Longitude
+          - name: formatted
+            type: string
+            intents: ["*"]
+            description: 0 for ISO timestamps
+
+input_schema:
+  type: object
+  required: [lat, lng, formatted]
+  properties:
+    lat:
+      type: string
+      description: Latitude
+      default: "25.7617"
+    lng:
+      type: string
+      description: Longitude
+      default: "-80.1918"
+    formatted:
+      type: string
+      description: Formatted flag
+      default: "0"
+
+semantics:
+  signal_mapping:
+    label_field: results
+  supported_intents:
+    - WEATHER_CHECK
+
+on_chain:
+  description: Stores weather signal for WEATHER_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result label
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

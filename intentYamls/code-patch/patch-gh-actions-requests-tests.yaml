@@ -1,0 +1,89 @@
+version: "1"
+kind: miner
+id: 190002
+slug: patch-gh-actions-requests-tests
+protocol: generic
+name: "Patch Gh Actions Requests Tests"
+description: "Semantic V2 miner for CODE_PATCH_VERIFY. Validates that software patch commits compile, resolve targeted defects, and introduce no regression side effects. Capture pin answers: Must convey whether the build/tests for the patch passed or failed."
+
+base_url: https://api.github.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.github.com/
+  website: https://api.github.com
+
+endpoints:
+  - path: /query
+    external_path: /repos/{owner}/{repo}/actions/workflows/{workflow}/runs
+    method: GET
+    description: Query for intent CODE_PATCH_VERIFY via Patch Gh Actions Requests Tests.
+    intents: [CODE_PATCH_VERIFY]
+    params:
+      path:
+        required:
+          - name: owner
+            type: string
+            intents: ["*"]
+            description: owner
+          - name: repo
+            type: string
+            intents: ["*"]
+            description: repo
+          - name: workflow
+            type: string
+            intents: ["*"]
+            description: workflow
+      query:
+        required:
+          - name: per_page
+            type: string
+            intents: ["*"]
+            description: per_page
+          - name: status
+            type: string
+            intents: ["*"]
+            description: status
+
+input_schema:
+  type: object
+  required: [owner, repo, workflow, per_page, status]
+  properties:
+    owner: {type: string, description: "owner", default: "psf"}
+    repo: {type: string, description: "repo", default: "requests"}
+    workflow: {type: string, description: "workflow", default: "run-tests.yml"}
+    per_page: {type: string, description: "per_page", default: "1"}
+    status: {type: string, description: "status", default: "completed"}
+
+semantics:
+  signal_mapping:
+    label_field: conclusion
+  supported_intents:
+    - CODE_PATCH_VERIFY
+
+on_chain:
+  description: Stores signal for CODE_PATCH_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

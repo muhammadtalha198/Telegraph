@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190169
+slug: vendor-vatcomply
+protocol: generic
+name: "Vendor Vatcomply"
+description: "Semantic V2 miner for VENDOR_VERIFY. Audits vendor tax identifiers, compliance credentials, banking details, and sanctions list clearance. Capture pin answers: Must return whether the vendor tax/VAT ID is valid and the registered business details."
+
+base_url: https://api.vatcomply.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.vatcomply.com/
+  website: https://api.vatcomply.com
+
+endpoints:
+  - path: /query
+    external_path: /vat
+    method: GET
+    description: Query for intent VENDOR_VERIFY via Vendor Vatcomply.
+    intents: [VENDOR_VERIFY]
+    params:
+      query:
+        required:
+          - name: vat_number
+            type: string
+            intents: ["*"]
+            description: vat_number
+
+input_schema:
+  type: object
+  required: [vat_number]
+  properties:
+    vat_number: {type: string, description: "vat_number", default: "IE6388047V"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - VENDOR_VERIFY
+
+on_chain:
+  description: Stores signal for VENDOR_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

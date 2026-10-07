@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 63004
+slug: llm-hf-papers
+protocol: generic
+name: HF Papers LLM Eval
+description: >
+  Hugging Face papers search for LLM eval. Intent LLM_OUTPUT_EVALUATION.
+
+base_url: https://huggingface.co
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://huggingface.co/docs/hub/api
+  website: https://huggingface.co/
+
+endpoints:
+  - path: /query
+    external_path: /api/papers
+    method: GET
+    description: Query for intent LLM_OUTPUT_EVALUATION via HF Papers LLM Eval.
+    intents: [LLM_OUTPUT_EVALUATION]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Query
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: Limit
+
+input_schema:
+  type: object
+  required: [q, limit]
+  properties:
+    q: {type: string, description: Query, default: "llm evaluation"}
+    limit: {type: string, description: Limit, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - LLM_OUTPUT_EVALUATION
+
+on_chain:
+  description: Stores signal for LLM_OUTPUT_EVALUATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

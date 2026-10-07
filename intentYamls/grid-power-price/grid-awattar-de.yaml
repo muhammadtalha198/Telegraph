@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190130
+slug: grid-awattar-de
+protocol: generic
+name: "Grid Awattar De"
+description: "Semantic V2 miner for GRID_POWER_PRICE. Ingests real-time nodal marginal locational prices (LMP) and day-ahead electricity spot rates from regional grid operators. Capture pin answers: Must return current/day-ahead electricity spot prices for the grid region asked."
+
+base_url: https://api.awattar.de
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.awattar.de/
+  website: https://api.awattar.de
+
+endpoints:
+  - path: /query
+    external_path: /v1/marketdata
+    method: GET
+    description: Query for intent GRID_POWER_PRICE via Grid Awattar De.
+    intents: [GRID_POWER_PRICE]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - GRID_POWER_PRICE
+
+on_chain:
+  description: Stores signal for GRID_POWER_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

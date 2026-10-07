@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170075
+slug: grm-yandex
+protocol: generic
+name: Yandex Speller
+description: >
+  Yandex Speller -> has_error (1 if the checker reports any issue, else 0).
+  Intent GRAMMAR_SPELL_CHECK - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://yandex.ru/dev/speller/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/has-error
+    method: GET
+    description: Query for intent GRAMMAR_SPELL_CHECK via Yandex Speller.
+    intents: [GRAMMAR_SPELL_CHECK]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Checker id
+          - name: text
+            type: string
+            intents: ["*"]
+            description: Text to check
+          - name: lang
+            type: string
+            intents: ["*"]
+            description: Language code
+
+input_schema:
+  type: object
+  required: [venue, text, lang]
+  properties:
+    venue: {type: string, description: "Checker id", default: "yandex"}
+    text: {type: string, description: "Text to check", default: "This are a test sentense."}
+    lang: {type: string, description: "Language code", default: "en"}
+
+semantics:
+  signal_mapping:
+    label_field: has_error
+  supported_intents:
+    - GRAMMAR_SPELL_CHECK
+
+on_chain:
+  description: Stores signal for GRAMMAR_SPELL_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

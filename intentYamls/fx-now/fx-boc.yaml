@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 31005
+slug: fx-boc
+protocol: generic
+name: Bank of Canada FX Now
+description: >
+  Bank of Canada Valet FX observations. Intent FX_NOW. Direct Request shows FX input fields in Alexandria.
+
+base_url: https://www.bankofcanada.ca
+
+auth:
+  type: none
+
+rate_limit_per_sec: 2
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.bankofcanada.ca/valet/docs
+  website: https://www.bankofcanada.ca/
+
+endpoints:
+  - path: /query
+    external_path: /valet/observations/{series}/json
+    method: GET
+    description: FX mid-market rates for intent FX_NOW via Bank of Canada FX Now.
+    intents: [FX_NOW]
+    params:
+      path:
+        required:
+          - name: series
+            type: string
+            intents: ["*"]
+            description: FX series id (e.g. FXUSDCAD)
+      query:
+        optional:
+          - name: recent
+            type: string
+            intents: ["*"]
+            description: Number of recent observations
+            default: "1"
+
+input_schema:
+  type: object
+  required: [series]
+  properties:
+    series:
+      type: string
+      description: BoC FX series id (e.g. FXUSDCAD, FXUSDEUR)
+      default: "FXUSDCAD"
+    recent:
+      type: string
+      description: Recent observations count
+      default: "1"
+
+semantics:
+  signal_mapping:
+    label_field: observations.0.d
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores FX signal for FX_NOW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: date
+        description: Observation date
+        source_path: observations.0.d
+    integers:
+      - index: 0
+        name: cad_x10000
+        description: USD/CAD x10000
+        source_path: observations.0.FXUSDCAD.v
+        multiplier: 10000

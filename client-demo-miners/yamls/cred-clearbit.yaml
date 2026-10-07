@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 157008
+slug: cred-clearbit
+protocol: generic
+name: Clearbit Credit Firm
+description: >
+  Clearbit firm identity credit context. Intent CREDIT_SCORE_VERIFY.
+
+base_url: https://autocomplete.clearbit.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://clearbit.com/
+  website: https://clearbit.com
+
+endpoints:
+  - path: /query
+    external_path: /v1/companies/suggest
+    method: GET
+    description: Query for intent CREDIT_SCORE_VERIFY via Clearbit Credit Firm.
+    intents: [CREDIT_SCORE_VERIFY]
+    params:
+      query:
+        required:
+          - name: query
+            type: string
+            intents: ["*"]
+            description: Query
+
+input_schema:
+  type: object
+  required: [query]
+  properties:
+    query: {type: string, description: Query, default: "jpmorgan"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - CREDIT_SCORE_VERIFY
+
+on_chain:
+  description: Stores signal for CREDIT_SCORE_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

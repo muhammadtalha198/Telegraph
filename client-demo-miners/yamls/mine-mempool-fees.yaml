@@ -1,0 +1,60 @@
+version: "1"
+kind: miner
+id: 67001
+slug: mine-mempool-fees
+protocol: generic
+name: Mempool Recommended Fees
+description: >
+  BTC mempool recommended fees. Intent MINING_HASHPRICE_VERIFY.
+
+base_url: https://mempool.space
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://mempool.space/docs/api/rest
+  website: https://mempool.space/
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/fees/recommended
+    method: GET
+    description: Query for intent MINING_HASHPRICE_VERIFY via Mempool Recommended Fees.
+    intents: [MINING_HASHPRICE_VERIFY]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: fastestFee
+  supported_intents:
+    - MINING_HASHPRICE_VERIFY
+
+on_chain:
+  description: Stores signal for MINING_HASHPRICE_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

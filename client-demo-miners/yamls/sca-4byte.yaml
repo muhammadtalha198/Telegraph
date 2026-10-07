@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 151001
+slug: sca-4byte
+protocol: generic
+name: 4byte Signature Audit
+description: >
+  4byte directory function signatures. Intent SMART_CONTRACT_AUDIT.
+
+base_url: https://www.4byte.directory
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.4byte.directory/docs/
+  website: https://www.4byte.directory
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/signatures/
+    method: GET
+    description: Query for intent SMART_CONTRACT_AUDIT via 4byte Signature Audit.
+    intents: [SMART_CONTRACT_AUDIT]
+    params:
+      query:
+        required:
+          - name: hex_signature
+            type: string
+            intents: ["*"]
+            description: Hex
+
+input_schema:
+  type: object
+  required: [hex_signature]
+  properties:
+    hex_signature: {type: string, description: Hex, default: "0xa9059cbb"}
+
+semantics:
+  signal_mapping:
+    label_field: results
+  supported_intents:
+    - SMART_CONTRACT_AUDIT
+
+on_chain:
+  description: Stores signal for SMART_CONTRACT_AUDIT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 88008
+slug: pay-handy-amex
+protocol: generic
+name: HandyAPI BIN Amex
+description: >
+  HandyAPI BIN metadata for Amex. Intent PAYMENT_METHOD_VERIFY.
+
+base_url: https://data.handyapi.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://handyapi.com/
+  website: https://handyapi.com
+
+endpoints:
+  - path: /query
+    external_path: /bin/378282246310005
+    method: GET
+    description: Query for intent PAYMENT_METHOD_VERIFY via HandyAPI BIN Amex.
+    intents: [PAYMENT_METHOD_VERIFY]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: Scheme
+  supported_intents:
+    - PAYMENT_METHOD_VERIFY
+
+on_chain:
+  description: Stores signal for PAYMENT_METHOD_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

@@ -1,0 +1,84 @@
+version: "1"
+kind: miner
+id: 170117
+slug: cls-hf-bart-mnli
+protocol: generic
+name: HF BART-MNLI Zero-Shot
+description: >
+  HF BART-MNLI Zero-Shot -> top_label_match.
+  Intent TEXT_CLASSIFICATION - Round Two Batch 7.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://huggingface.co/facebook/bart-large-mnli
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/text-classify
+    method: GET
+    description: Query for intent TEXT_CLASSIFICATION via HF BART-MNLI Zero-Shot.
+    intents: [TEXT_CLASSIFICATION]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: venue
+          - name: text
+            type: string
+            intents: ["*"]
+            description: text
+          - name: labels
+            type: string
+            intents: ["*"]
+            description: labels
+          - name: expected
+            type: string
+            intents: ["*"]
+            description: expected
+
+input_schema:
+  type: object
+  required: [venue, text, labels, expected]
+  properties:
+    venue: {type: string, description: "venue", default: "bart-mnli"}
+    text: {type: string, description: "text", default: "I love this product"}
+    labels: {type: string, description: "labels", default: "positive,negative"}
+    expected: {type: string, description: "expected", default: "positive"}
+
+semantics:
+  signal_mapping:
+    label_field: top_label_match
+  supported_intents:
+    - TEXT_CLASSIFICATION
+
+on_chain:
+  description: Stores signal for TEXT_CLASSIFICATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

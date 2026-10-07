@@ -1,0 +1,82 @@
+version: "1"
+kind: miner
+id: 190103
+slug: search-wikipedia
+protocol: generic
+name: "Search Wikipedia"
+description: "Semantic V2 miner for WEB_SEARCH. PACK READY - only 9 candidates; 4 keyless. Keyless web-search is scarce; Brave/Google/Mojeek/Tavily/Jina need free keys (you already have JINA_API_KEY). Distinct publishers: 9. Capture pin answers: Must satisfy catalog intent WEB_SEARCH via upstream Wikipedia search"
+
+base_url: https://en.wikipedia.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://en.wikipedia.org/
+  website: https://en.wikipedia.org
+
+endpoints:
+  - path: /query
+    external_path: /w/api.php
+    method: GET
+    description: Query for intent WEB_SEARCH via Search Wikipedia.
+    intents: [WEB_SEARCH]
+    params:
+      query:
+        required:
+          - name: action
+            type: string
+            intents: ["*"]
+            description: action
+          - name: list
+            type: string
+            intents: ["*"]
+            description: list
+          - name: srsearch
+            type: string
+            intents: ["*"]
+            description: srsearch
+          - name: format
+            type: string
+            intents: ["*"]
+            description: format
+
+input_schema:
+  type: object
+  required: [action, list, srsearch, format]
+  properties:
+    action: {type: string, description: "action", default: "query"}
+    list: {type: string, description: "list", default: "search"}
+    srsearch: {type: string, description: "srsearch", default: "EUR"}
+    format: {type: string, description: "format", default: "json"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - WEB_SEARCH
+
+on_chain:
+  description: Stores signal for WEB_SEARCH (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

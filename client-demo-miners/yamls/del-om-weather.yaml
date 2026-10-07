@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 96005
+slug: del-om-weather
+protocol: generic
+name: Open-Meteo Delivery Weather
+description: >
+  Weather conditions affecting delivery window. Intent DELIVERY_WINDOW_VERIFY.
+
+base_url: https://api.open-meteo.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://open-meteo.com/en/docs
+  website: https://open-meteo.com
+
+endpoints:
+  - path: /query
+    external_path: /v1/forecast
+    method: GET
+    description: Query for intent DELIVERY_WINDOW_VERIFY via Open-Meteo Delivery Weather.
+    intents: [DELIVERY_WINDOW_VERIFY]
+    params:
+      query:
+        required:
+          - name: latitude
+            type: string
+            intents: ["*"]
+            description: Lat
+          - name: longitude
+            type: string
+            intents: ["*"]
+            description: Lon
+          - name: current
+            type: string
+            intents: ["*"]
+            description: Current
+
+input_schema:
+  type: object
+  required: [latitude, longitude, current]
+  properties:
+    latitude: {type: string, description: Lat, default: "52.52"}
+    longitude: {type: string, description: Lon, default: "13.41"}
+    current: {type: string, description: Current, default: "weather_code,wind_speed_10m"}
+
+semantics:
+  signal_mapping:
+    label_field: current
+  supported_intents:
+    - DELIVERY_WINDOW_VERIFY
+
+on_chain:
+  description: Stores signal for DELIVERY_WINDOW_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

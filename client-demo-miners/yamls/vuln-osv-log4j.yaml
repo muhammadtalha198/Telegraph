@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 73007
+slug: vuln-osv-log4j
+protocol: generic
+name: OSV Log4Shell
+description: >
+  OSV record for Log4Shell-related GHSA. Intent VULNERABILITY_TRIAGE.
+
+base_url: https://api.osv.dev
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://osv.dev/
+  website: https://osv.dev/
+
+endpoints:
+  - path: /query
+    external_path: /v1/vulns/{id}
+    method: GET
+    description: Query for intent VULNERABILITY_TRIAGE via OSV Log4Shell.
+    intents: [VULNERABILITY_TRIAGE]
+    params:
+      path:
+        required:
+          - name: id
+            type: string
+            intents: ["*"]
+            description: Vuln id
+
+input_schema:
+  type: object
+  required: [id]
+  properties:
+    id: {type: string, description: Vuln id, default: "GHSA-jfh8-c2jp-5v3q"}
+
+semantics:
+  signal_mapping:
+    label_field: id
+  supported_intents:
+    - VULNERABILITY_TRIAGE
+
+on_chain:
+  description: Stores signal for VULNERABILITY_TRIAGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

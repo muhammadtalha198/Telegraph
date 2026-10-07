@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 31009
+slug: fx-coinbase
+protocol: generic
+name: Coinbase FX Now
+description: >
+  Coinbase public exchange-rates endpoint. Intent FX_NOW. Direct Request shows FX input fields in Alexandria.
+
+base_url: https://api.coinbase.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 2
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.cdp.coinbase.com/coinbase-app/track-apis/exchange-rates
+  website: https://www.coinbase.com/
+
+endpoints:
+  - path: /query
+    external_path: /v2/exchange-rates
+    method: GET
+    description: FX mid-market rates for intent FX_NOW via Coinbase FX Now.
+    intents: [FX_NOW]
+    params:
+      query:
+        required:
+          - name: currency
+            type: string
+            intents: ["*"]
+            description: Base currency code (e.g. USD)
+
+input_schema:
+  type: object
+  required: [currency]
+  properties:
+    currency:
+      type: string
+      description: Base currency
+      default: "USD"
+
+semantics:
+  signal_mapping:
+    label_field: data.currency
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores FX signal for FX_NOW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: currency
+        description: Base currency
+        source_path: data.currency
+    integers:
+      - index: 0
+        name: eur_x10000
+        description: EUR rate x10000
+        source_path: data.rates.EUR
+        multiplier: 10000

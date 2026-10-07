@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 49005
+slug: web-devto
+protocol: generic
+name: Dev.to Article Search
+description: >
+  Dev.to articles by tag. Intent WEB_SEARCH.
+
+base_url: https://dev.to
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://developers.forem.com/api
+  website: https://dev.to/
+
+endpoints:
+  - path: /query
+    external_path: /api/articles
+    method: GET
+    description: Query for intent WEB_SEARCH via Dev.to Article Search.
+    intents: [WEB_SEARCH]
+    params:
+      query:
+        required:
+          - name: tag
+            type: string
+            intents: ["*"]
+            description: Tag
+          - name: per_page
+            type: string
+            intents: ["*"]
+            description: Per page
+
+input_schema:
+  type: object
+  required: [tag, per_page]
+  properties:
+    tag: {type: string, description: Tag, default: "webdev"}
+    per_page: {type: string, description: Per page, default: "5"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - WEB_SEARCH
+
+on_chain:
+  description: Stores signal for WEB_SEARCH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

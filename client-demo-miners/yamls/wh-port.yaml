@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 119007
+slug: wh-port
+protocol: generic
+name: Digitraffic Warehouse Port
+description: >
+  Port-call cargo warehouse status. Intent WAREHOUSE_INVENTORY.
+
+base_url: https://meri.digitraffic.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.digitraffic.fi/en/marine-traffic/
+  website: https://www.digitraffic.fi
+
+endpoints:
+  - path: /query
+    external_path: /api/port-call/v1/port-calls
+    method: GET
+    description: Query for intent WAREHOUSE_INVENTORY via Digitraffic Warehouse Port.
+    intents: [WAREHOUSE_INVENTORY]
+    params:
+      query:
+        required:
+          - name: locode
+            type: string
+            intents: ["*"]
+            description: LOCODE
+
+input_schema:
+  type: object
+  required: [locode]
+  properties:
+    locode: {type: string, description: LOCODE, default: "FIHEL"}
+
+semantics:
+  signal_mapping:
+    label_field: portCalls
+  supported_intents:
+    - WAREHOUSE_INVENTORY
+
+on_chain:
+  description: Stores signal for WAREHOUSE_INVENTORY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

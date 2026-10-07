@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 146006
+slug: loan-erapi
+protocol: generic
+name: ER-API Loan FX
+description: >
+  Open ER-API FX loan quote. Intent LOAN_INTEREST_RATE_QUOTE.
+
+base_url: https://open.er-api.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.exchangerate-api.com/docs/free
+  website: https://www.exchangerate-api.com
+
+endpoints:
+  - path: /query
+    external_path: /v6/latest/{base}
+    method: GET
+    description: Query for intent LOAN_INTEREST_RATE_QUOTE via ER-API Loan FX.
+    intents: [LOAN_INTEREST_RATE_QUOTE]
+    params:
+      path:
+        required:
+          - name: base
+            type: string
+            intents: ["*"]
+            description: Base
+
+input_schema:
+  type: object
+  required: [base]
+  properties:
+    base: {type: string, description: Base, default: "USD"}
+
+semantics:
+  signal_mapping:
+    label_field: rates
+  supported_intents:
+    - LOAN_INTEREST_RATE_QUOTE
+
+on_chain:
+  description: Stores signal for LOAN_INTEREST_RATE_QUOTE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

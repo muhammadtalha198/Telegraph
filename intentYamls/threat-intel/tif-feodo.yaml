@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170032
+slug: tif-feodo
+protocol: generic
+name: abuse.ch Feodo Tracker
+description: >
+  abuse.ch Feodo Tracker -> ioc_flagged (1 if the feed lists the indicator, else 0).
+  Intent THREAT_INTELLIGENCE - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://feodotracker.abuse.ch/blocklist/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/ti-flag
+    method: GET
+    description: Query for intent THREAT_INTELLIGENCE via abuse.ch Feodo Tracker.
+    intents: [THREAT_INTELLIGENCE]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Threat feed id
+          - name: type
+            type: string
+            intents: ["*"]
+            description: IOC type (md5/sha1/sha256, ip, domain, url)
+          - name: value
+            type: string
+            intents: ["*"]
+            description: Indicator value
+
+input_schema:
+  type: object
+  required: [venue, type, value]
+  properties:
+    venue: {type: string, description: "Threat feed id", default: "feodo"}
+    type: {type: string, description: "IOC type (md5/sha1/sha256, ip, domain, url)", default: "ip"}
+    value: {type: string, description: "Indicator value", default: "162.243.103.246"}
+
+semantics:
+  signal_mapping:
+    label_field: ioc_flagged
+  supported_intents:
+    - THREAT_INTELLIGENCE
+
+on_chain:
+  description: Stores signal for THREAT_INTELLIGENCE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

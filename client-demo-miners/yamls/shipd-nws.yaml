@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 99008
+slug: shipd-nws
+protocol: generic
+name: NWS Alerts Delay NY
+description: >
+  NWS NY alerts shipment delay risk. Intent SHIPMENT_DELAY_RISK.
+
+base_url: https://api.weather.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.weather.gov/documentation/services-web-api
+  website: https://www.weather.gov
+
+endpoints:
+  - path: /query
+    external_path: /alerts/active
+    method: GET
+    description: Query for intent SHIPMENT_DELAY_RISK via NWS Alerts Delay NY.
+    intents: [SHIPMENT_DELAY_RISK]
+    params:
+      query:
+        required:
+          - name: area
+            type: string
+            intents: ["*"]
+            description: Area
+
+input_schema:
+  type: object
+  required: [area]
+  properties:
+    area: {type: string, description: Area, default: "NY"}
+
+semantics:
+  signal_mapping:
+    label_field: features
+  supported_intents:
+    - SHIPMENT_DELAY_RISK
+
+on_chain:
+  description: Stores signal for SHIPMENT_DELAY_RISK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

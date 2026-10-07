@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 29003
+slug: patch-godbolt
+protocol: generic
+name: Godbolt Patch Verify
+description: >
+  Compiler Explorer execute: compile+run source_code. Returns exit_status
+  from Godbolt code (0=ok). Intent CODE_PATCH_VERIFY. Distinct from Judge0/Wandbox.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://godbolt.org/api
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/patch-godbolt
+    method: GET
+    description: Query for intent CODE_PATCH_VERIFY via Compiler Explorer.
+    intents: [CODE_PATCH_VERIFY]
+    params:
+      query:
+        required:
+          - name: compiler
+            type: string
+            intents: ["*"]
+            description: Godbolt compiler id
+          - name: source_code
+            type: string
+            intents: ["*"]
+            description: Patched source to compile and run
+
+input_schema:
+  type: object
+  required: [compiler, source_code]
+  properties:
+    compiler: {type: string, description: "Godbolt compiler id", default: "python311"}
+    source_code: {type: string, description: "Patched source", default: "print(2+2)"}
+
+semantics:
+  signal_mapping:
+    label_field: exit_status
+  supported_intents:
+    - CODE_PATCH_VERIFY
+
+on_chain:
+  description: Stores exit_status for CODE_PATCH_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

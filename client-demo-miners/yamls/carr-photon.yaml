@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 101003
+slug: carr-photon
+protocol: generic
+name: Photon Carrier Hub
+description: >
+  Photon geocode warehouse/carrier hub. Intent CARRIER_SERVICEABILITY.
+
+base_url: https://photon.komoot.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://github.com/komoot/photon
+  website: https://photon.komoot.io
+
+endpoints:
+  - path: /query
+    external_path: /api/
+    method: GET
+    description: Query for intent CARRIER_SERVICEABILITY via Photon Carrier Hub.
+    intents: [CARRIER_SERVICEABILITY]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Query
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: Limit
+
+input_schema:
+  type: object
+  required: [q, limit]
+  properties:
+    q: {type: string, description: Query, default: "warehouse"}
+    limit: {type: string, description: Limit, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: features
+  supported_intents:
+    - CARRIER_SERVICEABILITY
+
+on_chain:
+  description: Stores signal for CARRIER_SERVICEABILITY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

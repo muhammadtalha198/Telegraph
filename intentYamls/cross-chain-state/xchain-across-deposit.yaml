@@ -1,0 +1,80 @@
+version: "1"
+kind: miner
+id: 29103
+slug: xchain-across-deposit
+protocol: generic
+name: Across Deposit Execution Verify
+description: >
+  Across bridge deposit status: fill/execution for pinned deposit_id + origin_chain_id.
+  Returns execution_ok 1 if status=filled, else 0. Intent CROSS_CHAIN_STATE_VERIFY.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.across.to/
+  website: https://across.to/
+
+endpoints:
+  - path: /query
+    external_path: /truth/xchain-across
+    method: GET
+    description: Query for intent CROSS_CHAIN_STATE_VERIFY via Across deposit status.
+    intents: [CROSS_CHAIN_STATE_VERIFY]
+    params:
+      query:
+        required:
+          - name: deposit_id
+            type: string
+            intents: ["*"]
+            description: Across deposit id
+          - name: origin_chain_id
+            type: string
+            intents: ["*"]
+            description: Origin chain id (e.g. 137 = Polygon)
+
+input_schema:
+  type: object
+  required: [deposit_id, origin_chain_id]
+  properties:
+    deposit_id:
+      type: string
+      description: Across deposit id
+      default: "2359443"
+    origin_chain_id:
+      type: string
+      description: Origin chain id
+      default: "137"
+
+semantics:
+  signal_mapping:
+    label_field: execution_ok
+  supported_intents:
+    - CROSS_CHAIN_STATE_VERIFY
+
+on_chain:
+  description: Stores execution_ok for CROSS_CHAIN_STATE_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

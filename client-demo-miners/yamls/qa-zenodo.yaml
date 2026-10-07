@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 148003
+slug: qa-zenodo
+protocol: generic
+name: Zenodo QA
+description: >
+  Zenodo QA datasets. Intent QUESTION_ANSWERING.
+
+base_url: https://zenodo.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://developers.zenodo.org/
+  website: https://zenodo.org
+
+endpoints:
+  - path: /query
+    external_path: /api/records
+    method: GET
+    description: Query for intent QUESTION_ANSWERING via Zenodo QA.
+    intents: [QUESTION_ANSWERING]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Query
+          - name: size
+            type: string
+            intents: ["*"]
+            description: Size
+
+input_schema:
+  type: object
+  required: [q, size]
+  properties:
+    q: {type: string, description: Query, default: "question answering"}
+    size: {type: string, description: Size, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: hits
+  supported_intents:
+    - QUESTION_ANSWERING
+
+on_chain:
+  description: Stores signal for QUESTION_ANSWERING.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

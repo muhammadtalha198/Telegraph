@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 85004
+slug: val-ssv
+protocol: generic
+name: SSV Network Validators
+description: >
+  SSV network validators page. Intent VALIDATOR_PERFORMANCE_VERIFY.
+
+base_url: https://api.ssv.network
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.ssv.network/
+  website: https://ssv.network
+
+endpoints:
+  - path: /query
+    external_path: /api/v4/mainnet/validators
+    method: GET
+    description: Query for intent VALIDATOR_PERFORMANCE_VERIFY via SSV Network Validators.
+    intents: [VALIDATOR_PERFORMANCE_VERIFY]
+    params:
+      query:
+        required:
+          - name: perPage
+            type: string
+            intents: ["*"]
+            description: Per page
+          - name: page
+            type: string
+            intents: ["*"]
+            description: Page
+
+input_schema:
+  type: object
+  required: [perPage, page]
+  properties:
+    perPage: {type: string, description: Per page, default: "1"}
+    page: {type: string, description: Page, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: validators
+  supported_intents:
+    - VALIDATOR_PERFORMANCE_VERIFY
+
+on_chain:
+  description: Stores signal for VALIDATOR_PERFORMANCE_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

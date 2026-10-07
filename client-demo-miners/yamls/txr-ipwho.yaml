@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 104004
+slug: txr-ipwho
+protocol: generic
+name: IPWho Tx Risk
+description: >
+  IPWho IP transaction risk. Intent TRANSACTION_RISK.
+
+base_url: https://ipwho.is
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://ipwho.is/
+  website: https://ipwho.is
+
+endpoints:
+  - path: /query
+    external_path: /8.8.8.8
+    method: GET
+    description: Query for intent TRANSACTION_RISK via IPWho Tx Risk.
+    intents: [TRANSACTION_RISK]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: success
+  supported_intents:
+    - TRANSACTION_RISK
+
+on_chain:
+  description: Stores signal for TRANSACTION_RISK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

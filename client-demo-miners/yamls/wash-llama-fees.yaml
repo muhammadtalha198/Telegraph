@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 80009
+slug: wash-llama-fees
+protocol: generic
+name: DefiLlama Fees Overview
+description: >
+  DefiLlama protocol fees overview for wash context. Intent WASH_TRADING_DETECTION.
+
+base_url: https://api.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/docs/api
+  website: https://defillama.com
+
+endpoints:
+  - path: /query
+    external_path: /overview/fees
+    method: GET
+    description: Query for intent WASH_TRADING_DETECTION via DefiLlama Fees Overview.
+    intents: [WASH_TRADING_DETECTION]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: totalDataChart
+  supported_intents:
+    - WASH_TRADING_DETECTION
+
+on_chain:
+  description: Stores signal for WASH_TRADING_DETECTION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

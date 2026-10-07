@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190147
+slug: macro-bls
+protocol: generic
+name: "Macro Bls"
+description: "Semantic V2 miner for MACRO_ECONOMIC_INDICATOR. Aggregates released central bank interest rates, consumer price index (CPI) updates, and unemployment figures. Capture pin answers: Must return the requested macro indicator value (unemployment / CPI / policy rate) for the country and period."
+
+base_url: https://api.bls.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.bls.gov/
+  website: https://api.bls.gov
+
+endpoints:
+  - path: /query
+    external_path: /publicAPI/v1/timeseries/data/
+    method: GET
+    description: Query for intent MACRO_ECONOMIC_INDICATOR via Macro Bls.
+    intents: [MACRO_ECONOMIC_INDICATOR]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - MACRO_ECONOMIC_INDICATOR
+
+on_chain:
+  description: Stores signal for MACRO_ECONOMIC_INDICATOR (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

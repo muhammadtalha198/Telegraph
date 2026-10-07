@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 45006
+slug: ssl-ssllabs-info
+protocol: generic
+name: SSL Labs API Info
+description: >
+  Qualys SSL Labs API engine info. Intent SSL_VERIFICATION.
+
+base_url: https://api.ssllabs.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://github.com/ssllabs/ssllabs-scan/blob/master/ssllabs-api-docs-v3.md
+  website: https://www.ssllabs.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v3/info
+    method: GET
+    description: Query for intent SSL_VERIFICATION via SSL Labs API Info.
+    intents: [SSL_VERIFICATION]
+
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: engineVersion
+  supported_intents:
+    - SSL_VERIFICATION
+
+on_chain:
+  description: Stores signal for SSL_VERIFICATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,91 @@
+version: "1"
+kind: miner
+id: 86007
+slug: port-rail-hki
+protocol: generic
+name: Digitraffic Rail Helsinki
+description: >
+  Helsinki rail live trains as port hinterland congestion. Intent LIVE_PORT_CONGESTION.
+
+base_url: https://rata.digitraffic.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.digitraffic.fi/en/railway-traffic/
+  website: https://www.digitraffic.fi
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/live-trains/station/{station}
+    method: GET
+    description: Query for intent LIVE_PORT_CONGESTION via Digitraffic Rail Helsinki.
+    intents: [LIVE_PORT_CONGESTION]
+    params:
+      path:
+        required:
+          - name: station
+            type: string
+            intents: ["*"]
+            description: Station
+      query:
+        required:
+          - name: arrived_trains
+            type: string
+            intents: ["*"]
+            description: Arrived
+          - name: arriving_trains
+            type: string
+            intents: ["*"]
+            description: Arriving
+          - name: departed_trains
+            type: string
+            intents: ["*"]
+            description: Departed
+          - name: departing_trains
+            type: string
+            intents: ["*"]
+            description: Departing
+
+input_schema:
+  type: object
+  required: [station, arrived_trains, arriving_trains, departed_trains, departing_trains]
+  properties:
+    station: {type: string, description: Station, default: "HKI"}
+    arrived_trains: {type: string, description: Arrived, default: "0"}
+    arriving_trains: {type: string, description: Arriving, default: "5"}
+    departed_trains: {type: string, description: Departed, default: "0"}
+    departing_trains: {type: string, description: Departing, default: "5"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - LIVE_PORT_CONGESTION
+
+on_chain:
+  description: Stores signal for LIVE_PORT_CONGESTION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

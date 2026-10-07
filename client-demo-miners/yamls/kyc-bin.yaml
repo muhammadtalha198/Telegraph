@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 165007
+slug: kyc-bin
+protocol: generic
+name: Binlist KYC Card
+description: >
+  binlist card BIN KYC metadata. Intent KYC_BIOMETRIC_LIVENESS.
+
+base_url: https://lookup.binlist.net
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://binlist.net/
+  website: https://binlist.net
+
+endpoints:
+  - path: /query
+    external_path: /{bin}
+    method: GET
+    description: Query for intent KYC_BIOMETRIC_LIVENESS via Binlist KYC Card.
+    intents: [KYC_BIOMETRIC_LIVENESS]
+    params:
+      path:
+        required:
+          - name: bin
+            type: string
+            intents: ["*"]
+            description: BIN
+
+input_schema:
+  type: object
+  required: [bin]
+  properties:
+    bin: {type: string, description: BIN, default: "45717360"}
+
+semantics:
+  signal_mapping:
+    label_field: scheme
+  supported_intents:
+    - KYC_BIOMETRIC_LIVENESS
+
+on_chain:
+  description: Stores signal for KYC_BIOMETRIC_LIVENESS.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

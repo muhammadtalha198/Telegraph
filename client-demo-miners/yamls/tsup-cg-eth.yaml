@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 154002
+slug: tsup-cg-eth
+protocol: generic
+name: CoinGecko ETH Supply
+description: >
+  CoinGecko ethereum supply verify. Intent TOKEN_TOTAL_SUPPLY_VERIFY.
+
+base_url: https://api.coingecko.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.coingecko.com/en/api
+  website: https://www.coingecko.com
+
+endpoints:
+  - path: /query
+    external_path: /api/v3/coins/{id}
+    method: GET
+    description: Query for intent TOKEN_TOTAL_SUPPLY_VERIFY via CoinGecko ETH Supply.
+    intents: [TOKEN_TOTAL_SUPPLY_VERIFY]
+    params:
+      path:
+        required:
+          - name: id
+            type: string
+            intents: ["*"]
+            description: Id
+
+input_schema:
+  type: object
+  required: [id]
+  properties:
+    id: {type: string, description: Id, default: "ethereum"}
+
+semantics:
+  signal_mapping:
+    label_field: market_data
+  supported_intents:
+    - TOKEN_TOTAL_SUPPLY_VERIFY
+
+on_chain:
+  description: Stores signal for TOKEN_TOTAL_SUPPLY_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

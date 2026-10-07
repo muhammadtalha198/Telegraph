@@ -1,0 +1,87 @@
+version: "1"
+kind: miner
+id: 33001
+slug: wx-openmeteo
+protocol: generic
+name: Open-Meteo Weather Check
+description: >
+  Current weather via Open-Meteo. Intent WEATHER_CHECK. Direct Request shows lat + lon.
+
+base_url: https://api.open-meteo.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://open-meteo.com/en/docs
+  website: https://open-meteo.com/
+
+endpoints:
+  - path: /query
+    external_path: /v1/forecast
+    method: GET
+    description: Current weather for intent WEATHER_CHECK via Open-Meteo Weather Check.
+    intents: [WEATHER_CHECK]
+    params:
+      query:
+        required:
+          - name: latitude
+            type: string
+            intents: ["*"]
+            description: Latitude
+          - name: longitude
+            type: string
+            intents: ["*"]
+            description: Longitude
+          - name: current_weather
+            type: string
+            intents: ["*"]
+            description: Set true for current conditions
+
+input_schema:
+  type: object
+  required: [latitude, longitude, current_weather]
+  properties:
+    latitude:
+      type: string
+      description: Latitude
+      default: "25.7617"
+    longitude:
+      type: string
+      description: Longitude
+      default: "-80.1918"
+    current_weather:
+      type: string
+      description: Enable current weather
+      default: "true"
+
+semantics:
+  signal_mapping:
+    label_field: current_weather
+  supported_intents:
+    - WEATHER_CHECK
+
+on_chain:
+  description: Stores weather signal for WEATHER_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result label
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

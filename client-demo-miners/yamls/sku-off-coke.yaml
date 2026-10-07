@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 100003
+slug: sku-off-coke
+protocol: generic
+name: OFF Coke SKU
+description: >
+  Open Food Facts Coke SKU metadata. Intent SKU_IN_STOCK.
+
+base_url: https://world.openfoodfacts.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://openfoodfacts.github.io/openfoodfacts-server/api/
+  website: https://world.openfoodfacts.org
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/product/{code}.json
+    method: GET
+    description: Query for intent SKU_IN_STOCK via OFF Coke SKU.
+    intents: [SKU_IN_STOCK]
+    params:
+      path:
+        required:
+          - name: code
+            type: string
+            intents: ["*"]
+            description: Barcode
+
+input_schema:
+  type: object
+  required: [code]
+  properties:
+    code: {type: string, description: Barcode, default: "5449000000996"}
+
+semantics:
+  signal_mapping:
+    label_field: product
+  supported_intents:
+    - SKU_IN_STOCK
+
+on_chain:
+  description: Stores signal for SKU_IN_STOCK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

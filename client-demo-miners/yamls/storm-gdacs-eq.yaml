@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 37008
+slug: storm-gdacs-eq
+protocol: generic
+name: GDACS Earthquake Events
+description: >
+  GDACS earthquake event list (hazard alerts). Intent STORM_ALERT.
+
+base_url: https://www.gdacs.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.gdacs.org/
+  website: https://www.gdacs.org/
+
+endpoints:
+  - path: /query
+    external_path: /gdacsapi/api/events/geteventlist/SEARCH
+    method: GET
+    description: Query for intent STORM_ALERT via GDACS Earthquake Events.
+    intents: [STORM_ALERT]
+    params:
+      query:
+        required:
+          - name: eventlist
+            type: string
+            intents: ["*"]
+            description: Event type EQ
+
+input_schema:
+  type: object
+  required: [eventlist]
+  properties:
+    eventlist: {type: string, description: Event list code, default: "EQ"}
+
+semantics:
+  signal_mapping:
+    label_field: features
+  supported_intents:
+    - STORM_ALERT
+
+on_chain:
+  description: Stores signal for STORM_ALERT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

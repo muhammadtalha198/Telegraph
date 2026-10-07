@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 137008
+slug: aq-nws
+protocol: generic
+name: NWS AQ Alerts
+description: >
+  NWS alerts affecting air quality. Intent AIR_QUALITY_INDEX.
+
+base_url: https://api.weather.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.weather.gov/documentation/services-web-api
+  website: https://www.weather.gov
+
+endpoints:
+  - path: /query
+    external_path: /alerts/active
+    method: GET
+    description: Query for intent AIR_QUALITY_INDEX via NWS AQ Alerts.
+    intents: [AIR_QUALITY_INDEX]
+    params:
+      query:
+        required:
+          - name: status
+            type: string
+            intents: ["*"]
+            description: Status
+          - name: message_type
+            type: string
+            intents: ["*"]
+            description: Type
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: Limit
+
+input_schema:
+  type: object
+  required: [status, message_type, limit]
+  properties:
+    status: {type: string, description: Status, default: "actual"}
+    message_type: {type: string, description: Type, default: "alert"}
+    limit: {type: string, description: Limit, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: features
+  supported_intents:
+    - AIR_QUALITY_INDEX
+
+on_chain:
+  description: Stores signal for AIR_QUALITY_INDEX.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 98007
+slug: corp-fedreg
+protocol: generic
+name: Federal Register Corp
+description: >
+  Federal Register newest corporate filings context. Intent CORPORATE_REGISTRY_LOOKUP.
+
+base_url: https://www.federalregister.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.federalregister.gov/developers/documentation/api/v1
+  website: https://www.federalregister.gov
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/documents.json
+    method: GET
+    description: Query for intent CORPORATE_REGISTRY_LOOKUP via Federal Register Corp.
+    intents: [CORPORATE_REGISTRY_LOOKUP]
+    params:
+      query:
+        required:
+          - name: per_page
+            type: string
+            intents: ["*"]
+            description: Per page
+          - name: order
+            type: string
+            intents: ["*"]
+            description: Order
+
+input_schema:
+  type: object
+  required: [per_page, order]
+  properties:
+    per_page: {type: string, description: Per page, default: "1"}
+    order: {type: string, description: Order, default: "newest"}
+
+semantics:
+  signal_mapping:
+    label_field: results
+  supported_intents:
+    - CORPORATE_REGISTRY_LOOKUP
+
+on_chain:
+  description: Stores signal for CORPORATE_REGISTRY_LOOKUP.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

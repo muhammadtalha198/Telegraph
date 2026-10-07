@@ -1,0 +1,60 @@
+version: "1"
+kind: miner
+id: 38002
+slug: tvl-llama-chains
+protocol: generic
+name: DefiLlama Chains TVL
+description: >
+  DefiLlama chains TVL. Intent TVL_LOOKUP.
+
+base_url: https://api.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/docs/api
+  website: https://defillama.com/
+
+endpoints:
+  - path: /query
+    external_path: /v2/chains
+    method: GET
+    description: Query for intent TVL_LOOKUP via DefiLlama Chains TVL.
+    intents: [TVL_LOOKUP]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - TVL_LOOKUP
+
+on_chain:
+  description: Stores signal for TVL_LOOKUP.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

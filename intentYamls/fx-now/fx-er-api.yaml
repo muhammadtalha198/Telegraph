@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 31002
+slug: fx-er-api
+protocol: generic
+name: Open ER-API FX Now
+description: >
+  Free ExchangeRate-API open endpoint. Intent FX_NOW. Direct Request shows FX input fields in Alexandria.
+
+base_url: https://open.er-api.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 2
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.exchangerate-api.com/docs/free
+  website: https://www.exchangerate-api.com/
+
+endpoints:
+  - path: /query
+    external_path: /v6/latest/{base}
+    method: GET
+    description: FX mid-market rates for intent FX_NOW via Open ER-API FX Now.
+    intents: [FX_NOW]
+    params:
+      path:
+        required:
+          - name: base
+            type: string
+            intents: ["*"]
+            description: Base currency code (e.g. USD)
+
+input_schema:
+  type: object
+  required: [base]
+  properties:
+    base:
+      type: string
+      description: Base currency
+      default: "USD"
+
+semantics:
+  signal_mapping:
+    label_field: base_code
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores FX signal for FX_NOW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: base_code
+        description: Base currency
+        source_path: base_code
+      - index: 1
+        name: result
+        description: Result status
+        source_path: result
+    integers:
+      - index: 0
+        name: eur_x10000
+        description: EUR rate x10000
+        source_path: rates.EUR
+        multiplier: 10000

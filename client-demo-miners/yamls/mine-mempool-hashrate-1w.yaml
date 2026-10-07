@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 67005
+slug: mine-mempool-hashrate-1w
+protocol: generic
+name: Mempool Hashrate 1w
+description: >
+  BTC network hashrate 1 week. Intent MINING_HASHPRICE_VERIFY.
+
+base_url: https://mempool.space
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://mempool.space/docs/api/rest
+  website: https://mempool.space/
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/mining/hashrate/{window}
+    method: GET
+    description: Query for intent MINING_HASHPRICE_VERIFY via Mempool Hashrate 1w.
+    intents: [MINING_HASHPRICE_VERIFY]
+    params:
+      path:
+        required:
+          - name: window
+            type: string
+            intents: ["*"]
+            description: Window
+
+input_schema:
+  type: object
+  required: [window]
+  properties:
+    window: {type: string, description: Window, default: "1w"}
+
+semantics:
+  signal_mapping:
+    label_field: hashrates
+  supported_intents:
+    - MINING_HASHPRICE_VERIFY
+
+on_chain:
+  description: Stores signal for MINING_HASHPRICE_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

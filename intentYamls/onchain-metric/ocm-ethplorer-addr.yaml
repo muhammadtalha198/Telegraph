@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 190036
+slug: ocm-ethplorer-addr
+protocol: generic
+name: "Ocm Ethplorer Addr"
+description: "Semantic V2 miner for ONCHAIN_METRIC_VERIFY. Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain. Capture pin answers: Must convey the on-chain value asked (wallet/token balance or tx state) for the address given."
+
+base_url: https://api.ethplorer.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.ethplorer.io/
+  website: https://api.ethplorer.io
+
+endpoints:
+  - path: /query
+    external_path: /getAddressInfo/{address}
+    method: GET
+    description: Query for intent ONCHAIN_METRIC_VERIFY via Ocm Ethplorer Addr.
+    intents: [ONCHAIN_METRIC_VERIFY]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: address
+      query:
+        required:
+          - name: apiKey
+            type: string
+            intents: ["*"]
+            description: apiKey
+
+input_schema:
+  type: object
+  required: [address, apiKey]
+  properties:
+    address: {type: string, description: "address", default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}
+    apiKey: {type: string, description: "apiKey", default: "freekey"}
+
+semantics:
+  signal_mapping:
+    label_field: coin_balance
+  supported_intents:
+    - ONCHAIN_METRIC_VERIFY
+
+on_chain:
+  description: Stores signal for ONCHAIN_METRIC_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

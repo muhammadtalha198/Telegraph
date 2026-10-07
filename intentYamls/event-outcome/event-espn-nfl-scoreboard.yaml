@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190012
+slug: event-espn-nfl-scoreboard
+protocol: generic
+name: "Event Espn NFL Scoreboard"
+description: "Semantic V2 miner for EVENT_OUTCOME_RESOLUTION. Resolves objective real-world event outcomes for prediction markets and conditional contracts using quorum oracles. Capture pin answers: Must state the settled outcome/result of the event asked."
+
+base_url: https://site.api.espn.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://site.api.espn.com/
+  website: https://site.api.espn.com
+
+endpoints:
+  - path: /query
+    external_path: /apis/site/v2/sports/football/nfl/scoreboard
+    method: GET
+    description: Query for intent EVENT_OUTCOME_RESOLUTION via Event Espn NFL Scoreboard.
+    intents: [EVENT_OUTCOME_RESOLUTION]
+    params:
+      query:
+        required:
+          - name: dates
+            type: string
+            intents: ["*"]
+            description: dates
+
+input_schema:
+  type: object
+  required: [dates]
+  properties:
+    dates: {type: string, description: "dates", default: "20240211"}
+
+semantics:
+  signal_mapping:
+    label_field: events
+  supported_intents:
+    - EVENT_OUTCOME_RESOLUTION
+
+on_chain:
+  description: Stores signal for EVENT_OUTCOME_RESOLUTION (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

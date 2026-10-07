@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190173
+slug: cp-coinlore
+protocol: generic
+name: "Cp Coinlore"
+description: "Semantic V2 miner for CRYPTO_PRICE. Fetches real-time spot and volume-weighted average prices for crypto assets across major exchanges. Capture pin answers: Must return the current price of the token asked (any quote currency is fine)."
+
+base_url: https://api.coinlore.net
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.coinlore.net/
+  website: https://api.coinlore.net
+
+endpoints:
+  - path: /query
+    external_path: /api/ticker/
+    method: GET
+    description: Query for intent CRYPTO_PRICE via Cp Coinlore.
+    intents: [CRYPTO_PRICE]
+    params:
+      query:
+        required:
+          - name: id
+            type: string
+            intents: ["*"]
+            description: id
+
+input_schema:
+  type: object
+  required: [id]
+  properties:
+    id: {type: string, description: "id", default: "90"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CRYPTO_PRICE
+
+on_chain:
+  description: Stores signal for CRYPTO_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

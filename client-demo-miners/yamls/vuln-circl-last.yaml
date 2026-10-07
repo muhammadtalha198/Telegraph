@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 73005
+slug: vuln-circl-last
+protocol: generic
+name: CIRCL CVE Last
+description: >
+  CIRCL CVE last published. Intent VULNERABILITY_TRIAGE.
+
+base_url: https://cve.circl.lu
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.circl.lu/services/cve-search/
+  website: https://cve.circl.lu/
+
+endpoints:
+  - path: /query
+    external_path: /api/last/{n}
+    method: GET
+    description: Query for intent VULNERABILITY_TRIAGE via CIRCL CVE Last.
+    intents: [VULNERABILITY_TRIAGE]
+    params:
+      path:
+        required:
+          - name: n
+            type: string
+            intents: ["*"]
+            description: Count
+
+input_schema:
+  type: object
+  required: [n]
+  properties:
+    n: {type: string, description: Count, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - VULNERABILITY_TRIAGE
+
+on_chain:
+  description: Stores signal for VULNERABILITY_TRIAGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

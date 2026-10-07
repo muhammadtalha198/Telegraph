@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 78021
+slug: san-ofac-entity
+protocol: generic
+name: OFAC SDN Entity Screen
+description: >
+  OFAC SDN name screen → on_list (1/0).
+  Intent SANCTIONS_SCREENING_MATCH — Usman truth-spec miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.telegraphprotocol.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/ofac-screen
+    method: GET
+    description: Query for intent SANCTIONS_SCREENING_MATCH via OFAC SDN Entity Screen.
+    intents: [SANCTIONS_SCREENING_MATCH]
+    params:
+      query:
+        required:
+          - name: entity
+            type: string
+            intents: ["*"]
+            description: Entity name
+
+input_schema:
+  type: object
+  required: [entity]
+  properties:
+    entity: {type: string, description: "Entity name", default: "PUTIN"}
+
+semantics:
+  signal_mapping:
+    label_field: on_list
+  supported_intents:
+    - SANCTIONS_SCREENING_MATCH
+
+on_chain:
+  description: Stores signal for SANCTIONS_SCREENING_MATCH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

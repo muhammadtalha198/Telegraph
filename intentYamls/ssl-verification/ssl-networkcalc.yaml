@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190092
+slug: ssl-networkcalc
+protocol: generic
+name: "Ssl Networkcalc"
+description: "Semantic V2 miner for SSL_VERIFICATION. PACK READY - only 4 candidates; 4 keyless. Few keyless TLS-inspection APIs exist; ~4 is the realistic keyless ceiling (Censys/SecurityTrails need keys). Distinct publishers: 4. Capture pin answers: Must satisfy catalog intent SSL_VERIFICATION via upstream NetworkCalc"
+
+base_url: https://networkcalc.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://networkcalc.com/
+  website: https://networkcalc.com
+
+endpoints:
+  - path: /query
+    external_path: /api/security/certificate/example.com
+    method: GET
+    description: Query for intent SSL_VERIFICATION via Ssl Networkcalc.
+    intents: [SSL_VERIFICATION]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - SSL_VERIFICATION
+
+on_chain:
+  description: Stores signal for SSL_VERIFICATION (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

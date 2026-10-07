@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 29001
+slug: patch-judge0-ce
+protocol: generic
+name: Judge0 CE Patch Verify
+description: >
+  Judge0 CE sandbox: compile+run source_code with expected_output.
+  Returns exit_status 0 on Accepted, else 1. Intent CODE_PATCH_VERIFY.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://ce.judge0.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/patch-judge0
+    method: GET
+    description: Query for intent CODE_PATCH_VERIFY via Judge0 CE.
+    intents: [CODE_PATCH_VERIFY]
+    params:
+      query:
+        required:
+          - name: language_id
+            type: string
+            intents: ["*"]
+            description: Judge0 language id (71=Python3)
+          - name: source_code
+            type: string
+            intents: ["*"]
+            description: Patched source to compile and run
+          - name: expected_output
+            type: string
+            intents: ["*"]
+            description: Expected stdout for defect/regression check
+
+input_schema:
+  type: object
+  required: [language_id, source_code, expected_output]
+  properties:
+    language_id: {type: string, description: "Judge0 language id", default: "71"}
+    source_code: {type: string, description: "Patched source", default: "print(2+2)"}
+    expected_output: {type: string, description: "Expected stdout", default: "4\\n"}
+
+semantics:
+  signal_mapping:
+    label_field: exit_status
+  supported_intents:
+    - CODE_PATCH_VERIFY
+
+on_chain:
+  description: Stores exit_status for CODE_PATCH_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

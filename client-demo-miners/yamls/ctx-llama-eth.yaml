@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 140001
+slug: ctx-llama-eth
+protocol: generic
+name: DefiLlama ETH Price Transfer
+description: >
+  DefiLlama ETH price transfer context. Intent CRYPTO_TRANSFER_VERIFY.
+
+base_url: https://coins.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/docs/api
+  website: https://defillama.com
+
+endpoints:
+  - path: /query
+    external_path: /prices/current/{coins}
+    method: GET
+    description: Query for intent CRYPTO_TRANSFER_VERIFY via DefiLlama ETH Price Transfer.
+    intents: [CRYPTO_TRANSFER_VERIFY]
+    params:
+      path:
+        required:
+          - name: coins
+            type: string
+            intents: ["*"]
+            description: Coins
+
+input_schema:
+  type: object
+  required: [coins]
+  properties:
+    coins: {type: string, description: Coins, default: "coingecko:ethereum"}
+
+semantics:
+  signal_mapping:
+    label_field: coins
+  supported_intents:
+    - CRYPTO_TRANSFER_VERIFY
+
+on_chain:
+  description: Stores signal for CRYPTO_TRANSFER_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

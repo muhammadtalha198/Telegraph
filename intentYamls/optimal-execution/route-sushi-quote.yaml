@@ -1,0 +1,87 @@
+version: "1"
+kind: miner
+id: 190044
+slug: route-sushi-quote
+protocol: generic
+name: "Route Sushi Quote"
+description: "Semantic V2 miner for OPTIMAL_EXECUTION_ROUTE. Determines optimal multi-venue order execution routing to minimize slippage, exchange fees, and market impact. Capture pin answers: Must convey the best swap route / output amount for the trade asked."
+
+base_url: https://api.sushi.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.sushi.com/
+  website: https://api.sushi.com
+
+endpoints:
+  - path: /query
+    external_path: /swap/v7/1
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE via Route Sushi Quote.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: tokenIn
+            type: string
+            intents: ["*"]
+            description: tokenIn
+          - name: tokenOut
+            type: string
+            intents: ["*"]
+            description: tokenOut
+          - name: amount
+            type: string
+            intents: ["*"]
+            description: amount
+          - name: maxSlippage
+            type: string
+            intents: ["*"]
+            description: maxSlippage
+          - name: sender
+            type: string
+            intents: ["*"]
+            description: sender
+
+input_schema:
+  type: object
+  required: [tokenIn, tokenOut, amount, maxSlippage, sender]
+  properties:
+    tokenIn: {type: string, description: "tokenIn", default: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}
+    tokenOut: {type: string, description: "tokenOut", default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
+    amount: {type: string, description: "amount", default: "1000000000000000000"}
+    maxSlippage: {type: string, description: "maxSlippage", default: "0.005"}
+    sender: {type: string, description: "sender", default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}
+
+semantics:
+  signal_mapping:
+    label_field: estimate
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores signal for OPTIMAL_EXECUTION_ROUTE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

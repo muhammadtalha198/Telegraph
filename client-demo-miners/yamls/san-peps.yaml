@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 78008
+slug: san-peps
+protocol: generic
+name: EveryPolitician Countries
+description: >
+  EveryPolitician countries index for PEP context. Intent SANCTIONS_SCREENING_MATCH.
+
+base_url: https://cdn.jsdelivr.net
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://everypolitician.org/
+  website: https://everypolitician.org
+
+endpoints:
+  - path: /query
+    external_path: /gh/everypolitician/everypolitician-data@master/countries.json
+    method: GET
+    description: Query for intent SANCTIONS_SCREENING_MATCH via EveryPolitician Countries.
+    intents: [SANCTIONS_SCREENING_MATCH]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - SANCTIONS_SCREENING_MATCH
+
+on_chain:
+  description: Stores signal for SANCTIONS_SCREENING_MATCH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

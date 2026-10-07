@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 83004
+slug: prod-obf-search
+protocol: generic
+name: Open Beauty Facts Search
+description: >
+  Open Beauty Facts product search. Intent PRODUCT_AUTHENTICITY.
+
+base_url: https://world.openbeautyfacts.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://world.openbeautyfacts.org/data
+  website: https://world.openbeautyfacts.org
+
+endpoints:
+  - path: /query
+    external_path: /cgi/search.pl
+    method: GET
+    description: Query for intent PRODUCT_AUTHENTICITY via Open Beauty Facts Search.
+    intents: [PRODUCT_AUTHENTICITY]
+    params:
+      query:
+        required:
+          - name: search_terms
+            type: string
+            intents: ["*"]
+            description: Search
+          - name: json
+            type: string
+            intents: ["*"]
+            description: JSON
+          - name: page_size
+            type: string
+            intents: ["*"]
+            description: Page size
+
+input_schema:
+  type: object
+  required: [search_terms, json, page_size]
+  properties:
+    search_terms: {type: string, description: Search, default: "shampoo"}
+    json: {type: string, description: JSON, default: "1"}
+    page_size: {type: string, description: Page size, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: products
+  supported_intents:
+    - PRODUCT_AUTHENTICITY
+
+on_chain:
+  description: Stores signal for PRODUCT_AUTHENTICITY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

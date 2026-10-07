@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190023
+slug: liq-dexscreener-token-weth
+protocol: generic
+name: "Liq Dexscreener Token Weth"
+description: "Semantic V2 miner for LIQUIDITY_DEPTH_VERIFY. Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools. Capture pin answers: Must convey bid/ask order-book depth or pool liquidity for the pair asked."
+
+base_url: https://api.dexscreener.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.dexscreener.com/
+  website: https://api.dexscreener.com
+
+endpoints:
+  - path: /query
+    external_path: /latest/dex/tokens/{address}
+    method: GET
+    description: Query for intent LIQUIDITY_DEPTH_VERIFY via Liq Dexscreener Token Weth.
+    intents: [LIQUIDITY_DEPTH_VERIFY]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: address
+
+input_schema:
+  type: object
+  required: [address]
+  properties:
+    address: {type: string, description: "address", default: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}
+
+semantics:
+  signal_mapping:
+    label_field: data
+  supported_intents:
+    - LIQUIDITY_DEPTH_VERIFY
+
+on_chain:
+  description: Stores signal for LIQUIDITY_DEPTH_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

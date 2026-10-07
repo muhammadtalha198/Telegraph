@@ -1,0 +1,84 @@
+version: "1"
+kind: miner
+id: 76021
+slug: wxfv-om-archive-wind
+protocol: generic
+name: Open-Meteo Archive Hourly Wind
+description: >
+  ERA5 archive hourly wind_speed_10m → wind_kmh_milli for pinned lat/lon/date/hour.
+  Intent WEATHER_FORECAST_VERIFY — Usman truth-spec miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.telegraphprotocol.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/weather-archive-wind
+    method: GET
+    description: Query for intent WEATHER_FORECAST_VERIFY via Open-Meteo Archive Hourly Wind.
+    intents: [WEATHER_FORECAST_VERIFY]
+    params:
+      query:
+        required:
+          - name: latitude
+            type: string
+            intents: ["*"]
+            description: Latitude
+          - name: longitude
+            type: string
+            intents: ["*"]
+            description: Longitude
+          - name: date
+            type: string
+            intents: ["*"]
+            description: Archive date YYYY-MM-DD
+          - name: hour
+            type: string
+            intents: ["*"]
+            description: Hour 0-23 UTC
+
+input_schema:
+  type: object
+  required: [latitude, longitude, date, hour]
+  properties:
+    latitude: {type: string, description: "Latitude", default: "52.52"}
+    longitude: {type: string, description: "Longitude", default: "13.41"}
+    date: {type: string, description: "Archive date YYYY-MM-DD", default: "2024-01-01"}
+    hour: {type: string, description: "Hour 0-23 UTC", default: "19"}
+
+semantics:
+  signal_mapping:
+    label_field: wind_kmh_milli
+  supported_intents:
+    - WEATHER_FORECAST_VERIFY
+
+on_chain:
+  description: Stores signal for WEATHER_FORECAST_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

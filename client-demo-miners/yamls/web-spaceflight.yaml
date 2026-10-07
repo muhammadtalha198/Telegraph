@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 49003
+slug: web-spaceflight
+protocol: generic
+name: Spaceflight News Search
+description: >
+  Spaceflight News articles search. Intent WEB_SEARCH.
+
+base_url: https://api.spaceflightnewsapi.net
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://spaceflightnewsapi.net/
+  website: https://spaceflightnewsapi.net/
+
+endpoints:
+  - path: /query
+    external_path: /v4/articles/
+    method: GET
+    description: Query for intent WEB_SEARCH via Spaceflight News Search.
+    intents: [WEB_SEARCH]
+    params:
+      query:
+        required:
+          - name: search
+            type: string
+            intents: ["*"]
+            description: Search
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: Limit
+
+input_schema:
+  type: object
+  required: [search, limit]
+  properties:
+    search: {type: string, description: Search, default: "NASA"}
+    limit: {type: string, description: Limit, default: "3"}
+
+semantics:
+  signal_mapping:
+    label_field: results
+  supported_intents:
+    - WEB_SEARCH
+
+on_chain:
+  description: Stores signal for WEB_SEARCH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 86003
+slug: port-digit-ves
+protocol: generic
+name: Digitraffic AIS Vessels
+description: >
+  Digitraffic AIS vessel metadata list. Intent LIVE_PORT_CONGESTION.
+
+base_url: https://meri.digitraffic.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.digitraffic.fi/en/marine-traffic/
+  website: https://www.digitraffic.fi
+
+endpoints:
+  - path: /query
+    external_path: /api/ais/v1/vessels
+    method: GET
+    description: Query for intent LIVE_PORT_CONGESTION via Digitraffic AIS Vessels.
+    intents: [LIVE_PORT_CONGESTION]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - LIVE_PORT_CONGESTION
+
+on_chain:
+  description: Stores signal for LIVE_PORT_CONGESTION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

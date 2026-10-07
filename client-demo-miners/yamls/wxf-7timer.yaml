@@ -1,0 +1,83 @@
+version: "1"
+kind: miner
+id: 35006
+slug: wxf-7timer
+protocol: generic
+name: 7Timer Civil Forecast
+description: >
+  7Timer civillight forecast. Intent WEATHER_FORECAST.
+
+base_url: https://www.7timer.info
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: http://www.7timer.info/doc.php
+  website: https://www.7timer.info/
+
+endpoints:
+  - path: /query
+    external_path: /bin/api.pl
+    method: GET
+    description: Query for intent WEATHER_FORECAST via 7Timer Civil Forecast.
+    intents: [WEATHER_FORECAST]
+    params:
+      query:
+        required:
+          - name: lat
+            type: string
+            intents: ["*"]
+            description: Latitude
+          - name: lon
+            type: string
+            intents: ["*"]
+            description: Longitude
+          - name: product
+            type: string
+            intents: ["*"]
+            description: Product
+          - name: output
+            type: string
+            intents: ["*"]
+            description: Output format
+
+input_schema:
+  type: object
+  required: [lat, lon, product, output]
+  properties:
+    lat: {type: string, description: Latitude, default: "25.7617"}
+    lon: {type: string, description: Longitude, default: "-80.1918"}
+    product: {type: string, description: Product, default: "civillight"}
+    output: {type: string, description: Output, default: "json"}
+
+semantics:
+  signal_mapping:
+    label_field: dataseries
+  supported_intents:
+    - WEATHER_FORECAST
+
+on_chain:
+  description: Stores signal for WEATHER_FORECAST.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

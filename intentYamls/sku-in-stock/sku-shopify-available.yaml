@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 29501
+slug: sku-shopify-available
+protocol: generic
+name: Shopify Variant In Stock
+description: >
+  Public Shopify products.json available → in_stock for pinned variant_id. Intent SKU_IN_STOCK.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://shopify.dev/docs/api/ajax/reference/product
+  website: https://colourpop.com/
+
+endpoints:
+  - path: /query
+    external_path: /truth/sku-shopify
+    method: GET
+    description: Query for intent SKU_IN_STOCK.
+    intents: [SKU_IN_STOCK]
+    params:
+      query:
+        required:
+          - name: shop
+            type: string
+            intents: ["*"]
+            description: shop
+          - name: variant_id
+            type: string
+            intents: ["*"]
+            description: variant_id
+
+input_schema:
+  type: object
+  required: [shop, variant_id]
+  properties:
+    shop: {type: string, description: "shop", default: "colourpop.com"}
+    variant_id: {type: string, description: "variant_id", default: "42663557595218"}
+
+semantics:
+  signal_mapping:
+    label_field: in_stock
+  supported_intents:
+    - SKU_IN_STOCK
+
+on_chain:
+  description: Stores in_stock for SKU_IN_STOCK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

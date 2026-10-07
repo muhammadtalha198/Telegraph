@@ -1,0 +1,60 @@
+version: "1"
+kind: miner
+id: 58001
+slug: flight-adsb-mil
+protocol: generic
+name: ADSB.lol military
+description: >
+  ADSB.lol military. Intent FLIGHT_AVAILABILITY.
+
+base_url: https://api.adsb.lol
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.adsb.lol/
+  website: https://api.adsb.lol/
+
+endpoints:
+  - path: /query
+    external_path: /v2/mil
+    method: GET
+    description: Query for intent FLIGHT_AVAILABILITY via ADSB.lol military.
+    intents: [FLIGHT_AVAILABILITY]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: ac
+  supported_intents:
+    - FLIGHT_AVAILABILITY
+
+on_chain:
+  description: Stores signal for FLIGHT_AVAILABILITY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

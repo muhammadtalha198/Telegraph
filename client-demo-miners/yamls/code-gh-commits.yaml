@@ -1,0 +1,80 @@
+version: "1"
+kind: miner
+id: 60005
+slug: code-gh-commits
+protocol: generic
+name: GitHub Commits
+description: >
+  GitHub recent commits for review context. Intent CODE_REVIEW.
+
+base_url: https://api.github.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.github.com/en/rest/commits/commits
+  website: https://github.com/
+
+endpoints:
+  - path: /query
+    external_path: /repos/{owner}/{repo}/commits
+    method: GET
+    description: Query for intent CODE_REVIEW via GitHub Commits.
+    intents: [CODE_REVIEW]
+    params:
+      path:
+        required:
+          - name: owner
+            type: string
+            intents: ["*"]
+            description: Repo owner
+          - name: repo
+            type: string
+            intents: ["*"]
+            description: Repo name
+      query:
+        required:
+          - name: per_page
+            type: string
+            intents: ["*"]
+            description: Page size
+
+input_schema:
+  type: object
+  required: [owner, repo, per_page]
+  properties:
+    owner: {type: string, description: Repo owner, default: "facebook"}
+    repo: {type: string, description: Repo name, default: "react"}
+    per_page: {type: string, description: Page size, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - CODE_REVIEW
+
+on_chain:
+  description: Stores signal for CODE_REVIEW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

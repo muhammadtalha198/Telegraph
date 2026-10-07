@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 31004
+slug: fx-hnb
+protocol: generic
+name: HNB FX Now
+description: >
+  Croatian National Bank EUR reference rates. Intent FX_NOW.
+  Direct Request shows valuta field (e.g. USD) in Alexandria.
+  Replaces AwesomeAPI which hit free-tier 429 from the node IP.
+
+base_url: https://api.hnb.hr
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 60
+
+docs:
+  documentation: https://api.hnb.hr/
+  website: https://www.hnb.hr/
+
+endpoints:
+  - path: /query
+    external_path: /tecajn-eur/v3
+    method: GET
+    description: EUR reference FX rate for intent FX_NOW via HNB.
+    intents: [FX_NOW]
+    params:
+      query:
+        required:
+          - name: valuta
+            type: string
+            intents: ["*"]
+            description: Currency code vs EUR (e.g. USD)
+
+input_schema:
+  type: object
+  required: [valuta]
+  properties:
+    valuta:
+      type: string
+      description: ISO currency code quoted against EUR
+      default: "USD"
+
+semantics:
+  signal_mapping:
+    label_field: 0.valuta
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores FX signal for FX_NOW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: valuta
+        description: Currency code
+        source_path: 0.valuta
+      - index: 1
+        name: date
+        description: Rate date
+        source_path: 0.datum_primjene
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

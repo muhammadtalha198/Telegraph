@@ -1,0 +1,83 @@
+version: "1"
+kind: miner
+id: 35005
+slug: wxf-openmeteo-marine
+protocol: generic
+name: Open-Meteo Marine Forecast
+description: >
+  Marine forecast via Open-Meteo. Intent WEATHER_FORECAST.
+
+base_url: https://marine-api.open-meteo.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://open-meteo.com/en/docs/marine-weather-api
+  website: https://open-meteo.com/
+
+endpoints:
+  - path: /query
+    external_path: /v1/marine
+    method: GET
+    description: Query for intent WEATHER_FORECAST via Open-Meteo Marine Forecast.
+    intents: [WEATHER_FORECAST]
+    params:
+      query:
+        required:
+          - name: latitude
+            type: string
+            intents: ["*"]
+            description: Latitude
+          - name: longitude
+            type: string
+            intents: ["*"]
+            description: Longitude
+          - name: hourly
+            type: string
+            intents: ["*"]
+            description: Hourly marine vars
+          - name: forecast_days
+            type: string
+            intents: ["*"]
+            description: Forecast days
+
+input_schema:
+  type: object
+  required: [latitude, longitude, hourly, forecast_days]
+  properties:
+    latitude: {type: string, description: Latitude, default: "25.7617"}
+    longitude: {type: string, description: Longitude, default: "-80.1918"}
+    hourly: {type: string, description: Hourly vars, default: "wave_height"}
+    forecast_days: {type: string, description: Days, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: hourly
+  supported_intents:
+    - WEATHER_FORECAST
+
+on_chain:
+  description: Stores signal for WEATHER_FORECAST.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,71 @@
+version: "1"
+kind: miner
+id: 32005
+slug: crypto-coinpaprika
+protocol: generic
+name: CoinPaprika Crypto Price
+description: >
+  CoinPaprika ticker by id. Intent CRYPTO_PRICE. Direct Request shows id (e.g. btc-bitcoin).
+
+base_url: https://api.coinpaprika.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 2
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.coinpaprika.com/
+  website: https://coinpaprika.com/
+
+endpoints:
+  - path: /query
+    external_path: /v1/tickers/{id}
+    method: GET
+    description: Spot crypto price for intent CRYPTO_PRICE via CoinPaprika Crypto Price.
+    intents: [CRYPTO_PRICE]
+    params:
+      path:
+        required:
+          - name: id
+            type: string
+            intents: ["*"]
+            description: CoinPaprika id like btc-bitcoin
+
+input_schema:
+  type: object
+  required: [id]
+  properties:
+    id:
+      type: string
+      description: CoinPaprika asset id
+      default: "btc-bitcoin"
+
+semantics:
+  signal_mapping:
+    label_field: symbol
+  supported_intents:
+    - CRYPTO_PRICE
+
+on_chain:
+  description: Stores crypto spot signal for CRYPTO_PRICE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result label
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

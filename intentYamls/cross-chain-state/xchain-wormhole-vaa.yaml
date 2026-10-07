@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 29102
+slug: xchain-wormhole-vaa
+protocol: generic
+name: Wormhole VAA Execution Verify
+description: >
+  Wormholescan: cross-chain message attestation header (VAA) for a pinned tx.
+  Returns execution_ok 1 if a VAA is present, else 0. Intent CROSS_CHAIN_STATE_VERIFY.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.wormholescan.io/
+  website: https://wormholescan.io/
+
+endpoints:
+  - path: /query
+    external_path: /truth/xchain-wormhole
+    method: GET
+    description: Query for intent CROSS_CHAIN_STATE_VERIFY via Wormholescan.
+    intents: [CROSS_CHAIN_STATE_VERIFY]
+    params:
+      query:
+        required:
+          - name: tx_hash
+            type: string
+            intents: ["*"]
+            description: Source transaction hash for the Wormhole operation
+
+input_schema:
+  type: object
+  required: [tx_hash]
+  properties:
+    tx_hash:
+      type: string
+      description: Wormhole source tx hash
+      default: "GvoU9f8G674NViZwZTBPyv2nP16To495F7xLDZiZ2fhW"
+
+semantics:
+  signal_mapping:
+    label_field: execution_ok
+  supported_intents:
+    - CROSS_CHAIN_STATE_VERIFY
+
+on_chain:
+  description: Stores execution_ok for CROSS_CHAIN_STATE_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

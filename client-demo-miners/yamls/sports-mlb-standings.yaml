@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 44004
+slug: sports-mlb-standings
+protocol: generic
+name: MLB Standings
+description: >
+  MLB standings. Intent SPORTS_SCORE.
+
+base_url: https://statsapi.mlb.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://statsapi.mlb.com/docs/
+  website: https://www.mlb.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/standings
+    method: GET
+    description: Query for intent SPORTS_SCORE via MLB Standings.
+    intents: [SPORTS_SCORE]
+    params:
+      query:
+        required:
+          - name: leagueId
+            type: string
+            intents: ["*"]
+            description: League ids
+
+input_schema:
+  type: object
+  required: [leagueId]
+  properties:
+    leagueId: {type: string, description: League ids, default: "103,104"}
+
+semantics:
+  signal_mapping:
+    label_field: records
+  supported_intents:
+    - SPORTS_SCORE
+
+on_chain:
+  description: Stores signal for SPORTS_SCORE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

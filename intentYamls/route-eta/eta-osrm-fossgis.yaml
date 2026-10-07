@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190161
+slug: eta-osrm-fossgis
+protocol: generic
+name: "Eta Osrm Fossgis"
+description: "Semantic V2 miner for ROUTE_ETA. Computes multimodal routing itineraries, live traffic transit times, and turn-by-turn arrival estimations. Capture pin answers: Must return the driving travel time/distance between the two points."
+
+base_url: https://routing.openstreetmap.de
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://routing.openstreetmap.de/
+  website: https://routing.openstreetmap.de
+
+endpoints:
+  - path: /query
+    external_path: /routed-car/route/v1/driving/13.405,52.52
+    method: GET
+    description: Query for intent ROUTE_ETA via Eta Osrm Fossgis.
+    intents: [ROUTE_ETA]
+    params:
+      query:
+        required:
+          - name: overview
+            type: string
+            intents: ["*"]
+            description: overview
+
+input_schema:
+  type: object
+  required: [overview]
+  properties:
+    overview: {type: string, description: "overview", default: "false"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - ROUTE_ETA
+
+on_chain:
+  description: Stores signal for ROUTE_ETA (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,97 @@
+version: "1"
+kind: miner
+id: 190043
+slug: route-paraswap-usdt
+protocol: generic
+name: "Route Paraswap Usdt"
+description: "Semantic V2 miner for OPTIMAL_EXECUTION_ROUTE. Determines optimal multi-venue order execution routing to minimize slippage, exchange fees, and market impact. Capture pin answers: Must convey the best swap route / output amount for the trade asked."
+
+base_url: https://apiv5.paraswap.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://apiv5.paraswap.io/
+  website: https://apiv5.paraswap.io
+
+endpoints:
+  - path: /query
+    external_path: /prices
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE via Route Paraswap Usdt.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: srcToken
+            type: string
+            intents: ["*"]
+            description: srcToken
+          - name: destToken
+            type: string
+            intents: ["*"]
+            description: destToken
+          - name: amount
+            type: string
+            intents: ["*"]
+            description: amount
+          - name: srcDecimals
+            type: string
+            intents: ["*"]
+            description: srcDecimals
+          - name: destDecimals
+            type: string
+            intents: ["*"]
+            description: destDecimals
+          - name: side
+            type: string
+            intents: ["*"]
+            description: side
+          - name: network
+            type: string
+            intents: ["*"]
+            description: network
+
+input_schema:
+  type: object
+  required: [srcToken, destToken, amount, srcDecimals, destDecimals, side, network]
+  properties:
+    srcToken: {type: string, description: "srcToken", default: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"}
+    destToken: {type: string, description: "destToken", default: "0xdAC17F958D2ee523a2206206994597C13D831ec7"}
+    amount: {type: string, description: "amount", default: "1000000000000000000"}
+    srcDecimals: {type: string, description: "srcDecimals", default: "18"}
+    destDecimals: {type: string, description: "destDecimals", default: "6"}
+    side: {type: string, description: "side", default: "SELL"}
+    network: {type: string, description: "network", default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: estimate
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores signal for OPTIMAL_EXECUTION_ROUTE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

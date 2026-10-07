@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 170062
+slug: prm-prometheusio
+protocol: generic
+name: prometheus.io demo Prometheus
+description: >
+  prometheus.io demo Prometheus -> metric_value (Value of the first result series).
+  Intent CLOUD_RESOURCE_USAGE - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://prometheus.demo.prometheus.io
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/prom-value
+    method: GET
+    description: Query for intent CLOUD_RESOURCE_USAGE via prometheus.io demo Prometheus.
+    intents: [CLOUD_RESOURCE_USAGE]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Prometheus host id
+          - name: query
+            type: string
+            intents: ["*"]
+            description: PromQL instant query
+
+input_schema:
+  type: object
+  required: [venue, query]
+  properties:
+    venue: {type: string, description: "Prometheus host id", default: "prometheusio"}
+    query: {type: string, description: "PromQL instant query", default: "node_memory_MemTotal_bytes"}
+
+semantics:
+  signal_mapping:
+    label_field: metric_value
+  supported_intents:
+    - CLOUD_RESOURCE_USAGE
+
+on_chain:
+  description: Stores signal for CLOUD_RESOURCE_USAGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

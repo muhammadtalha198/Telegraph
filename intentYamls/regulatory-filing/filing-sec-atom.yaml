@@ -1,0 +1,97 @@
+version: "1"
+kind: miner
+id: 190159
+slug: filing-sec-atom
+protocol: generic
+name: "Filing Sec Atom"
+description: "Semantic V2 miner for REGULATORY_FILING_MONITOR. Parses statutory regulatory filings, 10-K/10-Q disclosures, and disclosure updates from financial oversight portals. Capture pin answers: Must return the company's regulatory filings (10-K/10-Q etc.) with dates/links."
+
+base_url: https://www.sec.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.sec.gov/
+  website: https://www.sec.gov
+
+endpoints:
+  - path: /query
+    external_path: /cgi-bin/browse-edgar
+    method: GET
+    description: Query for intent REGULATORY_FILING_MONITOR via Filing Sec Atom.
+    intents: [REGULATORY_FILING_MONITOR]
+    params:
+      query:
+        required:
+          - name: action
+            type: string
+            intents: ["*"]
+            description: action
+          - name: CIK
+            type: string
+            intents: ["*"]
+            description: CIK
+          - name: type
+            type: string
+            intents: ["*"]
+            description: type
+          - name: dateb
+            type: string
+            intents: ["*"]
+            description: dateb
+          - name: owner
+            type: string
+            intents: ["*"]
+            description: owner
+          - name: count
+            type: string
+            intents: ["*"]
+            description: count
+          - name: output
+            type: string
+            intents: ["*"]
+            description: output
+
+input_schema:
+  type: object
+  required: [action, CIK, type, dateb, owner, count, output]
+  properties:
+    action: {type: string, description: "action", default: "getcompany"}
+    CIK: {type: string, description: "CIK", default: "0000320193"}
+    type: {type: string, description: "type", default: "10-K"}
+    dateb: {type: string, description: "dateb", default: ""}
+    owner: {type: string, description: "owner", default: "include"}
+    count: {type: string, description: "count", default: "5"}
+    output: {type: string, description: "output", default: "atom"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - REGULATORY_FILING_MONITOR
+
+on_chain:
+  description: Stores signal for REGULATORY_FILING_MONITOR (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

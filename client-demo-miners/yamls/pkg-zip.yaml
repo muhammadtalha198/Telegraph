@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 113007
+slug: pkg-zip
+protocol: generic
+name: Zippopotam Package Dest
+description: >
+  Destination ZIP package routing status. Intent PACKAGE_STATUS.
+
+base_url: https://api.zippopotam.us
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.zippopotam.us/
+  website: https://www.zippopotam.us
+
+endpoints:
+  - path: /query
+    external_path: /us/{zip}
+    method: GET
+    description: Query for intent PACKAGE_STATUS via Zippopotam Package Dest.
+    intents: [PACKAGE_STATUS]
+    params:
+      path:
+        required:
+          - name: zip
+            type: string
+            intents: ["*"]
+            description: ZIP
+
+input_schema:
+  type: object
+  required: [zip]
+  properties:
+    zip: {type: string, description: ZIP, default: "10001"}
+
+semantics:
+  signal_mapping:
+    label_field: places
+  supported_intents:
+    - PACKAGE_STATUS
+
+on_chain:
+  description: Stores signal for PACKAGE_STATUS.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

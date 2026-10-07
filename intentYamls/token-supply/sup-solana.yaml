@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170048
+slug: sup-solana
+protocol: generic
+name: Solana RPC getTokenSupply
+description: >
+  Solana RPC getTokenSupply -> total_supply_raw (totalSupply in base units).
+  Intent TOKEN_TOTAL_SUPPLY_VERIFY - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://solana.com/docs/rpc/http/gettokensupply
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/token-supply
+    method: GET
+    description: Query for intent TOKEN_TOTAL_SUPPLY_VERIFY via Solana RPC getTokenSupply.
+    intents: [TOKEN_TOTAL_SUPPLY_VERIFY]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Chain RPC id
+          - name: token
+            type: string
+            intents: ["*"]
+            description: ERC-20 contract or SPL mint
+          - name: block
+            type: string
+            intents: ["*"]
+            description: Block number (EVM) or latest
+
+input_schema:
+  type: object
+  required: [venue, token, block]
+  properties:
+    venue: {type: string, description: "Chain RPC id", default: "solana"}
+    token: {type: string, description: "ERC-20 contract or SPL mint", default: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"}
+    block: {type: string, description: "Block number (EVM) or latest", default: "latest"}
+
+semantics:
+  signal_mapping:
+    label_field: total_supply_raw
+  supported_intents:
+    - TOKEN_TOTAL_SUPPLY_VERIFY
+
+on_chain:
+  description: Stores signal for TOKEN_TOTAL_SUPPLY_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

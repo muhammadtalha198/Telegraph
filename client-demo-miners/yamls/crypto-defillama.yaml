@@ -1,0 +1,71 @@
+version: "1"
+kind: miner
+id: 32006
+slug: crypto-defillama
+protocol: generic
+name: DefiLlama Crypto Price
+description: >
+  DefiLlama coins price endpoint. Intent CRYPTO_PRICE. Direct Request shows coins (e.g. coingecko:bitcoin).
+
+base_url: https://coins.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 2
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/docs/api
+  website: https://defillama.com/
+
+endpoints:
+  - path: /query
+    external_path: /prices/current/{coins}
+    method: GET
+    description: Spot crypto price for intent CRYPTO_PRICE via DefiLlama Crypto Price.
+    intents: [CRYPTO_PRICE]
+    params:
+      path:
+        required:
+          - name: coins
+            type: string
+            intents: ["*"]
+            description: Coin key like coingecko:bitcoin
+
+input_schema:
+  type: object
+  required: [coins]
+  properties:
+    coins:
+      type: string
+      description: DefiLlama coin key
+      default: "coingecko:bitcoin"
+
+semantics:
+  signal_mapping:
+    label_field: coins
+  supported_intents:
+    - CRYPTO_PRICE
+
+on_chain:
+  description: Stores crypto spot signal for CRYPTO_PRICE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result label
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

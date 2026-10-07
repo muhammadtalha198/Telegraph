@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 134001
+slug: tknow-openalex2
+protocol: generic
+name: OpenAlex Protocol Knowledge
+description: >
+  OpenAlex protocol knowledge works. Intent TELEGRAPH_KNOWLEDGE.
+
+base_url: https://api.openalex.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.openalex.org/
+  website: https://openalex.org
+
+endpoints:
+  - path: /query
+    external_path: /works
+    method: GET
+    description: Query for intent TELEGRAPH_KNOWLEDGE via OpenAlex Protocol Knowledge.
+    intents: [TELEGRAPH_KNOWLEDGE]
+    params:
+      query:
+        required:
+          - name: search
+            type: string
+            intents: ["*"]
+            description: Search
+          - name: per_page
+            type: string
+            intents: ["*"]
+            description: Per page
+
+input_schema:
+  type: object
+  required: [search, per_page]
+  properties:
+    search: {type: string, description: Search, default: "distributed protocol"}
+    per_page: {type: string, description: Per page, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: results
+  supported_intents:
+    - TELEGRAPH_KNOWLEDGE
+
+on_chain:
+  description: Stores signal for TELEGRAPH_KNOWLEDGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

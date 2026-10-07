@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190072
+slug: cp-defillama
+protocol: generic
+name: "Cp Defillama"
+description: "Semantic V2 miner for CRYPTO_PRICE. PACK READY - meets 10 candidates; 22 keyless. Distinct operators. Quote asset differs (USD vs USDT) by ~0.1%, inside the 1.5% tolerance. Capture pin answers: Must satisfy catalog intent CRYPTO_PRICE via upstream DefiLlama Coins"
+
+base_url: https://coins.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://coins.llama.fi/
+  website: https://coins.llama.fi
+
+endpoints:
+  - path: /query
+    external_path: /prices/current/coingecko:ethereum
+    method: GET
+    description: Query for intent CRYPTO_PRICE via Cp Defillama.
+    intents: [CRYPTO_PRICE]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CRYPTO_PRICE
+
+on_chain:
+  description: Stores signal for CRYPTO_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

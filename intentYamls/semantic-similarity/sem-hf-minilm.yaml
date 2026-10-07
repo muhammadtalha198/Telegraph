@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170116
+slug: sem-hf-minilm
+protocol: generic
+name: HF MiniLM Sentence Similarity
+description: >
+  HF MiniLM Sentence Similarity -> similarity_x10000.
+  Intent SEMANTIC_SIMILARITY - Round Two Batch 7.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/semantic-sim
+    method: GET
+    description: Query for intent SEMANTIC_SIMILARITY via HF MiniLM Sentence Similarity.
+    intents: [SEMANTIC_SIMILARITY]
+    params:
+      query:
+        required:
+          - name: source
+            type: string
+            intents: ["*"]
+            description: source
+          - name: candidate
+            type: string
+            intents: ["*"]
+            description: candidate
+          - name: model
+            type: string
+            intents: ["*"]
+            description: model
+
+input_schema:
+  type: object
+  required: [source, candidate, model]
+  properties:
+    source: {type: string, description: "source", default: "a sunny day in berlin"}
+    candidate: {type: string, description: "candidate", default: "a bright day in berlin"}
+    model: {type: string, description: "model", default: "sentence-transformers/all-MiniLM-L6-v2"}
+
+semantics:
+  signal_mapping:
+    label_field: similarity_x10000
+  supported_intents:
+    - SEMANTIC_SIMILARITY
+
+on_chain:
+  description: Stores signal for SEMANTIC_SIMILARITY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

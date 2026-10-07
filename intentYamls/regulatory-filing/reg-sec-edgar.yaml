@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 80011
+slug: reg-sec-edgar
+protocol: generic
+name: SEC EDGAR Has Form
+description: >
+  SEC EDGAR submissions JSON → has_form (1/0) for pinned cik + form (e.g. 10-K).
+  Intent REGULATORY_FILING_MONITOR — Usman truth-spec miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.sec.gov/edgar/sec-api-documentation
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/reg-edgar
+    method: GET
+    description: Query for intent REGULATORY_FILING_MONITOR via SEC EDGAR.
+    intents: [REGULATORY_FILING_MONITOR]
+    params:
+      query:
+        required:
+          - name: cik
+            type: string
+            intents: ["*"]
+            description: SEC CIK (zero-padded ok)
+          - name: form
+            type: string
+            intents: ["*"]
+            description: Form type (e.g. 10-K)
+
+input_schema:
+  type: object
+  required: [cik, form]
+  properties:
+    cik: {type: string, description: "SEC CIK", default: "0000320193"}
+    form: {type: string, description: "Form type", default: "10-K"}
+
+semantics:
+  signal_mapping:
+    label_field: has_form
+  supported_intents:
+    - REGULATORY_FILING_MONITOR
+
+on_chain:
+  description: Stores signal for REGULATORY_FILING_MONITOR.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

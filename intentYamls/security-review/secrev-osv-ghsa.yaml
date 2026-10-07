@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190050
+slug: secrev-osv-ghsa
+protocol: generic
+name: "Secrev Osv Ghsa"
+description: "Semantic V2 miner for SECURITY_REVIEW. Scans codebase dependencies, API endpoints, and configuration files for common CVEs, secrets leakage, and misconfigurations. Capture pin answers: Must list known security vulnerabilities for the package/version asked."
+
+base_url: https://api.osv.dev
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.osv.dev/
+  website: https://api.osv.dev
+
+endpoints:
+  - path: /query
+    external_path: /v1/vulns/{ghsa_id}
+    method: GET
+    description: Query for intent SECURITY_REVIEW via Secrev Osv Ghsa.
+    intents: [SECURITY_REVIEW]
+    params:
+      path:
+        required:
+          - name: ghsa_id
+            type: string
+            intents: ["*"]
+            description: ghsa id
+
+input_schema:
+  type: object
+  required: [ghsa_id]
+  properties:
+    ghsa_id: {type: string, description: "ghsa_id", default: "GHSA-jfh8-c2jp-5v3q"}
+
+semantics:
+  signal_mapping:
+    label_field: vulnerabilities
+  supported_intents:
+    - SECURITY_REVIEW
+
+on_chain:
+  description: Stores signal for SECURITY_REVIEW (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

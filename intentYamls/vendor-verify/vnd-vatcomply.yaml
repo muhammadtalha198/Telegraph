@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 170115
+slug: vnd-vatcomply
+protocol: generic
+name: VATComply VAT
+description: >
+  VATComply VAT -> id_valid.
+  Intent VENDOR_VERIFY - Round Two Batch 7.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.vatcomply.com/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/vendor-id
+    method: GET
+    description: Query for intent VENDOR_VERIFY via VATComply VAT.
+    intents: [VENDOR_VERIFY]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: venue
+          - name: id
+            type: string
+            intents: ["*"]
+            description: id
+
+input_schema:
+  type: object
+  required: [venue, id]
+  properties:
+    venue: {type: string, description: "venue", default: "vatcomply"}
+    id: {type: string, description: "id", default: "DE811569869"}
+
+semantics:
+  signal_mapping:
+    label_field: id_valid
+  supported_intents:
+    - VENDOR_VERIFY
+
+on_chain:
+  description: Stores signal for VENDOR_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,76 @@
+version: "1"
+kind: miner
+id: 119009
+slug: wh-off-fields
+protocol: generic
+name: OFF Fields Warehouse
+description: >
+  OFF product fields inventory. Intent WAREHOUSE_INVENTORY.
+
+base_url: https://world.openfoodfacts.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://openfoodfacts.github.io/openfoodfacts-server/api/
+  website: https://world.openfoodfacts.org
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/product/{code}
+    method: GET
+    description: Query for intent WAREHOUSE_INVENTORY via OFF Fields Warehouse.
+    intents: [WAREHOUSE_INVENTORY]
+    params:
+      path:
+        required:
+          - name: code
+            type: string
+            intents: ["*"]
+            description: Barcode
+      query:
+        required:
+          - name: fields
+            type: string
+            intents: ["*"]
+            description: Fields
+
+input_schema:
+  type: object
+  required: [code, fields]
+  properties:
+    code: {type: string, description: Barcode, default: "3017620422003"}
+    fields: {type: string, description: Fields, default: "code,product_name,stores,countries"}
+
+semantics:
+  signal_mapping:
+    label_field: product
+  supported_intents:
+    - WAREHOUSE_INVENTORY
+
+on_chain:
+  description: Stores signal for WAREHOUSE_INVENTORY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

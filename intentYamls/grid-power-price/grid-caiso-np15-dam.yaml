@@ -1,0 +1,89 @@
+version: "1"
+kind: miner
+id: 66021
+slug: grid-caiso-np15-dam
+protocol: generic
+name: CAISO NP15 DAM LMP
+description: >
+  CAISO OASIS PRC_LMP for node TH_NP15_GEN-APND, market DAM.
+  Returns lmp_usd_per_mwh / lmp_usd_per_mwh_milli (USD/MWh × 1000).
+  Intent GRID_POWER_PRICE — matches Usman truth spec.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.caiso.com/market/Pages/ReportsAndBulletins/OASIS.aspx
+  website: https://oasis.caiso.com/
+
+endpoints:
+  - path: /query
+    external_path: /caiso/lmp
+    method: GET
+    description: Query for intent GRID_POWER_PRICE via CAISO NP15 DAM LMP.
+    intents: [GRID_POWER_PRICE]
+    params:
+      query:
+        required:
+          - name: node
+            type: string
+            intents: ["*"]
+            description: CAISO pricing node
+          - name: market
+            type: string
+            intents: ["*"]
+            description: DAM or RTM
+          - name: startdatetime
+            type: string
+            intents: ["*"]
+            description: OASIS start (YYYYMMDDTHH:MM-0000)
+          - name: enddatetime
+            type: string
+            intents: ["*"]
+            description: OASIS end (YYYYMMDDTHH:MM-0000)
+
+input_schema:
+  type: object
+  required: [node, market, startdatetime, enddatetime]
+  properties:
+    node: {type: string, description: CAISO node, default: "TH_NP15_GEN-APND"}
+    market: {type: string, description: Market run id, default: "DAM"}
+    startdatetime: {type: string, description: Start UTC, default: "20260920T07:00-0000"}
+    enddatetime: {type: string, description: End UTC, default: "20260920T08:00-0000"}
+
+semantics:
+  signal_mapping:
+    label_field: lmp_usd_per_mwh_milli
+  supported_intents:
+    - GRID_POWER_PRICE
+
+on_chain:
+  description: Stores signal for GRID_POWER_PRICE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+      - index: 1
+        name: lmp_usd_per_mwh_milli
+        description: LMP USD/MWh × 1000
+        source_path: lmp_usd_per_mwh_milli

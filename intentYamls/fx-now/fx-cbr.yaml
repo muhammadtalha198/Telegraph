@@ -1,0 +1,60 @@
+version: "1"
+kind: miner
+id: 31007
+slug: fx-cbr
+protocol: generic
+name: CBR FX Now
+description: >
+  Central Bank of Russia daily FX JSON. Intent FX_NOW. Returns full table (no filter param). Direct Request shows FX input fields in Alexandria.
+
+base_url: https://www.cbr-xml-daily.ru
+
+auth:
+  type: none
+
+rate_limit_per_sec: 2
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.cbr-xml-daily.ru/
+  website: https://www.cbr.ru/
+
+endpoints:
+  - path: /query
+    external_path: /daily_json.js
+    method: GET
+    description: FX mid-market rates for intent FX_NOW via CBR FX Now.
+    intents: [FX_NOW]
+
+input_schema:
+  type: object
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: Date
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores FX signal for FX_NOW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: date
+        description: Rate timestamp
+        source_path: Date
+      - index: 1
+        name: usd_name
+        description: USD name
+        source_path: Valute.USD.Name
+    integers:
+      - index: 0
+        name: usd_x100
+        description: USD Value x100
+        source_path: Valute.USD.Value
+        multiplier: 100

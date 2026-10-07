@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 71005
+slug: ocm-stablecoins
+protocol: generic
+name: Llama Stablecoin Metrics
+description: >
+  DefiLlama stablecoin metrics. Intent ONCHAIN_METRIC_VERIFY.
+
+base_url: https://stablecoins.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/
+  website: https://defillama.com/
+
+endpoints:
+  - path: /query
+    external_path: /stablecoins
+    method: GET
+    description: Query for intent ONCHAIN_METRIC_VERIFY via Llama Stablecoin Metrics.
+    intents: [ONCHAIN_METRIC_VERIFY]
+    params:
+      query:
+        required:
+          - name: includePrices
+            type: string
+            intents: ["*"]
+            description: Include prices
+
+input_schema:
+  type: object
+  required: [includePrices]
+  properties:
+    includePrices: {type: string, description: Include prices, default: "true"}
+
+semantics:
+  signal_mapping:
+    label_field: peggedAssets
+  supported_intents:
+    - ONCHAIN_METRIC_VERIFY
+
+on_chain:
+  description: Stores signal for ONCHAIN_METRIC_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

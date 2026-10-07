@@ -1,0 +1,98 @@
+version: "1"
+kind: miner
+id: 61001
+slug: route-paraswap-eth
+protocol: generic
+name: ParaSwap Price Route ETH
+description: >
+  ParaSwap multi-DEX price route on Ethereum. Intent OPTIMAL_EXECUTION_ROUTE.
+
+base_url: https://apiv5.paraswap.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://developers.paraswap.network/
+  website: https://www.paraswap.io/
+
+endpoints:
+  - path: /query
+    external_path: /prices
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE via ParaSwap Price Route ETH.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: srcToken
+            type: string
+            intents: ["*"]
+            description: Source token
+          - name: destToken
+            type: string
+            intents: ["*"]
+            description: Dest token
+          - name: amount
+            type: string
+            intents: ["*"]
+            description: Amount wei
+          - name: srcDecimals
+            type: string
+            intents: ["*"]
+            description: Src decimals
+          - name: destDecimals
+            type: string
+            intents: ["*"]
+            description: Dest decimals
+          - name: side
+            type: string
+            intents: ["*"]
+            description: Side
+          - name: network
+            type: string
+            intents: ["*"]
+            description: Network id
+
+input_schema:
+  type: object
+  required: [srcToken, destToken, amount, srcDecimals, destDecimals, side, network]
+  properties:
+    srcToken: {type: string, description: Source token, default: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"}
+    destToken: {type: string, description: Dest token, default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
+    amount: {type: string, description: Amount wei, default: "1000000000000000000"}
+    srcDecimals: {type: string, description: Src decimals, default: "18"}
+    destDecimals: {type: string, description: Dest decimals, default: "6"}
+    side: {type: string, description: Side, default: "SELL"}
+    network: {type: string, description: Network id, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: priceRoute
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores signal for OPTIMAL_EXECUTION_ROUTE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

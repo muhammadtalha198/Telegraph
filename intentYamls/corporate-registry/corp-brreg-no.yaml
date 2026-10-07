@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190104
+slug: corp-brreg-no
+protocol: generic
+name: "Corp Brreg No"
+description: "Semantic V2 miner for CORPORATE_REGISTRY_LOOKUP. Queries national business registers for incorporation status, registered agent details, and beneficial ownership filings. Capture pin answers: Must return the company's registry record (legal name, status, identifiers) for the company asked."
+
+base_url: https://data.brreg.no
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://data.brreg.no/
+  website: https://data.brreg.no
+
+endpoints:
+  - path: /query
+    external_path: /enhetsregisteret/api/enheter/923609016
+    method: GET
+    description: Query for intent CORPORATE_REGISTRY_LOOKUP via Corp Brreg No.
+    intents: [CORPORATE_REGISTRY_LOOKUP]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CORPORATE_REGISTRY_LOOKUP
+
+on_chain:
+  description: Stores signal for CORPORATE_REGISTRY_LOOKUP (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 51007
+slug: tok-bs-base-usdc-counters
+protocol: generic
+name: Blockscout Base USDC Counters
+description: >
+  Blockscout token /counters on Base USDC Counters. Intent TOKEN_HOLDER_COUNT.
+
+base_url: https://base.blockscout.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://base.blockscout.com/api-docs
+  website: https://base.blockscout.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/tokens/{address}/counters
+    method: GET
+    description: Query for intent TOKEN_HOLDER_COUNT via Blockscout Base USDC Counters.
+    intents: [TOKEN_HOLDER_COUNT]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: Token contract address
+
+input_schema:
+  type: object
+  required: [address]
+  properties:
+    address: {type: string, description: Token address, default: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"}
+
+semantics:
+  signal_mapping:
+    label_field: token_holders_count
+  supported_intents:
+    - TOKEN_HOLDER_COUNT
+
+on_chain:
+  description: Stores signal for TOKEN_HOLDER_COUNT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 79012
+slug: corp-fr-recherche
+protocol: generic
+name: FR Recherche Entreprises Status
+description: >
+  French recherche-entreprises register → status_active (1 if etat_administratif=A).
+  Intent CORPORATE_REGISTRY_LOOKUP — Usman truth-spec miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://recherche-entreprises.api.gouv.fr/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/corp-fr
+    method: GET
+    description: Query for intent CORPORATE_REGISTRY_LOOKUP via FR register.
+    intents: [CORPORATE_REGISTRY_LOOKUP]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Company search query
+
+input_schema:
+  type: object
+  required: [q]
+  properties:
+    q: {type: string, description: "Company search query", default: "Apple"}
+
+semantics:
+  signal_mapping:
+    label_field: status_active
+  supported_intents:
+    - CORPORATE_REGISTRY_LOOKUP
+
+on_chain:
+  description: Stores signal for CORPORATE_REGISTRY_LOOKUP.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

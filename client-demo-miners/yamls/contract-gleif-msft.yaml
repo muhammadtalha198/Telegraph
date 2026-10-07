@@ -1,0 +1,60 @@
+version: "1"
+kind: miner
+id: 64002
+slug: contract-gleif-msft
+protocol: generic
+name: GLEIF LEI Microsoft
+description: >
+  GLEIF LEI records for Microsoft legal entity. Intent CONTRACT_OBLIGATION_AUDIT.
+
+base_url: https://api.gleif.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.gleif.org/en/lei-data/gleif-api
+  website: https://www.gleif.org/
+
+endpoints:
+  - path: /query
+    external_path: "/api/v1/lei-records?filter%5Bentity.legalName%5D=Microsoft&page%5Bsize%5D=1"
+    method: GET
+    description: Query for intent CONTRACT_OBLIGATION_AUDIT via GLEIF LEI Microsoft.
+    intents: [CONTRACT_OBLIGATION_AUDIT]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: data
+  supported_intents:
+    - CONTRACT_OBLIGATION_AUDIT
+
+on_chain:
+  description: Stores signal for CONTRACT_OBLIGATION_AUDIT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

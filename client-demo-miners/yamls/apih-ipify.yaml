@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 138008
+slug: apih-ipify
+protocol: generic
+name: IPify Health
+description: >
+  IPify health check. Intent API_HEALTH_CHECK.
+
+base_url: https://api.ipify.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.ipify.org/
+  website: https://www.ipify.org
+
+endpoints:
+  - path: /query
+    external_path: /
+    method: GET
+    description: Query for intent API_HEALTH_CHECK via IPify Health.
+    intents: [API_HEALTH_CHECK]
+    params:
+      query:
+        required:
+          - name: format
+            type: string
+            intents: ["*"]
+            description: Format
+
+input_schema:
+  type: object
+  required: [format]
+  properties:
+    format: {type: string, description: Format, default: "json"}
+
+semantics:
+  signal_mapping:
+    label_field: ip
+  supported_intents:
+    - API_HEALTH_CHECK
+
+on_chain:
+  description: Stores signal for API_HEALTH_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

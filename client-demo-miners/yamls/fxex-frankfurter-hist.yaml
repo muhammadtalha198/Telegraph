@@ -1,0 +1,80 @@
+version: "1"
+kind: miner
+id: 50002
+slug: fxex-frankfurter-hist
+protocol: generic
+name: Frankfurter Historical
+description: >
+  Frankfurter historical FX. Intent CURRENCY_EXCHANGE.
+
+base_url: https://api.frankfurter.dev
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.frankfurter.app/docs/
+  website: https://www.frankfurter.app/
+
+endpoints:
+  - path: /query
+    external_path: /v1/{date}
+    method: GET
+    description: Query for intent CURRENCY_EXCHANGE via Frankfurter Historical.
+    intents: [CURRENCY_EXCHANGE]
+    params:
+      path:
+        required:
+          - name: date
+            type: string
+            intents: ["*"]
+            description: YYYY-MM-DD
+      query:
+        required:
+          - name: base
+            type: string
+            intents: ["*"]
+            description: Base currency
+          - name: symbols
+            type: string
+            intents: ["*"]
+            description: Quote symbols
+
+input_schema:
+  type: object
+  required: [date, base, symbols]
+  properties:
+    date: {type: string, description: Date, default: "2024-01-01"}
+    base: {type: string, description: Base, default: "USD"}
+    symbols: {type: string, description: Symbols, default: "EUR"}
+
+semantics:
+  signal_mapping:
+    label_field: rates
+  supported_intents:
+    - CURRENCY_EXCHANGE
+
+on_chain:
+  description: Stores signal for CURRENCY_EXCHANGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

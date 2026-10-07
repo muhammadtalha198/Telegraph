@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 47007
+slug: bal-bs-arb-vitalik
+protocol: generic
+name: Blockscout Arbitrum Vitalik Balance
+description: >
+  Blockscout address balance on Arbitrum Vitalik. Intent WALLET_BALANCE_CHECK.
+
+base_url: https://arbitrum.blockscout.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://arbitrum.blockscout.com/api-docs
+  website: https://arbitrum.blockscout.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v2/addresses/{address}
+    method: GET
+    description: Query for intent WALLET_BALANCE_CHECK via Blockscout Arbitrum Vitalik Balance.
+    intents: [WALLET_BALANCE_CHECK]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: Wallet address
+
+input_schema:
+  type: object
+  required: [address]
+  properties:
+    address: {type: string, description: Address, default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}
+
+semantics:
+  signal_mapping:
+    label_field: coin_balance
+  supported_intents:
+    - WALLET_BALANCE_CHECK
+
+on_chain:
+  description: Stores signal for WALLET_BALANCE_CHECK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

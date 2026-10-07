@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 50003
+slug: fxex-frankfurter-currencies
+protocol: generic
+name: Frankfurter Currencies
+description: >
+  Frankfurter supported currencies. Intent CURRENCY_EXCHANGE.
+
+base_url: https://api.frankfurter.dev
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.frankfurter.app/docs/
+  website: https://www.frankfurter.app/
+
+endpoints:
+  - path: /query
+    external_path: /v1/currencies
+    method: GET
+    description: Query for intent CURRENCY_EXCHANGE via Frankfurter Currencies.
+    intents: [CURRENCY_EXCHANGE]
+
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: AUD
+  supported_intents:
+    - CURRENCY_EXCHANGE
+
+on_chain:
+  description: Stores signal for CURRENCY_EXCHANGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

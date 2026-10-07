@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 170114
+slug: corp-brreg
+protocol: generic
+name: Bronnoysund Enhetsregisteret
+description: >
+  Bronnoysund Enhetsregisteret -> status_active.
+  Intent CORPORATE_REGISTRY_LOOKUP - Round Two Batch 7.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://data.brreg.no/enhetsregisteret/api/docs/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/corp-brreg
+    method: GET
+    description: Query for intent CORPORATE_REGISTRY_LOOKUP via Bronnoysund Enhetsregisteret.
+    intents: [CORPORATE_REGISTRY_LOOKUP]
+    params:
+      query:
+        required:
+          - name: name
+            type: string
+            intents: ["*"]
+            description: name
+
+input_schema:
+  type: object
+  required: [name]
+  properties:
+    name: {type: string, description: "name", default: "Equinor"}
+
+semantics:
+  signal_mapping:
+    label_field: status_active
+  supported_intents:
+    - CORPORATE_REGISTRY_LOOKUP
+
+on_chain:
+  description: Stores signal for CORPORATE_REGISTRY_LOOKUP.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

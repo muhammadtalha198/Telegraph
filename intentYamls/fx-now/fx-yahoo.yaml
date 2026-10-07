@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190125
+slug: fx-yahoo
+protocol: generic
+name: "Fx Yahoo"
+description: "Semantic V2 miner for FX_NOW. Provides real-time institutional foreign exchange mid-market rates, spreads, and currency conversion quotes. Capture pin answers: Must return the current exchange rate between the two currencies asked."
+
+base_url: https://query1.finance.yahoo.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://query1.finance.yahoo.com/
+  website: https://query1.finance.yahoo.com
+
+endpoints:
+  - path: /query
+    external_path: /v8/finance/chart/USDEUR=X
+    method: GET
+    description: Query for intent FX_NOW via Fx Yahoo.
+    intents: [FX_NOW]
+    params:
+      query:
+        required:
+          - name: interval
+            type: string
+            intents: ["*"]
+            description: interval
+          - name: range
+            type: string
+            intents: ["*"]
+            description: range
+
+input_schema:
+  type: object
+  required: [interval, range]
+  properties:
+    interval: {type: string, description: "interval", default: "1d"}
+    range: {type: string, description: "range", default: "1d"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores signal for FX_NOW (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 31004
+slug: fx-awesomeapi
+protocol: generic
+name: AwesomeAPI FX Now
+description: >
+  Brazilian AwesomeAPI FX pair quotes. Intent FX_NOW.
+  Direct Request shows pair field (e.g. USD-EUR) in Alexandria.
+
+base_url: https://economia.awesomeapi.com.br
+
+auth:
+  type: none
+
+rate_limit_per_sec: 2
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.awesomeapi.com.br/api-de-moedas
+  website: https://economia.awesomeapi.com.br/
+
+endpoints:
+  - path: /query
+    external_path: /json/last/{pair}
+    method: GET
+    description: FX pair quote for intent FX_NOW via AwesomeAPI.
+    intents: [FX_NOW]
+    params:
+      path:
+        required:
+          - name: pair
+            type: string
+            intents: ["*"]
+            description: Currency pair like USD-EUR
+
+input_schema:
+  type: object
+  required: [pair]
+  properties:
+    pair:
+      type: string
+      description: Currency pair (BASE-QUOTE)
+      default: "USD-EUR"
+
+semantics:
+  signal_mapping:
+    label_field: USDEUR.name
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores FX signal for FX_NOW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: name
+        description: Pair name
+        source_path: USDEUR.name
+      - index: 1
+        name: create_date
+        description: Quote timestamp
+        source_path: USDEUR.create_date
+    integers:
+      - index: 0
+        name: bid_x10000
+        description: Bid x10000
+        source_path: USDEUR.bid
+        multiplier: 10000

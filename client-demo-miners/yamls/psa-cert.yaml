@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 147007
+slug: psa-cert
+protocol: generic
+name: CERT.PL Exposure Domains
+description: >
+  CERT.PL malicious exposure domains. Intent PORT_SCAN_AUDIT.
+
+base_url: https://hole.cert.pl
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://hole.cert.pl/
+  website: https://hole.cert.pl
+
+endpoints:
+  - path: /query
+    external_path: /domains/v2/domains.json
+    method: GET
+    description: Query for intent PORT_SCAN_AUDIT via CERT.PL Exposure Domains.
+    intents: [PORT_SCAN_AUDIT]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - PORT_SCAN_AUDIT
+
+on_chain:
+  description: Stores signal for PORT_SCAN_AUDIT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

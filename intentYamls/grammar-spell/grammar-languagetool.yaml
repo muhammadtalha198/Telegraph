@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190129
+slug: grammar-languagetool
+protocol: generic
+name: "Grammar Languagetool"
+description: "Semantic V2 miner for GRAMMAR_SPELL_CHECK. Detects typographical, orthographic, punctuation, and grammatical syntax errors with correction offsets. Capture pin answers: Must return the detected spelling/grammar errors with corrections/offsets for the text."
+
+base_url: https://api.languagetool.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.languagetool.org/
+  website: https://api.languagetool.org
+
+endpoints:
+  - path: /query
+    external_path: /v2/check
+    method: GET
+    description: Query for intent GRAMMAR_SPELL_CHECK via Grammar Languagetool.
+    intents: [GRAMMAR_SPELL_CHECK]
+    params:
+      query:
+        required:
+          - name: language
+            type: string
+            intents: ["*"]
+            description: language
+          - name: text
+            type: string
+            intents: ["*"]
+            description: text
+
+input_schema:
+  type: object
+  required: [language, text]
+  properties:
+    language: {type: string, description: "language", default: "en-US"}
+    text: {type: string, description: "text", default: "I has a apple and teh dog runned"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - GRAMMAR_SPELL_CHECK
+
+on_chain:
+  description: Stores signal for GRAMMAR_SPELL_CHECK (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

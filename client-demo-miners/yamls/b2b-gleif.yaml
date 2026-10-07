@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 95004
+slug: b2b-gleif
+protocol: generic
+name: GLEIF LEI Enrich
+description: >
+  GLEIF LEI legal entity enrichment. Intent B2B_IDENTITY_ENRICHMENT.
+
+base_url: https://api.gleif.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.gleif.org/en/lei-data/gleif-api
+  website: https://www.gleif.org
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/lei-records
+    method: GET
+    description: Query for intent B2B_IDENTITY_ENRICHMENT via GLEIF LEI Enrich.
+    intents: [B2B_IDENTITY_ENRICHMENT]
+    params:
+      query:
+        required:
+          - name: "filter[entity.legalName]"
+            type: string
+            intents: ["*"]
+            description: Legal name
+          - name: "page[size]"
+            type: string
+            intents: ["*"]
+            description: Page size
+
+input_schema:
+  type: object
+  required: ["filter[entity.legalName]", "page[size]"]
+  properties:
+    "filter[entity.legalName]": {type: string, description: Legal name, default: "Stripe"}
+    "page[size]": {type: string, description: Page size, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: data
+  supported_intents:
+    - B2B_IDENTITY_ENRICHMENT
+
+on_chain:
+  description: Stores signal for B2B_IDENTITY_ENRICHMENT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

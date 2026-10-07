@@ -1,0 +1,86 @@
+version: "1"
+kind: miner
+id: 146001
+slug: loan-wb
+protocol: generic
+name: World Bank Lending Rate
+description: >
+  World Bank lending interest rate. Intent LOAN_INTEREST_RATE_QUOTE.
+
+base_url: https://api.worldbank.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://datahelpdesk.worldbank.org/knowledgebase/articles/889392
+  website: https://data.worldbank.org
+
+endpoints:
+  - path: /query
+    external_path: /v2/country/{country}/indicator/{indicator}
+    method: GET
+    description: Query for intent LOAN_INTEREST_RATE_QUOTE via World Bank Lending Rate.
+    intents: [LOAN_INTEREST_RATE_QUOTE]
+    params:
+      path:
+        required:
+          - name: country
+            type: string
+            intents: ["*"]
+            description: Country
+          - name: indicator
+            type: string
+            intents: ["*"]
+            description: Indicator
+      query:
+        required:
+          - name: format
+            type: string
+            intents: ["*"]
+            description: Format
+          - name: per_page
+            type: string
+            intents: ["*"]
+            description: Per page
+
+input_schema:
+  type: object
+  required: [country, indicator, format, per_page]
+  properties:
+    country: {type: string, description: Country, default: "US"}
+    indicator: {type: string, description: Indicator, default: "FR.INR.LEND"}
+    format: {type: string, description: Format, default: "json"}
+    per_page: {type: string, description: Per page, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "1"
+  supported_intents:
+    - LOAN_INTEREST_RATE_QUOTE
+
+on_chain:
+  description: Stores signal for LOAN_INTEREST_RATE_QUOTE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

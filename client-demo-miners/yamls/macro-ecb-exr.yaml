@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 39009
+slug: macro-ecb-exr
+protocol: generic
+name: ECB USD/EUR Exchange
+description: >
+  ECB SDMX USD/EUR daily exchange. Intent MACRO_ECONOMIC_INDICATOR.
+
+base_url: https://data-api.ecb.europa.eu
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://data.ecb.europa.eu/help/api/data
+  website: https://www.ecb.europa.eu/
+
+endpoints:
+  - path: /query
+    external_path: /service/data/EXR/D.USD.EUR.SP00.A
+    method: GET
+    description: Query for intent MACRO_ECONOMIC_INDICATOR via ECB USD/EUR Exchange.
+    intents: [MACRO_ECONOMIC_INDICATOR]
+    params:
+      query:
+        required:
+          - name: lastNObservations
+            type: string
+            intents: ["*"]
+            description: Last N observations
+          - name: format
+            type: string
+            intents: ["*"]
+            description: jsondata
+
+input_schema:
+  type: object
+  required: [lastNObservations, format]
+  properties:
+    lastNObservations: {type: string, description: N, default: "1"}
+    format: {type: string, description: Format, default: "jsondata"}
+
+semantics:
+  signal_mapping:
+    label_field: dataSets
+  supported_intents:
+    - MACRO_ECONOMIC_INDICATOR
+
+on_chain:
+  description: Stores signal for MACRO_ECONOMIC_INDICATOR.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

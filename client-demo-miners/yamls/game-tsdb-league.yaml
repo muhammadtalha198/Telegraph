@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 69009
+slug: game-tsdb-league
+protocol: generic
+name: TheSportsDB League
+description: >
+  TheSportsDB league lookup. Intent GAME_RESULT.
+
+base_url: https://www.thesportsdb.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.thesportsdb.com/api.php
+  website: https://www.thesportsdb.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/json/3/lookupleague.php
+    method: GET
+    description: Query for intent GAME_RESULT via TheSportsDB League.
+    intents: [GAME_RESULT]
+    params:
+      query:
+        required:
+          - name: id
+            type: string
+            intents: ["*"]
+            description: League id
+
+input_schema:
+  type: object
+  required: [id]
+  properties:
+    id: {type: string, description: League id, default: "4328"}
+
+semantics:
+  signal_mapping:
+    label_field: leagues
+  supported_intents:
+    - GAME_RESULT
+
+on_chain:
+  description: Stores signal for GAME_RESULT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,85 @@
+version: "1"
+kind: miner
+id: {{ID}}
+slug: {{SLUG}}
+protocol: generic
+name: {{NAME}}
+description: >
+  {{DESCRIPTION}}
+
+base_url: {{BASE_URL}}
+
+auth:
+  type: bearer
+
+rate_limit_per_sec: 5
+cache_ttl_sec: 0
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+endpoints:
+  - path: /respond
+    external_path: /v1/responses
+    method: POST
+    description: OpenAI-compatible Responses API for model {{MODEL}}.
+    intents: [{{INTENT}}]
+    params:
+      body:
+        required:
+          - name: model
+            type: string
+            intents: ["*"]
+            description: Must be {{MODEL}}
+            accepted_fields:
+              "{{MODEL}}":
+                description: {{MODEL_DESCRIPTION}}
+                intents: [{{INTENT}}]
+          - name: input
+            type: string
+            intents: ["*"]
+            description: User input prompt for the Responses API
+        optional:
+          - name: max_output_tokens
+            type: integer
+            intents: ["*"]
+          - name: temperature
+            type: number
+            intents: ["*"]
+
+semantics:
+  signal_mapping:
+    label_field: output_text
+  supported_intents:
+    - {{INTENT}}
+
+on_chain:
+  description: Stores Responses API output text, model id, and token usage.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: response_text
+        description: Assistant output text
+        source_path: output_text
+      - index: 1
+        name: model
+        description: Model used
+        source_path: model
+    integers:
+      - index: 0
+        name: output_tokens
+        description: Output token count
+        source_path: usage.output_tokens
+      - index: 1
+        name: input_tokens
+        description: Input token count
+        source_path: usage.input_tokens
+  request:
+    - endpoint: respond
+      method: POST
+      body:
+        model:
+          source: strings.0
+        input:
+          source: strings.1

@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170066
+slug: sen-thingspeak
+protocol: generic
+name: ThingSpeak
+description: >
+  ThingSpeak -> heartbeat_fresh (1 if the newest sample is within max_age_s, else 0).
+  Intent SENSOR_TELEMETRY_VERIFY - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.mathworks.com/help/thingspeak/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/sensor-fresh
+    method: GET
+    description: Query for intent SENSOR_TELEMETRY_VERIFY via ThingSpeak.
+    intents: [SENSOR_TELEMETRY_VERIFY]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Telemetry network id
+          - name: sensor
+            type: string
+            intents: ["*"]
+            description: Sensor / station / channel id
+          - name: max_age_s
+            type: string
+            intents: ["*"]
+            description: Freshness window in seconds
+
+input_schema:
+  type: object
+  required: [venue, sensor, max_age_s]
+  properties:
+    venue: {type: string, description: "Telemetry network id", default: "thingspeak"}
+    sensor: {type: string, description: "Sensor / station / channel id", default: "12397"}
+    max_age_s: {type: string, description: "Freshness window in seconds", default: "7200"}
+
+semantics:
+  signal_mapping:
+    label_field: heartbeat_fresh
+  supported_intents:
+    - SENSOR_TELEMETRY_VERIFY
+
+on_chain:
+  description: Stores signal for SENSOR_TELEMETRY_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

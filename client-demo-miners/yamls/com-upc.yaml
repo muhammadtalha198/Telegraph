@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 114008
+slug: com-upc
+protocol: generic
+name: UPC Purchase Lookup
+description: >
+  UPCitemdb purchase product verify. Intent COMMERCE_PURCHASE_VERIFY.
+
+base_url: https://api.upcitemdb.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.upcitemdb.com/api/explorer
+  website: https://www.upcitemdb.com
+
+endpoints:
+  - path: /query
+    external_path: /prod/trial/lookup
+    method: GET
+    description: Query for intent COMMERCE_PURCHASE_VERIFY via UPC Purchase Lookup.
+    intents: [COMMERCE_PURCHASE_VERIFY]
+    params:
+      query:
+        required:
+          - name: upc
+            type: string
+            intents: ["*"]
+            description: UPC
+
+input_schema:
+  type: object
+  required: [upc]
+  properties:
+    upc: {type: string, description: UPC, default: "885909950805"}
+
+semantics:
+  signal_mapping:
+    label_field: items
+  supported_intents:
+    - COMMERCE_PURCHASE_VERIFY
+
+on_chain:
+  description: Stores signal for COMMERCE_PURCHASE_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

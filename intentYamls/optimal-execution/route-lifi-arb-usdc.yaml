@@ -1,0 +1,92 @@
+version: "1"
+kind: miner
+id: 190040
+slug: route-lifi-arb-usdc
+protocol: generic
+name: "Route Lifi Arb USDC"
+description: "Semantic V2 miner for OPTIMAL_EXECUTION_ROUTE. Determines optimal multi-venue order execution routing to minimize slippage, exchange fees, and market impact. Capture pin answers: Must convey the best swap route / output amount for the trade asked."
+
+base_url: https://li.quest
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://li.quest/
+  website: https://li.quest
+
+endpoints:
+  - path: /query
+    external_path: /v1/quote
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE via Route Lifi Arb USDC.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: fromChain
+            type: string
+            intents: ["*"]
+            description: fromChain
+          - name: toChain
+            type: string
+            intents: ["*"]
+            description: toChain
+          - name: fromToken
+            type: string
+            intents: ["*"]
+            description: fromToken
+          - name: toToken
+            type: string
+            intents: ["*"]
+            description: toToken
+          - name: fromAmount
+            type: string
+            intents: ["*"]
+            description: fromAmount
+          - name: fromAddress
+            type: string
+            intents: ["*"]
+            description: fromAddress
+
+input_schema:
+  type: object
+  required: [fromChain, toChain, fromToken, toToken, fromAmount, fromAddress]
+  properties:
+    fromChain: {type: string, description: "fromChain", default: "1"}
+    toChain: {type: string, description: "toChain", default: "42161"}
+    fromToken: {type: string, description: "fromToken", default: "ETH"}
+    toToken: {type: string, description: "toToken", default: "USDC"}
+    fromAmount: {type: string, description: "fromAmount", default: "1000000000000000000"}
+    fromAddress: {type: string, description: "fromAddress", default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}
+
+semantics:
+  signal_mapping:
+    label_field: estimate
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores signal for OPTIMAL_EXECUTION_ROUTE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

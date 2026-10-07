@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 50006
+slug: fxex-fawaz-usd
+protocol: generic
+name: Fawaz Currency API USD
+description: >
+  Fawazahmed0 currency-api USD JSON. Intent CURRENCY_EXCHANGE.
+
+base_url: https://cdn.jsdelivr.net
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://github.com/fawazahmed0/currency-api
+  website: https://github.com/fawazahmed0/currency-api
+
+endpoints:
+  - path: /query
+    external_path: /npm/@fawazahmed0/currency-api@latest/v1/currencies/{currency}.json
+    method: GET
+    description: Query for intent CURRENCY_EXCHANGE via Fawaz Currency API USD.
+    intents: [CURRENCY_EXCHANGE]
+    params:
+      path:
+        required:
+          - name: currency
+            type: string
+            intents: ["*"]
+            description: Base currency code
+
+input_schema:
+  type: object
+  required: [currency]
+  properties:
+    currency: {type: string, description: Currency, default: "usd"}
+
+semantics:
+  signal_mapping:
+    label_field: date
+  supported_intents:
+    - CURRENCY_EXCHANGE
+
+on_chain:
+  description: Stores signal for CURRENCY_EXCHANGE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

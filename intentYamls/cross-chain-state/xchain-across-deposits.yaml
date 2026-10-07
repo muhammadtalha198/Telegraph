@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190005
+slug: xchain-across-deposits
+protocol: generic
+name: "Xchain Across Deposits"
+description: "Semantic V2 miner for CROSS_CHAIN_STATE_VERIFY. Proves cryptographic Merkle-Patricia state roots and cross-chain message execution headers between distinct blockchain networks. Capture pin answers: Must convey whether the cross-chain message/transfer executed and its status."
+
+base_url: https://across.to
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://across.to/
+  website: https://across.to
+
+endpoints:
+  - path: /query
+    external_path: /api/deposits
+    method: GET
+    description: Query for intent CROSS_CHAIN_STATE_VERIFY via Xchain Across Deposits.
+    intents: [CROSS_CHAIN_STATE_VERIFY]
+    params:
+      query:
+        required:
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: limit
+
+input_schema:
+  type: object
+  required: [limit]
+  properties:
+    limit: {type: string, description: "limit", default: "5"}
+
+semantics:
+  signal_mapping:
+    label_field: status
+  supported_intents:
+    - CROSS_CHAIN_STATE_VERIFY
+
+on_chain:
+  description: Stores signal for CROSS_CHAIN_STATE_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

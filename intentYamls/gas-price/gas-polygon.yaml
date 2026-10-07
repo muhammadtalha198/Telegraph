@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 170046
+slug: gas-polygon
+protocol: generic
+name: Polygon Gas Station v2
+description: >
+  Polygon Gas Station v2 -> base_fee_gwei_micro (Current base fee in gwei x1e6).
+  Intent GAS_PRICE - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.polygon.technology/tools/gas/polygon-gas-station/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/gas-basefee
+    method: GET
+    description: Query for intent GAS_PRICE via Polygon Gas Station v2.
+    intents: [GAS_PRICE]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Gas oracle id
+          - name: chain_id
+            type: string
+            intents: ["*"]
+            description: EVM chain id
+
+input_schema:
+  type: object
+  required: [venue, chain_id]
+  properties:
+    venue: {type: string, description: "Gas oracle id", default: "polygon"}
+    chain_id: {type: string, description: "EVM chain id", default: "137"}
+
+semantics:
+  signal_mapping:
+    label_field: base_fee_gwei_micro
+  supported_intents:
+    - GAS_PRICE
+
+on_chain:
+  description: Stores signal for GAS_PRICE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 147005
+slug: psa-otx
+protocol: generic
+name: OTX Host Exposure
+description: >
+  OTX host exposure indicator. Intent PORT_SCAN_AUDIT.
+
+base_url: https://otx.alienvault.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://otx.alienvault.com/api
+  website: https://otx.alienvault.com
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/indicators/hostname/{host}/general
+    method: GET
+    description: Query for intent PORT_SCAN_AUDIT via OTX Host Exposure.
+    intents: [PORT_SCAN_AUDIT]
+    params:
+      path:
+        required:
+          - name: host
+            type: string
+            intents: ["*"]
+            description: Host
+
+input_schema:
+  type: object
+  required: [host]
+  properties:
+    host: {type: string, description: Host, default: "example.com"}
+
+semantics:
+  signal_mapping:
+    label_field: sections
+  supported_intents:
+    - PORT_SCAN_AUDIT
+
+on_chain:
+  description: Stores signal for PORT_SCAN_AUDIT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

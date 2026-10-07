@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 106001
+slug: ttl-faa
+protocol: generic
+name: FAA Transit Lock
+description: >
+  FAA NAS status transit lock signal. Intent TRAVEL_TRANSIT_LOCK.
+
+base_url: https://nasstatus.faa.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://nasstatus.faa.gov/
+  website: https://nasstatus.faa.gov
+
+endpoints:
+  - path: /query
+    external_path: /api/airport-status-information
+    method: GET
+    description: Query for intent TRAVEL_TRANSIT_LOCK via FAA Transit Lock.
+    intents: [TRAVEL_TRANSIT_LOCK]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: AIRPORT_STATUS_INFORMATION
+  supported_intents:
+    - TRAVEL_TRANSIT_LOCK
+
+on_chain:
+  description: Stores signal for TRAVEL_TRANSIT_LOCK.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 81006
+slug: res-llama-comp
+protocol: generic
+name: DefiLlama Compound V3
+description: >
+  DefiLlama Compound V3 protocol TVL. Intent ASSET_RESERVE_ATTESTATION.
+
+base_url: https://api.llama.fi
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://defillama.com/docs/api
+  website: https://defillama.com
+
+endpoints:
+  - path: /query
+    external_path: /protocol/{slug}
+    method: GET
+    description: Query for intent ASSET_RESERVE_ATTESTATION via DefiLlama Compound V3.
+    intents: [ASSET_RESERVE_ATTESTATION]
+    params:
+      path:
+        required:
+          - name: slug
+            type: string
+            intents: ["*"]
+            description: Protocol slug
+
+input_schema:
+  type: object
+  required: [slug]
+  properties:
+    slug: {type: string, description: Protocol slug, default: "compound-v3"}
+
+semantics:
+  signal_mapping:
+    label_field: tvl
+  supported_intents:
+    - ASSET_RESERVE_ATTESTATION
+
+on_chain:
+  description: Stores signal for ASSET_RESERVE_ATTESTATION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

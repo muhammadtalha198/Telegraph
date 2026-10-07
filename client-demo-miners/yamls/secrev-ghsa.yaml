@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 77003
+slug: secrev-ghsa
+protocol: generic
+name: GitHub Security Advisories
+description: >
+  GitHub global security advisories. Intent SECURITY_REVIEW.
+
+base_url: https://api.github.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.github.com/en/rest/security-advisories
+  website: https://github.com/advisories
+
+endpoints:
+  - path: /query
+    external_path: /advisories
+    method: GET
+    description: Query for intent SECURITY_REVIEW via GitHub Security Advisories.
+    intents: [SECURITY_REVIEW]
+    params:
+      query:
+        required:
+          - name: per_page
+            type: string
+            intents: ["*"]
+            description: Page size
+
+input_schema:
+  type: object
+  required: [per_page]
+  properties:
+    per_page: {type: string, description: Page size, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - SECURITY_REVIEW
+
+on_chain:
+  description: Stores signal for SECURITY_REVIEW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

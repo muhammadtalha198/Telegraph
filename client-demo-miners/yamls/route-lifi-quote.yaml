@@ -1,0 +1,93 @@
+version: "1"
+kind: miner
+id: 61004
+slug: route-lifi-quote
+protocol: generic
+name: LI.FI Quote
+description: >
+  LI.FI cross-venue execution quote. Intent OPTIMAL_EXECUTION_ROUTE.
+
+base_url: https://li.quest
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.li.fi/
+  website: https://li.fi/
+
+endpoints:
+  - path: /query
+    external_path: /v1/quote
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE via LI.FI Quote.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: fromChain
+            type: string
+            intents: ["*"]
+            description: From chain
+          - name: toChain
+            type: string
+            intents: ["*"]
+            description: To chain
+          - name: fromToken
+            type: string
+            intents: ["*"]
+            description: From token
+          - name: toToken
+            type: string
+            intents: ["*"]
+            description: To token
+          - name: fromAmount
+            type: string
+            intents: ["*"]
+            description: From amount
+          - name: fromAddress
+            type: string
+            intents: ["*"]
+            description: From address
+
+input_schema:
+  type: object
+  required: [fromChain, toChain, fromToken, toToken, fromAmount, fromAddress]
+  properties:
+    fromChain: {type: string, description: From chain, default: "1"}
+    toChain: {type: string, description: To chain, default: "1"}
+    fromToken: {type: string, description: From token, default: "ETH"}
+    toToken: {type: string, description: To token, default: "USDC"}
+    fromAmount: {type: string, description: From amount, default: "1000000000000000000"}
+    fromAddress: {type: string, description: From address, default: "0x0000000000000000000000000000000000000001"}
+
+semantics:
+  signal_mapping:
+    label_field: type
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores signal for OPTIMAL_EXECUTION_ROUTE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

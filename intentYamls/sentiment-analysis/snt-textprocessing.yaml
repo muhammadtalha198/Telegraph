@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 170079
+slug: snt-textprocessing
+protocol: generic
+name: text-processing.com sentiment
+description: >
+  text-processing.com sentiment -> is_positive (1 if the classifier labels the text positive, else 0).
+  Intent SENTIMENT_ANALYSIS - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://text-processing.com/docs/sentiment.html
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/is-positive
+    method: GET
+    description: Query for intent SENTIMENT_ANALYSIS via text-processing.com sentiment.
+    intents: [SENTIMENT_ANALYSIS]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Classifier id
+          - name: text
+            type: string
+            intents: ["*"]
+            description: Text to classify
+
+input_schema:
+  type: object
+  required: [venue, text]
+  properties:
+    venue: {type: string, description: "Classifier id", default: "textprocessing"}
+    text: {type: string, description: "Text to classify", default: "I love this wonderful product, it is fantastic"}
+
+semantics:
+  signal_mapping:
+    label_field: is_positive
+  supported_intents:
+    - SENTIMENT_ANALYSIS
+
+on_chain:
+  description: Stores signal for SENTIMENT_ANALYSIS.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

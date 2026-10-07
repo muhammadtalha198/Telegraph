@@ -1,0 +1,74 @@
+version: "1"
+kind: miner
+id: 170072
+slug: vnd-brreg
+protocol: generic
+name: Bronnoysund Register Centre
+description: >
+  Bronnoysund Register Centre -> id_valid (1 if the registry validates the identifier, else 0).
+  Intent VENDOR_VERIFY - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://data.brreg.no/enhetsregisteret/api/docs/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/vendor-id
+    method: GET
+    description: Query for intent VENDOR_VERIFY via Bronnoysund Register Centre.
+    intents: [VENDOR_VERIFY]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Registry id
+          - name: id
+            type: string
+            intents: ["*"]
+            description: VAT number / org number / IBAN for this registry
+
+input_schema:
+  type: object
+  required: [venue, id]
+  properties:
+    venue: {type: string, description: "Registry id", default: "brreg"}
+    id: {type: string, description: "VAT number / org number / IBAN for this registry", default: "923609016"}
+
+semantics:
+  signal_mapping:
+    label_field: id_valid
+  supported_intents:
+    - VENDOR_VERIFY
+
+on_chain:
+  description: Stores signal for VENDOR_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

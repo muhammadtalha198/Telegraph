@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190120
+slug: email-doh-adguard
+protocol: generic
+name: "Email Doh Adguard"
+description: "Semantic V2 miner for EMAIL_SECURITY. Verifies SPF, DKIM, and DMARC records, inspects header anomalies, and detects spoofing or malicious attachments. Capture pin answers: Must return the domain's SPF/DKIM/DMARC records or a spoofing-protection assessment."
+
+base_url: https://dns.adguard-dns.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://dns.adguard-dns.com/
+  website: https://dns.adguard-dns.com
+
+endpoints:
+  - path: /query
+    external_path: /resolve
+    method: GET
+    description: Query for intent EMAIL_SECURITY via Email Doh Adguard.
+    intents: [EMAIL_SECURITY]
+    params:
+      query:
+        required:
+          - name: name
+            type: string
+            intents: ["*"]
+            description: name
+          - name: type
+            type: string
+            intents: ["*"]
+            description: type
+
+input_schema:
+  type: object
+  required: [name, type]
+  properties:
+    name: {type: string, description: "name", default: "gmail.com"}
+    type: {type: string, description: "type", default: "TXT"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - EMAIL_SECURITY
+
+on_chain:
+  description: Stores signal for EMAIL_SECURITY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 95009
+slug: b2b-ip2loc
+protocol: generic
+name: IP2Location Enrich
+description: >
+  IP2Location.io free IP enrichment. Intent B2B_IDENTITY_ENRICHMENT.
+
+base_url: https://api.ip2location.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.ip2location.io/ip2location-documentation
+  website: https://www.ip2location.io
+
+endpoints:
+  - path: /query
+    external_path: /
+    method: GET
+    description: Query for intent B2B_IDENTITY_ENRICHMENT via IP2Location Enrich.
+    intents: [B2B_IDENTITY_ENRICHMENT]
+    params:
+      query:
+        required:
+          - name: ip
+            type: string
+            intents: ["*"]
+            description: IP
+
+input_schema:
+  type: object
+  required: [ip]
+  properties:
+    ip: {type: string, description: IP, default: "8.8.8.8"}
+
+semantics:
+  signal_mapping:
+    label_field: country_name
+  supported_intents:
+    - B2B_IDENTITY_ENRICHMENT
+
+on_chain:
+  description: Stores signal for B2B_IDENTITY_ENRICHMENT.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

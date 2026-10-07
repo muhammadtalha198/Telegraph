@@ -1,0 +1,76 @@
+version: "1"
+kind: miner
+id: 135003
+slug: tw-masto-tags
+protocol: generic
+name: Mastodon Hashtag
+description: >
+  Mastodon hashtag timeline search. Intent TWITTER_SEARCH.
+
+base_url: https://mastodon.social
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.joinmastodon.org/methods/timelines/
+  website: https://mastodon.social
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/timelines/tag/{hashtag}
+    method: GET
+    description: Query for intent TWITTER_SEARCH via Mastodon Hashtag.
+    intents: [TWITTER_SEARCH]
+    params:
+      path:
+        required:
+          - name: hashtag
+            type: string
+            intents: ["*"]
+            description: Hashtag
+      query:
+        required:
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: Limit
+
+input_schema:
+  type: object
+  required: [hashtag, limit]
+  properties:
+    hashtag: {type: string, description: Hashtag, default: "bitcoin"}
+    limit: {type: string, description: Limit, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - TWITTER_SEARCH
+
+on_chain:
+  description: Stores signal for TWITTER_SEARCH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

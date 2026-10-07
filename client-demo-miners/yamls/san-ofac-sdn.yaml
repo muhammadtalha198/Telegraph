@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 78003
+slug: san-ofac-sdn
+protocol: generic
+name: OFAC SDN XML
+description: >
+  US OFAC Specially Designated Nationals list. Intent SANCTIONS_SCREENING_MATCH.
+
+base_url: https://www.treasury.gov
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://ofac.treasury.gov/specially-designated-nationals-list-sdn-list
+  website: https://ofac.treasury.gov
+
+endpoints:
+  - path: /query
+    external_path: /ofac/downloads/sdn.xml
+    method: GET
+    description: Query for intent SANCTIONS_SCREENING_MATCH via OFAC SDN XML.
+    intents: [SANCTIONS_SCREENING_MATCH]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: sdnList
+  supported_intents:
+    - SANCTIONS_SCREENING_MATCH
+
+on_chain:
+  description: Stores signal for SANCTIONS_SCREENING_MATCH.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

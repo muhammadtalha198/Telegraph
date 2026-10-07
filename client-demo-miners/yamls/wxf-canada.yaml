@@ -1,0 +1,73 @@
+version: "1"
+kind: miner
+id: 35010
+slug: wxf-canada
+protocol: generic
+name: Environment Canada Forecast
+description: >
+  Environment Canada citypage realtime (includes forecast fields). Intent WEATHER_FORECAST.
+
+base_url: https://api.weather.gc.ca
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://eccc-msc.github.io/open-data/
+  website: https://weather.gc.ca/
+
+endpoints:
+  - path: /query
+    external_path: /collections/citypageweather-realtime/items
+    method: GET
+    description: Query for intent WEATHER_FORECAST via Environment Canada Forecast.
+    intents: [WEATHER_FORECAST]
+    params:
+      query:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: City name
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: Limit
+
+input_schema:
+  type: object
+  required: [q, limit]
+  properties:
+    q: {type: string, description: City, default: "Toronto"}
+    limit: {type: string, description: Limit, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: features
+  supported_intents:
+    - WEATHER_FORECAST
+
+on_chain:
+  description: Stores signal for WEATHER_FORECAST.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

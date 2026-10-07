@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170047
+slug: sup-drpc
+protocol: generic
+name: dRPC Ethereum eth_call totalSupply
+description: >
+  dRPC Ethereum eth_call totalSupply -> total_supply_raw (totalSupply in base units).
+  Intent TOKEN_TOTAL_SUPPLY_VERIFY - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://drpc.org
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/token-supply
+    method: GET
+    description: Query for intent TOKEN_TOTAL_SUPPLY_VERIFY via dRPC Ethereum eth_call totalSupply.
+    intents: [TOKEN_TOTAL_SUPPLY_VERIFY]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Chain RPC id
+          - name: token
+            type: string
+            intents: ["*"]
+            description: ERC-20 contract or SPL mint
+          - name: block
+            type: string
+            intents: ["*"]
+            description: Block number (EVM) or latest
+
+input_schema:
+  type: object
+  required: [venue, token, block]
+  properties:
+    venue: {type: string, description: "Chain RPC id", default: "drpc"}
+    token: {type: string, description: "ERC-20 contract or SPL mint", default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
+    block: {type: string, description: "Block number (EVM) or latest", default: "23000000"}
+
+semantics:
+  signal_mapping:
+    label_field: total_supply_raw
+  supported_intents:
+    - TOKEN_TOTAL_SUPPLY_VERIFY
+
+on_chain:
+  description: Stores signal for TOKEN_TOTAL_SUPPLY_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

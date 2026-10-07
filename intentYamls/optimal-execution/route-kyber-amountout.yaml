@@ -1,0 +1,83 @@
+version: "1"
+kind: miner
+id: 29402
+slug: route-kyber-amountout
+protocol: generic
+name: KyberSwap Amount Out
+description: >
+  KyberSwap aggregator amountOut. Intent OPTIMAL_EXECUTION_ROUTE.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.kyberswap.com/
+  website: https://kyberswap.com/
+
+endpoints:
+  - path: /query
+    external_path: /truth/route-kyber
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: tokenIn
+            type: string
+            intents: ["*"]
+            description: tokenIn
+          - name: tokenOut
+            type: string
+            intents: ["*"]
+            description: tokenOut
+          - name: amountIn
+            type: string
+            intents: ["*"]
+            description: amountIn
+          - name: chain
+            type: string
+            intents: ["*"]
+            description: chain
+
+input_schema:
+  type: object
+  required: [tokenIn, tokenOut, amountIn]
+  properties:
+    tokenIn: {type: string, description: "tokenIn", default: "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"}
+    tokenOut: {type: string, description: "tokenOut", default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
+    amountIn: {type: string, description: "amountIn", default: "1000000000000000000"}
+    chain: {type: string, description: "chain", default: "ethereum"}
+
+semantics:
+  signal_mapping:
+    label_field: amount_out
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores amount_out for OPTIMAL_EXECUTION_ROUTE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

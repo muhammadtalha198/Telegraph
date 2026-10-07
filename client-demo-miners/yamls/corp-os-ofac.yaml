@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 98005
+slug: corp-os-ofac
+protocol: generic
+name: OpenSanctions OFAC Corp
+description: >
+  OpenSanctions OFAC corporate index. Intent CORPORATE_REGISTRY_LOOKUP.
+
+base_url: https://data.opensanctions.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.opensanctions.org/
+  website: https://www.opensanctions.org
+
+endpoints:
+  - path: /query
+    external_path: /datasets/latest/us_ofac_sdn/index.json
+    method: GET
+    description: Query for intent CORPORATE_REGISTRY_LOOKUP via OpenSanctions OFAC Corp.
+    intents: [CORPORATE_REGISTRY_LOOKUP]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: name
+  supported_intents:
+    - CORPORATE_REGISTRY_LOOKUP
+
+on_chain:
+  description: Stores signal for CORPORATE_REGISTRY_LOOKUP.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

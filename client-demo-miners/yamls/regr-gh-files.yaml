@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 107007
+slug: regr-gh-files
+protocol: generic
+name: GH PR Files
+description: >
+  GitHub PR files changed regression. Intent REGRESSION_VERIFY.
+
+base_url: https://api.github.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.github.com/en/rest
+  website: https://github.com
+
+endpoints:
+  - path: /query
+    external_path: /repos/{owner}/{repo}/pulls/{pull}/files
+    method: GET
+    description: Query for intent REGRESSION_VERIFY via GH PR Files.
+    intents: [REGRESSION_VERIFY]
+    params:
+      path:
+        required:
+          - name: owner
+            type: string
+            intents: ["*"]
+            description: Owner
+          - name: repo
+            type: string
+            intents: ["*"]
+            description: Repo
+          - name: pull
+            type: string
+            intents: ["*"]
+            description: PR
+
+input_schema:
+  type: object
+  required: [owner, repo, pull]
+  properties:
+    owner: {type: string, description: Owner, default: "facebook"}
+    repo: {type: string, description: Repo, default: "react"}
+    pull: {type: string, description: PR, default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - REGRESSION_VERIFY
+
+on_chain:
+  description: Stores signal for REGRESSION_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

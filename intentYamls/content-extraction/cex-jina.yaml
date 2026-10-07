@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170077
+slug: cex-jina
+protocol: generic
+name: Jina Reader
+description: >
+  Jina Reader -> has_phrase (1 if the extracted text contains the phrase, else 0).
+  Intent CONTENT_EXTRACTION - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://jina.ai/reader/
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/has-phrase
+    method: GET
+    description: Query for intent CONTENT_EXTRACTION via Jina Reader.
+    intents: [CONTENT_EXTRACTION]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Extractor id
+          - name: url
+            type: string
+            intents: ["*"]
+            description: Page URL
+          - name: phrase
+            type: string
+            intents: ["*"]
+            description: Phrase to find (case-insensitive)
+
+input_schema:
+  type: object
+  required: [venue, url, phrase]
+  properties:
+    venue: {type: string, description: "Extractor id", default: "jina"}
+    url: {type: string, description: "Page URL", default: "https://example.com/"}
+    phrase: {type: string, description: "Phrase to find (case-insensitive)", default: "documentation examples"}
+
+semantics:
+  signal_mapping:
+    label_field: has_phrase
+  supported_intents:
+    - CONTENT_EXTRACTION
+
+on_chain:
+  description: Stores signal for CONTENT_EXTRACTION.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,68 @@
+version: "1"
+kind: miner
+id: 54009
+slug: threat-otx-domain-example
+protocol: generic
+name: OTX Domain example.com
+description: >
+  AlienVault OTX domain general indicator. Intent THREAT_INTELLIGENCE.
+
+base_url: https://otx.alienvault.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://otx.alienvault.com/api
+  website: https://otx.alienvault.com/
+
+endpoints:
+  - path: /query
+    external_path: /api/v1/indicators/domain/{domain}/general
+    method: GET
+    description: Query for intent THREAT_INTELLIGENCE via OTX Domain example.com.
+    intents: [THREAT_INTELLIGENCE]
+    params:
+      path:
+        required:
+          - name: domain
+            type: string
+            intents: ["*"]
+            description: Domain name
+
+input_schema:
+  type: object
+  required: [domain]
+  properties:
+    domain: {type: string, description: Domain, default: "example.com"}
+
+semantics:
+  signal_mapping:
+    label_field: indicator
+  supported_intents:
+    - THREAT_INTELLIGENCE
+
+on_chain:
+  description: Stores signal for THREAT_INTELLIGENCE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

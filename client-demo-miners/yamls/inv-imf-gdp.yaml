@@ -1,0 +1,61 @@
+version: "1"
+kind: miner
+id: 116004
+slug: inv-imf-gdp
+protocol: generic
+name: IMF GDP Growth
+description: >
+  IMF real GDP growth ledger values. Intent INVOICE_LEDGER_RECONCILE.
+
+base_url: https://www.imf.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.imf.org/external/datamapper/api/help
+  website: https://www.imf.org
+
+endpoints:
+  - path: /query
+    external_path: /external/datamapper/api/v1/NGDP_RPCH
+    method: GET
+    description: Query for intent INVOICE_LEDGER_RECONCILE via IMF GDP Growth.
+    intents: [INVOICE_LEDGER_RECONCILE]
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: values
+  supported_intents:
+    - INVOICE_LEDGER_RECONCILE
+
+on_chain:
+  description: Stores signal for INVOICE_LEDGER_RECONCILE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

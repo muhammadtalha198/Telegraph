@@ -1,0 +1,245 @@
+[
+  {
+    "intent": "LIQUIDITY_DEPTH_VERIFY",
+    "slug": "liq-coinbase-book",
+    "url": "https://api.exchange.coinbase.com/products/BTC-USD/book?level=2",
+    "inputs": "BTC-USD",
+    "requirement": "Must convey bid/ask order-book depth or pool liquidity for the pair asked (raw levels acceptable if depth is readable).",
+    "note": "",
+    "description": "Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools."
+  },
+  {
+    "intent": "LIQUIDITY_DEPTH_VERIFY",
+    "slug": "liq-kraken-depth",
+    "url": "https://api.kraken.com/0/public/Depth?pair=XBTUSD&count=50",
+    "inputs": "XBTUSD",
+    "requirement": "Must convey bid/ask order-book depth or pool liquidity for the pair asked (raw levels acceptable if depth is readable).",
+    "note": "",
+    "description": "Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools."
+  },
+  {
+    "intent": "LIQUIDITY_DEPTH_VERIFY",
+    "slug": "liq-bitstamp-book",
+    "url": "https://www.bitstamp.net/api/v2/order_book/btcusd/",
+    "inputs": "btcusd",
+    "requirement": "Must convey bid/ask order-book depth or pool liquidity for the pair asked (raw levels acceptable if depth is readable).",
+    "note": "",
+    "description": "Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools."
+  },
+  {
+    "intent": "LIQUIDITY_DEPTH_VERIFY",
+    "slug": "liq-okx-books",
+    "url": "https://www.okx.com/api/v5/market/books?instId=BTC-USDT&sz=50",
+    "inputs": "BTC-USDT",
+    "requirement": "Must convey bid/ask order-book depth or pool liquidity for the pair asked (raw levels acceptable if depth is readable).",
+    "note": "",
+    "description": "Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools."
+  },
+  {
+    "intent": "LIQUIDITY_DEPTH_VERIFY",
+    "slug": "liq-gemini-book",
+    "url": "https://api.gemini.com/v1/book/btcusd",
+    "inputs": "btcusd",
+    "requirement": "Must convey bid/ask order-book depth or pool liquidity for the pair asked (raw levels acceptable if depth is readable).",
+    "note": "",
+    "description": "Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools."
+  },
+  {
+    "intent": "LIQUIDITY_DEPTH_VERIFY",
+    "slug": "liq-bitfinex-book",
+    "url": "https://api-pub.bitfinex.com/v2/book/tBTCUSD/P0",
+    "inputs": "tBTCUSD",
+    "requirement": "Must convey bid/ask order-book depth or pool liquidity for the pair asked (raw levels acceptable if depth is readable).",
+    "note": "",
+    "description": "Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools."
+  },
+  {
+    "intent": "LIQUIDITY_DEPTH_VERIFY",
+    "slug": "liq-binance-depth",
+    "url": "https://api.binance.com/api/v3/depth?symbol=BTCUSDT&limit=50",
+    "inputs": "BTCUSDT",
+    "requirement": "Must convey bid/ask order-book depth or pool liquidity for the pair asked (raw levels acceptable if depth is readable).",
+    "note": "Geo-blocked in some regions",
+    "description": "Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools."
+  },
+  {
+    "intent": "ONCHAIN_METRIC_VERIFY",
+    "slug": "ocm-blockscout-eth",
+    "url": "https://eth.blockscout.com/api/v2/addresses/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "inputs": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "requirement": "Must convey the on-chain value asked (wallet/token balance or tx state) for the address given.",
+    "note": "balance only; capture is GET-only so RPC POST miners need the /truth proxy",
+    "description": "Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain."
+  },
+  {
+    "intent": "ONCHAIN_METRIC_VERIFY",
+    "slug": "ocm-blockscout-base",
+    "url": "https://base.blockscout.com/api/v2/addresses/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "inputs": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "requirement": "Must convey the on-chain value asked (wallet/token balance or tx state) for the address given.",
+    "note": "balance only; capture is GET-only so RPC POST miners need the /truth proxy",
+    "description": "Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain."
+  },
+  {
+    "intent": "ONCHAIN_METRIC_VERIFY",
+    "slug": "ocm-blockscout-optimism",
+    "url": "https://optimism.blockscout.com/api/v2/addresses/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "inputs": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "requirement": "Must convey the on-chain value asked (wallet/token balance or tx state) for the address given.",
+    "note": "balance only; capture is GET-only so RPC POST miners need the /truth proxy",
+    "description": "Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain."
+  },
+  {
+    "intent": "ONCHAIN_METRIC_VERIFY",
+    "slug": "ocm-blockscout-gnosis",
+    "url": "https://gnosis.blockscout.com/api/v2/addresses/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "inputs": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "requirement": "Must convey the on-chain value asked (wallet/token balance or tx state) for the address given.",
+    "note": "balance only; capture is GET-only so RPC POST miners need the /truth proxy",
+    "description": "Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain."
+  },
+  {
+    "intent": "ONCHAIN_METRIC_VERIFY",
+    "slug": "ocm-blockscout-polygon",
+    "url": "https://polygon.blockscout.com/api/v2/addresses/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "inputs": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "requirement": "Must convey the on-chain value asked (wallet/token balance or tx state) for the address given.",
+    "note": "balance only; capture is GET-only so RPC POST miners need the /truth proxy",
+    "description": "Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain."
+  },
+  {
+    "intent": "ONCHAIN_METRIC_VERIFY",
+    "slug": "ocm-blockchair-eth",
+    "url": "https://api.blockchair.com/ethereum/dashboards/address/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "inputs": "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+    "requirement": "Must convey the on-chain value asked (wallet/token balance or tx state) for the address given.",
+    "note": "balance only",
+    "description": "Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain."
+  },
+  {
+    "intent": "EVENT_OUTCOME_RESOLUTION",
+    "slug": "event-thesportsdb-last",
+    "url": "https://www.thesportsdb.com/api/v1/json/3/eventslast.php?id=133602",
+    "inputs": "team id 133602",
+    "requirement": "Must state the settled outcome/result of the event asked.",
+    "note": "sports events only",
+    "description": "Resolves objective real-world event outcomes for prediction markets and conditional contracts using quorum oracles."
+  },
+  {
+    "intent": "EVENT_OUTCOME_RESOLUTION",
+    "slug": "event-espn-nba",
+    "url": "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard",
+    "inputs": "NBA scoreboard",
+    "requirement": "Must state the settled outcome/result of the event asked.",
+    "note": "unofficial API; sports only",
+    "description": "Resolves objective real-world event outcomes for prediction markets and conditional contracts using quorum oracles."
+  },
+  {
+    "intent": "CROSS_CHAIN_STATE_VERIFY",
+    "slug": "xchain-layerzero-scan",
+    "url": "https://scan.layerzero-api.com/v1/messages/tx/FILL_TX_HASH",
+    "inputs": "FILL real LayerZero tx hash",
+    "requirement": "Must convey whether the cross-chain message/transfer executed and its status.",
+    "note": "",
+    "description": "Proves cryptographic Merkle-Patricia state roots and cross-chain message execution headers between distinct blockchain networks."
+  },
+  {
+    "intent": "CROSS_CHAIN_STATE_VERIFY",
+    "slug": "xchain-wormholescan",
+    "url": "https://api.wormholescan.io/api/v1/operations?txHash=FILL_TX_HASH",
+    "inputs": "FILL real Wormhole tx hash",
+    "requirement": "Must convey whether the cross-chain message/transfer executed and its status.",
+    "note": "",
+    "description": "Proves cryptographic Merkle-Patricia state roots and cross-chain message execution headers between distinct blockchain networks."
+  },
+  {
+    "intent": "CROSS_CHAIN_STATE_VERIFY",
+    "slug": "xchain-lifi-status",
+    "url": "https://li.quest/v1/status?txHash=FILL_TX_HASH",
+    "inputs": "FILL real bridge tx hash",
+    "requirement": "Must convey whether the cross-chain message/transfer executed and its status.",
+    "note": "",
+    "description": "Proves cryptographic Merkle-Patricia state roots and cross-chain message execution headers between distinct blockchain networks."
+  },
+  {
+    "intent": "OPTIMAL_EXECUTION_ROUTE",
+    "slug": "route-openocean-quote",
+    "url": "https://open-api.openocean.finance/v4/1/quote?inTokenAddress=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&outTokenAddress=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amount=1&gasPrice=5",
+    "inputs": "1 WETH->USDC eth",
+    "requirement": "Must convey the best swap route / output amount for the trade asked.",
+    "note": "",
+    "description": "Determines optimal multi-venue order execution routing to minimize slippage, exchange fees, and market impact."
+  },
+  {
+    "intent": "OPTIMAL_EXECUTION_ROUTE",
+    "slug": "route-sushi-quote",
+    "url": "https://api.sushi.com/swap/v7/1?tokenIn=0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2&tokenOut=0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48&amount=1000000000000000000&maxSlippage=0.005",
+    "inputs": "1 WETH->USDC eth",
+    "requirement": "Must convey the best swap route / output amount for the trade asked.",
+    "note": "may require sender param; check",
+    "description": "Determines optimal multi-venue order execution routing to minimize slippage, exchange fees, and market impact."
+  },
+  {
+    "intent": "SECURITY_REVIEW",
+    "slug": "secrev-depsdev",
+    "url": "https://api.deps.dev/v3/systems/npm/packages/lodash/versions/4.17.20",
+    "inputs": "npm lodash 4.17.20",
+    "requirement": "Must list known security vulnerabilities for the package/version asked.",
+    "note": "",
+    "description": "Scans codebase dependencies, API endpoints, and configuration files for common CVEs, secrets leakage, and misconfigurations."
+  },
+  {
+    "intent": "SECURITY_REVIEW",
+    "slug": "secrev-pypi",
+    "url": "https://pypi.org/pypi/django/3.0/json",
+    "inputs": "pypi django 3.0",
+    "requirement": "Must list known security vulnerabilities for the package/version asked.",
+    "note": "see 'vulnerabilities' field",
+    "description": "Scans codebase dependencies, API endpoints, and configuration files for common CVEs, secrets leakage, and misconfigurations."
+  },
+  {
+    "intent": "VULNERABILITY_TRIAGE",
+    "slug": "vuln-shodan-cvedb",
+    "url": "https://cvedb.shodan.io/cve/CVE-2021-44228",
+    "inputs": "CVE-2021-44228",
+    "requirement": "Must convey severity/CVSS and exploit info for the CVE asked.",
+    "note": "",
+    "description": "Ranks and categorizes detected vulnerabilities by CVSS score, active exploit availability, and asset criticality."
+  },
+  {
+    "intent": "VULNERABILITY_TRIAGE",
+    "slug": "vuln-epss",
+    "url": "https://api.first.org/data/v1/epss?cve=CVE-2021-44228",
+    "inputs": "CVE-2021-44228",
+    "requirement": "Must convey severity/CVSS and exploit info for the CVE asked.",
+    "note": "exploit probability only (one facet)",
+    "description": "Ranks and categorizes detected vulnerabilities by CVSS score, active exploit availability, and asset criticality."
+  },
+  {
+    "intent": "VULNERABILITY_TRIAGE",
+    "slug": "vuln-ubuntu",
+    "url": "https://ubuntu.com/security/cves/CVE-2021-44228.json",
+    "inputs": "CVE-2021-44228",
+    "requirement": "Must convey severity/CVSS and exploit info for the CVE asked.",
+    "note": "",
+    "description": "Ranks and categorizes detected vulnerabilities by CVSS score, active exploit availability, and asset criticality."
+  },
+  {
+    "intent": "VULNERABILITY_TRIAGE",
+    "slug": "vuln-cisa-kev",
+    "url": "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json",
+    "inputs": "KEV catalog",
+    "requirement": "Must convey severity/CVSS and exploit info for the CVE asked.",
+    "note": "large file; exploited flag only",
+    "description": "Ranks and categorizes detected vulnerabilities by CVSS score, active exploit availability, and asset criticality."
+  },
+  {
+    "intent": "CODE_PATCH_VERIFY",
+    "slug": "patch-github-actions",
+    "url": "https://api.github.com/repos/psf/requests/actions/runs?per_page=1",
+    "inputs": "psf/requests latest CI run",
+    "requirement": "Must convey whether the build/tests for the patch passed or failed.",
+    "note": "CI result via GET; 60 req/h keyless",
+    "description": "Validates that software patch commits compile, resolve targeted defects, and introduce no regression side effects."
+  }
+]

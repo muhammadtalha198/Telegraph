@@ -1,0 +1,83 @@
+version: "1"
+kind: miner
+id: 29403
+slug: route-cowswap-buyamount
+protocol: generic
+name: CoW Protocol Buy Amount
+description: >
+  CoW Protocol quote buyAmount as amount_out. Intent OPTIMAL_EXECUTION_ROUTE.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.cow.fi/
+  website: https://cow.fi/
+
+endpoints:
+  - path: /query
+    external_path: /truth/route-cow
+    method: GET
+    description: Query for intent OPTIMAL_EXECUTION_ROUTE.
+    intents: [OPTIMAL_EXECUTION_ROUTE]
+    params:
+      query:
+        required:
+          - name: sellToken
+            type: string
+            intents: ["*"]
+            description: sellToken
+          - name: buyToken
+            type: string
+            intents: ["*"]
+            description: buyToken
+          - name: sellAmount
+            type: string
+            intents: ["*"]
+            description: sellAmount
+          - name: from
+            type: string
+            intents: ["*"]
+            description: from
+
+input_schema:
+  type: object
+  required: [sellToken, buyToken, sellAmount, from]
+  properties:
+    sellToken: {type: string, description: "sellToken", default: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"}
+    buyToken: {type: string, description: "buyToken", default: "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"}
+    sellAmount: {type: string, description: "sellAmount", default: "1000000000000000000"}
+    from: {type: string, description: "from", default: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}
+
+semantics:
+  signal_mapping:
+    label_field: amount_out
+  supported_intents:
+    - OPTIMAL_EXECUTION_ROUTE
+
+on_chain:
+  description: Stores amount_out for OPTIMAL_EXECUTION_ROUTE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170022
+slug: dns-google
+protocol: generic
+name: Google Public DNS DoH
+description: >
+  Google Public DNS DoH -> has_record (1 if the resolver returns at least one record of that type, else 0).
+  Intent DNS_RECORD_LOOKUP - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://developers.google.com/speed/public-dns/docs/doh/json
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/dns-has
+    method: GET
+    description: Query for intent DNS_RECORD_LOOKUP via Google Public DNS DoH.
+    intents: [DNS_RECORD_LOOKUP]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: DoH resolver id
+          - name: name
+            type: string
+            intents: ["*"]
+            description: Domain name
+          - name: type
+            type: string
+            intents: ["*"]
+            description: Record type (A, AAAA, MX, TXT, NS, CNAME)
+
+input_schema:
+  type: object
+  required: [venue, name, type]
+  properties:
+    venue: {type: string, description: "DoH resolver id", default: "google"}
+    name: {type: string, description: "Domain name", default: "example.com"}
+    type: {type: string, description: "Record type (A, AAAA, MX, TXT, NS, CNAME)", default: "A"}
+
+semantics:
+  signal_mapping:
+    label_field: has_record
+  supported_intents:
+    - DNS_RECORD_LOOKUP
+
+on_chain:
+  description: Stores signal for DNS_RECORD_LOOKUP.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

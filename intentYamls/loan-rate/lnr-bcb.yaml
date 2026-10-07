@@ -1,0 +1,79 @@
+version: "1"
+kind: miner
+id: 170056
+slug: lnr-bcb
+protocol: generic
+name: Banco Central do Brasil SGS
+description: >
+  Banco Central do Brasil SGS -> rate_bps (Published rate in basis points).
+  Intent LOAN_INTEREST_RATE_QUOTE - one publisher per miner.
+
+base_url: https://omni-chat.13.237.89.59.sslip.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://dadosabertos.bcb.gov.br
+  website: https://omni-chat.13.237.89.59.sslip.io
+
+endpoints:
+  - path: /query
+    external_path: /truth/loan-rate
+    method: GET
+    description: Query for intent LOAN_INTEREST_RATE_QUOTE via Banco Central do Brasil SGS.
+    intents: [LOAN_INTEREST_RATE_QUOTE]
+    params:
+      query:
+        required:
+          - name: venue
+            type: string
+            intents: ["*"]
+            description: Rate publisher id
+          - name: series
+            type: string
+            intents: ["*"]
+            description: Series id at this publisher
+          - name: date
+            type: string
+            intents: ["*"]
+            description: Observation date (YYYY-MM-DD; ECB YYYY-MM)
+
+input_schema:
+  type: object
+  required: [venue, series, date]
+  properties:
+    venue: {type: string, description: "Rate publisher id", default: "bcb"}
+    series: {type: string, description: "Series id at this publisher", default: "20779"}
+    date: {type: string, description: "Observation date (YYYY-MM-DD; ECB YYYY-MM)", default: "2026-07-01"}
+
+semantics:
+  signal_mapping:
+    label_field: rate_bps
+  supported_intents:
+    - LOAN_INTEREST_RATE_QUOTE
+
+on_chain:
+  description: Stores signal for LOAN_INTEREST_RATE_QUOTE.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

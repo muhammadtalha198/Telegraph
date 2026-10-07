@@ -1,0 +1,69 @@
+version: "1"
+kind: miner
+id: 112010
+slug: ret-brandfetch
+protocol: generic
+name: Brandfetch Merchant
+description: >
+  Brandfetch merchant brand for policy context. Intent RETURN_POLICY_VERIFY.
+
+base_url: https://api.brandfetch.io
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://docs.brandfetch.com/
+  website: https://brandfetch.com
+
+endpoints:
+  - path: /query
+    external_path: /v2/search/{q}
+    method: GET
+    description: Query for intent RETURN_POLICY_VERIFY via Brandfetch Merchant.
+    intents: [RETURN_POLICY_VERIFY]
+    params:
+      path:
+        required:
+          - name: q
+            type: string
+            intents: ["*"]
+            description: Query
+
+input_schema:
+  type: object
+  required: [q]
+  properties:
+    q: {type: string, description: Query, default: "amazon"}
+
+semantics:
+  signal_mapping:
+    label_field: "0"
+  supported_intents:
+    - RETURN_POLICY_VERIFY
+
+on_chain:
+  description: Stores signal for RETURN_POLICY_VERIFY.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
+

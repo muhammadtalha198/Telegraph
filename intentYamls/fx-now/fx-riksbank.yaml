@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 31006
+slug: fx-riksbank
+protocol: generic
+name: Riksbank FX Now
+description: >
+  Sveriges Riksbank SWEA FX observations. Intent FX_NOW.
+  Direct Request shows series and date fields in Alexandria.
+
+base_url: https://api.riksbank.se
+
+auth:
+  type: none
+
+rate_limit_per_sec: 2
+cache_ttl_sec: 30
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www.riksbank.se/en-gb/statistics/api-for-the-swedish-riksbank/
+  website: https://www.riksbank.se/
+
+endpoints:
+  - path: /query
+    external_path: /swea/v1/Observations/{series}/{date}
+    method: GET
+    description: FX observation for intent FX_NOW via Riksbank.
+    intents: [FX_NOW]
+    params:
+      path:
+        required:
+          - name: series
+            type: string
+            intents: ["*"]
+            description: Series id (e.g. SEKUSDPMI)
+          - name: date
+            type: string
+            intents: ["*"]
+            description: Observation date YYYY-MM-DD
+
+input_schema:
+  type: object
+  required: [series, date]
+  properties:
+    series:
+      type: string
+      description: Riksbank series id
+      default: "SEKUSDPMI"
+    date:
+      type: string
+      description: Observation date
+      default: "2026-09-10"
+
+semantics:
+  signal_mapping:
+    label_field: 0.date
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores FX signal for FX_NOW.
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: date
+        description: Observation date
+        source_path: 0.date
+    integers:
+      - index: 0
+        name: value_x10000
+        description: Rate value x10000
+        source_path: 0.value
+        multiplier: 10000
