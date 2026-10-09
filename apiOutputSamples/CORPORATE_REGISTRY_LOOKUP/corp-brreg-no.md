@@ -1,7 +1,7 @@
 ---
 intent: CORPORATE_REGISTRY_LOOKUP
 slug: corp-brreg-no
-status: approved
+status: pending_review
 captured_at: 2026-10-05T09:33:58Z
 request_url: https://data.brreg.no/enhetsregisteret/api/enheter/923609016
 content_type: application/json
@@ -13,11 +13,11 @@ answer_requirement: |
   Must return the company's registry record (legal name, status, identifiers) for the company asked.
 capture_note: |
   golden-test PASS: Brønnøysund Register (Norway)
-reviewer_note: "auto_review: [1.00|heuristic+llm] The response contains extensive information about the company but does not include the specific registry record requested."
-reviewed_at: 2026-10-05T12:11:31Z
-review_source: auto_review
-review_mode: heuristic+llm
-llm_used: true
+reviewer_note: "2026-10-07 re-review: judge approved but its own reason says the answer is missing (enum-echo/contradiction bug, fixed)"
+reviewed_at: ""
+review_source: manual
+review_mode: manual
+llm_used: false
 review_confidence: 1.000
 ---
 

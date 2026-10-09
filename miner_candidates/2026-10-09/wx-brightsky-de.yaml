@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190209
+slug: wx-brightsky-de
+protocol: generic
+name: "Wx Brightsky De"
+description: "Semantic V2 miner for WEATHER_CHECK via Bright Sky (DWD). Germany + border coverage only."
+
+base_url: https://api.brightsky.dev
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://brightsky.dev/docs/
+  website: https://api.brightsky.dev
+
+endpoints:
+  - path: /query
+    external_path: /current_weather
+    method: GET
+    description: Query for intent WEATHER_CHECK via Wx Brightsky De.
+    intents: [WEATHER_CHECK]
+    params:
+      query:
+        required:
+          - name: lat
+            type: string
+            intents: ["*"]
+            description: lat
+          - name: lon
+            type: string
+            intents: ["*"]
+            description: lon
+
+input_schema:
+  type: object
+  required: [lat, lon]
+  properties:
+    lat: {type: string, description: "lat", default: "52.52"}
+    lon: {type: string, description: "lon", default: "13.41"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - WEATHER_CHECK
+
+on_chain:
+  description: Stores signal for WEATHER_CHECK (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

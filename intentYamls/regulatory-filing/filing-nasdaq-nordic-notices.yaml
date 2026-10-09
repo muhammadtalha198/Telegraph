@@ -1,0 +1,112 @@
+version: "1"
+kind: miner
+id: 190200
+slug: filing-nasdaq-nordic-notices
+protocol: generic
+name: "Filing Nasdaq Nordic Notices"
+description: "Semantic V2 miner for REGULATORY_FILING_MONITOR. Parses statutory regulatory filings, 10-K/10-Q disclosures, and disclosure updates from financial oversight portals. Capture pin answers: Must return the company's recent regulatory filings / disclosure notices (type/headline + date) for the pinned issuer."
+
+base_url: https://api.news.eu.nasdaq.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.news.eu.nasdaq.com/
+  website: https://api.news.eu.nasdaq.com
+
+endpoints:
+  - path: /query
+    external_path: /news/query.action
+    method: GET
+    description: Query for intent REGULATORY_FILING_MONITOR via Filing Nasdaq Nordic Notices.
+    intents: [REGULATORY_FILING_MONITOR]
+    params:
+      query:
+        required:
+          - name: globalGroup
+            type: string
+            intents: ["*"]
+            description: globalGroup
+          - name: displayLanguage
+            type: string
+            intents: ["*"]
+            description: displayLanguage
+          - name: timeZone
+            type: string
+            intents: ["*"]
+            description: timeZone
+          - name: company
+            type: string
+            intents: ["*"]
+            description: company
+          - name: start
+            type: string
+            intents: ["*"]
+            description: start
+          - name: limit
+            type: string
+            intents: ["*"]
+            description: limit
+          - name: countResults
+            type: string
+            intents: ["*"]
+            description: countResults
+          - name: globalName
+            type: string
+            intents: ["*"]
+            description: globalName
+          - name: dir
+            type: string
+            intents: ["*"]
+            description: dir
+          - name: callback
+            type: string
+            intents: ["*"]
+            description: callback
+
+input_schema:
+  type: object
+  required: ["globalGroup", "displayLanguage", "timeZone", "company", "start", "limit", "countResults", "globalName", "dir", "callback"]
+  properties:
+    "globalGroup": {type: string, description: "globalGroup", default: "exchangeNotice"}
+    "displayLanguage": {type: string, description: "displayLanguage", default: "en"}
+    "timeZone": {type: string, description: "timeZone", default: "CET"}
+    "company": {type: string, description: "company", default: "Nokia"}
+    "start": {type: string, description: "start", default: "0"}
+    "limit": {type: string, description: "limit", default: "5"}
+    "countResults": {type: string, description: "countResults", default: "false"}
+    "globalName": {type: string, description: "globalName", default: "NordicAllMarkets"}
+    "dir": {type: string, description: "dir", default: "DESC"}
+    "callback": {type: string, description: "callback", default: "cb"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - REGULATORY_FILING_MONITOR
+
+on_chain:
+  description: Stores signal for REGULATORY_FILING_MONITOR (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

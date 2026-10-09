@@ -1,0 +1,70 @@
+# How the Intent Catalog decides whether minercheck MUST verify an intent.
+# Read by minercheck.catalog. Catalog columns used: Verifiable, Verifiability Reason, Class, Scoring path.
+#
+# The catalog has no "Verifiable: Yes" values (97 blank, 22 "No"), so tiers are derived:
+#   unverifiable  Verifiable = No            -> BLOCKED, the catalog's Verifiability Reason is quoted
+#   judgment      Class NON-DETERMINISTIC     -> no deterministic truth ("adapter only"): LLM judge only
+#   required      everything else             -> DETERMINISTIC (comparator only) and HYBRID
+#                 (comparator + adapter): the comparator part is a checkable answer, so a spec is
+#                 required and the gate FAILS closed with "no spec for catalog intent X"
+# Rules are tried top to bottom; the first match wins.
+
+tiers:
+  unverifiable: {verifiable: "No"}
+  judgment: {class: [NON-DETERMINISTIC]}
+default_tier: required
+
+# Per-intent exceptions. Each needs a reason.
+# These sit in HYBRID/comparator+adapter rows but the catalog's own Evaluation Mechanism is
+# model/heuristic-scored (BLEU, LLM-as-Judge, F1, NDCG, ...), i.e. no single deterministic truth
+# to cross-check -> judgment tier (LLM judge), not a deterministic spec.
+overrides:
+  TOXICITY_MODERATION: {tier: judgment, reason: "Evaluation is Multi-Model Safety Consensus (subjective); no single right label to cross-check"}
+  FACT_CHECKING: {tier: judgment, reason: "Evaluation is Claim Verification Consensus / LLM judgment; no single comparator truth"}
+  QUESTION_ANSWERING: {tier: judgment, reason: "Open-domain QA scored by Factuality Rubric & LLM-as-Judge; not a comparator value"}
+  CODE_GENERATION: {tier: judgment, reason: "Scored by Unit Test Pass Rate + LLM Review; generative, no single correct output"}
+  ENTITY_EXTRACTION: {tier: judgment, reason: "Scored by Span-Level F1 against a rubric; no cross-checkable scalar"}
+  KEYWORD_EXTRACTION: {tier: judgment, reason: "Scored by Jaccard Index & Rank Overlap; set is model-dependent, not canonical"}
+  INTENT_CLASSIFICATION: {tier: judgment, reason: "Scored by Top-1 Intent Match & Slot F1; label space is model-defined"}
+  PLAGIARISM_DETECTION: {tier: judgment, reason: "Scored by Shingle Overlap & Similarity Threshold; a judgment score"}
+  SPEECH_TO_TEXT: {tier: judgment, reason: "Scored by Word Error Rate against a reference; generative transcription"}
+  WEB_SEARCH_QUERY: {tier: judgment, reason: "Ranked results scored by Rank Correlation (NDCG); no single right answer set"}
+  SMART_CONTRACT_AUDIT: {tier: judgment, reason: "Scored by Multi-Engine Heuristic; findings are judgment, not a comparator value"}
+  WASH_TRADING_DETECTION: {tier: judgment, reason: "Scored by Multi-Engine Heuristic over graph analysis; a probability, not a fact"}
+
+# On-chain / folder intent names that differ from the catalog row name
+# (same mapping as scripts/v2_intent_folders.py CATALOG_TO_CANONICAL, inverted).
+aliases:
+  CRYPTO_PRICE: CRYPTO_PRICE_LOOKUP
+  GAS_PRICE: GAS_PRICE_ESTIMATION
+  SSL_VERIFICATION: SSL_CERTIFICATE_VERIFY
+  CONTENT_EXTRACTION: URL_CONTENT_EXTRACTION
+  WEB_SEARCH: WEB_SEARCH_QUERY
+  WEATHER_CHECK: WEATHER_CURRENT
+  STOCK_PRICE: STOCK_PRICE_QUOTE
+
+# Allowed values for sources[].kind in specs (what kind of publisher a source is).
+# A spec's catalog.allowed_kinds picks from these, based on the catalog Description / Data Source Type.
+source_kinds:
+  - cex                # centralized exchange
+  - dex                # decentralized exchange pool / orderbook (on-chain venue)
+  - dex_indexer        # indexes DEX pools (GeckoTerminal, DexScreener)
+  - price_aggregator   # CoinGecko, CoinPaprika, CoinLore, DIA
+  - index              # composite index (Deribit index)
+  - fx_feed            # FX rate publisher (market or reference)
+  - weather_model      # NWP model / nowcast at coordinates
+  - weather_station    # station observations (METAR)
+  - clock              # time source
+  - defi_yield         # yield publisher (protocol or aggregator)
+  - lending_rate       # lending / mortgage / prime rate publisher
+  - stats_agency       # national statistics office / central bank / multilateral
+  - chain_node         # blockchain node / indexer reading chain state
+  - token_explorer     # block explorer token endpoint
+  - carrier            # courier / postal carrier's own system
+  - postcode_geocoder  # postcode -> place (not a carrier)
+  - registry           # official business register
+  - lei_registry       # GLEIF LEI register
+  - dns_resolver       # recursive / DoH resolver
+  - dns_tool           # third-party DNS lookup service
+  - filing_portal      # regulator / exchange disclosure portal
+  - beacon_node        # Ethereum consensus node

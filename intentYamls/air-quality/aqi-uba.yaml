@@ -38,14 +38,14 @@ endpoints:
           - name: site
             type: string
             intents: ["*"]
-            description: Station / sensor / lat,lon for this network
+            description: "Location as lat,lon (e.g. 52.52,13.41)"
 
 input_schema:
   type: object
   required: [venue, site]
   properties:
     venue: {type: string, description: "Air-quality network id", default: "uba"}
-    site: {type: string, description: "Station / sensor / lat,lon for this network", default: "DEBE034"}
+    site: {type: string, description: "Location as lat,lon (e.g. 52.52,13.41)", default: "52.52,13.41"}
 
 semantics:
   signal_mapping:

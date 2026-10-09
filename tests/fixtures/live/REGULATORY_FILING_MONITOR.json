@@ -1,0 +1,30 @@
+[
+ {
+  "test": "asx-bhp",
+  "source": "asx",
+  "url": "https://asx.api.markitdigital.com/asx-research/1.0/companies/BHP/announcements",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:20:18 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"data\": {\"displayName\": \"BHP GROUP LIMITED\", \"issueType\": \"CS\", \"items\": [{\"announcementType\": \"DISTRIBUTION ANNOUNCEMENT\", \"date\": \"2026-10-07T22:23:09.000Z\", \"documentKey\": \"2924-03145894-3A703622\", \"fileSize\": \"16KB\", \"headline\": \"Update - Dividend/Distribution - BHP\", \"isPriceSensitive\": false, \"url\": \"\"}, {\"announcementType\": \"OTHER\", \"date\": \"2026-09-14T22:14:04.000Z\", \"documentKey\": \"2924-03135379-3A701731\", \"fileSize\": \"5489KB\", \"headline\": \"BHP 2026 Notice of Annual General Meeting\", \"isPriceSensitive\": false, \"url\": \"\"}], \"symbol\": \"BHP\", \"xid\": \"60947\"}}",
+  "fetched_at": "2026-10-09T05:20:17.474664+00:00"
+ },
+ {
+  "test": "nasdaq-nokia",
+  "source": "nasdaq-nordic",
+  "url": "https://api.news.eu.nasdaq.com/news/query.action?globalGroup=exchangeNotice&displayLanguage=en&timeZone=CET&company=Nokia&start=0&limit=5&countResults=false&globalName=NordicAllMarkets&dir=DESC&callback=cb",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:20:19 GMT",
+   "content-type": "application/javascript;charset=UTF-8"
+  },
+  "body": "cb({\n  \"results\" : {\n    \"item\" : [ {\n      \"disclosureId\" : 1462354,\n      \"categoryId\" : 69,\n      \"headline\" : \"Changes in Nokia Corporation's own shares\",\n      \"language\" : \"en\",\n      \"languages\" : [ \"en\", \"fi\" ],\n      \"cnsCategory\" : \"Changes in company's own shares\",\n      \"messageUrl\" : \"https://view.news.eu.nasdaq.com/view?id=bcfc55230ca20d9c0d4d38eb1d2cd5b5e&lang=en&src=listed\",\n      \"releaseTime\" : \"2026-09-08 16:00:00 +0200\",\n      \"published\" : \"2026-09-08 16:00:00 +0200\",\n      \"market\" : \"Main Market, Helsinki\",\n      \"attachment\" : [ ],\n      \"company\" : \"Nokia\",\n      \"cnsTypeId\" : \"6\"\n    }, {\n      \"disclosureId\" : 1460634,\n      \"categoryId\" : 69,\n      \"headline\" : \"Changes in Nokia Corporation's own shares\",\n      \"language\" : \"en\",\n      \"languages\" : [ \"en\", \"fi\" ],\n      \"cnsCategory\" : \"Changes in company's own shares\",\n      \"messageUrl\" : \"https://view.news.eu.nasdaq.com/view?id=bdf6003c8b36ea202983a1fa3dd804ca9&lang=en&src=listed\",\n      \"releaseTime\" : \"2026-08-27 18:00:00 +0200\",\n      \"published\" : \"2026-08-27 18:00:00 +0200\",\n      \"market\" : \"Main Market, Helsinki\",\n      \"attachment\" : [ ],\n      \"company\" : \"Nokia\",\n      \"cnsTypeId\" : \"6\"\n    }, {\n      \"disclosureId\" : 1458447,\n      \"categoryId\" : 66,\n      \"headline\" : \"Nokia Corporation - Managers' transactions (Sahgal)\",\n      \"language\" : \"en\",\n      \"languages\" : [ \"en\", \"fi\" ],\n      \"cnsCategory\" : \"Managers' Transactions\",\n      \"messageUrl\" : \"https://view.news.eu.nasdaq.com/view?id=be2c6f35a28858e7a9efa8ea807d42ae5&lang=en&src=listed\",\n      \"releaseTime\" : \"2026-08-14 14:30:00 +0200\",\n      \"published\" : \"2026-08-14 14:30:00 +0200\",\n      \"market\" : \"Main Market, Helsinki\",\n      \"attachment\" : [ ],\n      \"company\" : \"Nokia\",\n      \"cnsTypeId\" : \"6\"\n    }, {\n      \"disclosureId\" : 1458446,\n      \"categoryId\" : 66,\n      \"headline\" : \"Nokia Corporation - Managers' transactions (Heard)\",\n      \"language\" : \"en\",\n      \"languages\" : [ \"fi\", \"en\" ],\n      \"cnsCategory\" : \"Managers' Transactions\",\n      \"messageUrl\" : \"https://view.news.eu.nasdaq.com/view?id=b7c179e48c5746e36f41ae9b578ae0cf4&lang=en&src=listed\",\n      \"releaseTime\" : \"2026-08-14 14:30:00 +0200\",\n      \"published\" : \"2026-08-14 14:30:00 +0200\",\n      \"market\" : \"Main Market, Helsinki\",\n      \"attachment\" : [ ],\n      \"company\" : \"Nokia\",\n      \"cnsTypeId\" : \"6\"\n    }, {\n      \"disclosureId\" : 1458445,\n      \"categoryId\" : 66,\n      \"headline\" : \"Nokia Corporation - Managers' transactions (Fisk)\",\n      \"language\" : \"en\",\n      \"languages\" : [ \"fi\", \"en\" ],\n      \"cnsCategory\" : \"Managers' Transactions\",\n      \"messageUrl\" : \"https://view.news.eu.nasdaq.com/view?id=b6017d8b298b9ecfd27b1f11ed1cea61c&lang=en&src=listed\",\n      \"releaseTime\" : \"2026-08-14 14:30:00 +0200\",\n      \"published\" : \"2026-08-14 14:30:00 +0200\",\n      \"market\" : \"Main Market, Helsinki\",\n      \"attachment\" : [ ],\n      \"company\" : \"Nokia\",\n      \"cnsTypeId\" : \"6\"\n    } ]\n  }\n} )",
+  "fetched_at": "2026-10-09T05:20:18.848391+00:00"
+ }
+]

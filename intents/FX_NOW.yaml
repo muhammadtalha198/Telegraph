@@ -1,0 +1,145 @@
+# Intent spec: FX_NOW (catalog FX_NOW). Every source checked live on 2026-10-08.
+# CURRENCY_EXCHANGE is a separate catalog intent ("conversion rates and mid-market spot pricing",
+# no "real-time"): daily reference fixes fit there, not here.
+intent: FX_NOW
+description: Real-time mid-market exchange rate (units of quote currency per 1 base currency).
+answer_type: fx_rate
+scope: current
+
+catalog:
+  intent: FX_NOW
+  description: "Provides real-time institutional foreign exchange mid-market rates, spreads, and currency conversion quotes."
+  facets:
+    - {text: "real-time institutional foreign exchange mid-market rates", covered_by: value, required: true,
+       note: "rate = quote per 1 base, direction checked; 'real-time': a timestamp older than 1 h is stale, so daily reference fixes (ECB, ExchangeRate-API open, fawazahmed0, FloatRates, Hexarate) fail"}
+    - {text: "spreads", covered_by: none,
+       note: "only Kraken publishes FX bid/ask among free sources; the spread is not computed yet"}
+    - {text: "currency conversion quotes", covered_by: "input:amount",
+       note: "amount x verified rate is rendered in the answer"}
+  allowed_kinds: [fx_feed, cex]
+
+inputs:
+  base: {kind: currency, required: false, default: USD, description: "Currency you have (ISO code or name)"}
+  quote: {kind: currency, required: true, description: "Currency you want (ISO code or name)"}
+  amount: {kind: text, required: false, default: "1", description: "Amount of base currency to convert"}
+
+validation:
+  sanity: {min: 0.000001, max: 1000000}
+  freshness: {max_age_s: 3600, max_future_s: 3600}     # catalog: "real-time"
+  cross_check:
+    tolerance: {rel: 0.01}                             # 1%: reference vs market mid differ by ~0.2%
+    min_sources: 2
+    target_sources: 3
+
+sources:
+  - id: frankfurter
+    name: Frankfurter (ECB)
+    publisher: ecb.europa.eu
+    kind: fx_feed
+    miner: {slug: fx-frankfurter, question: {base: USD, quote: EUR}}
+    notes: ECB daily reference fix (~16:00 CET); stale under FX_NOW's "real-time" except shortly after publication.
+    request:
+      url: "https://api.frankfurter.dev/v1/latest?base={base}&symbols={quote}"
+    cache_ttl_s: 3600
+    value: [{json: "rates.{quote}"}]
+    timestamp: [{json: date, tz: Europe/Berlin}]
+    entity:
+      base: [{json: base}]
+
+  - id: er-api
+    name: ExchangeRate-API (open)
+    publisher: exchangerate-api.com
+    kind: fx_feed
+    miner: {slug: fx-er-api, question: {base: USD, quote: EUR}}
+    request:
+      url: "https://open.er-api.com/v6/latest/{base}"
+    cache_ttl_s: 3600
+    free_tier: {requests_per_day: 1500}
+    value: [{json: "rates.{quote}"}]
+    timestamp: [{json: time_last_update_unix, epoch: s}]
+    entity:
+      base: [{json: base_code}]
+
+  - id: fawaz
+    name: fawazahmed0 currency-api
+    publisher: fawazahmed0
+    kind: fx_feed
+    miner: {slug: fx-fawaz, question: {base: USD, quote: EUR}}
+    request:
+      url: "https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/{base_lower}.json"
+    cache_ttl_s: 3600
+    value: [{json: "{base_lower}.{quote_lower}"}]
+    timestamp: [{json: date, tz: UTC}]
+
+  - id: floatrates
+    name: FloatRates
+    publisher: floatrates.com
+    kind: fx_feed
+    request:
+      url: "https://www.floatrates.com/daily/{base_lower}.xml"
+    cache_ttl_s: 3600
+    value: [{xpath: ".//item[targetCurrency='{quote}']/exchangeRate"}]
+    timestamp: [{xpath: ".//item[targetCurrency='{quote}']/pubDate"}]
+    entity:
+      base: [{xpath: ".//item[targetCurrency='{quote}']/baseCurrency"}]
+      quote: [{xpath: ".//item[targetCurrency='{quote}']/targetCurrency"}]
+
+  - id: coinbase-fx
+    name: Coinbase exchange rates
+    publisher: coinbase.com
+    kind: fx_feed
+    miner: {slug: fx-coinbase, question: {base: USD, quote: EUR}}
+    request:
+      url: "https://api.coinbase.com/v2/exchange-rates?currency={base}"
+    cache_ttl_s: 300
+    value: [{json: "data.rates.{quote}"}]
+    entity:
+      base: [{json: data.currency}]
+
+  - id: x-rates
+    name: X-Rates (HTML page)
+    publisher: x-rates.com
+    kind: fx_feed
+    notes: HTML calculator page; the rate is the text of span.ccOutputRslt ("0.893026 EUR").
+    request:
+      url: "https://www.x-rates.com/calculator/?from={base}&to={quote}&amount=1"
+      headers: {User-Agent: "Mozilla/5.0 (compatible; minercheck/1.0)"}
+    cache_ttl_s: 600
+    value: [{css: "span.ccOutputRslt"}]
+
+  # Wave2 candidates (2026-10-08)
+  - id: fxratesapi
+    name: FXRatesAPI
+    publisher: fxratesapi.com
+    kind: fx_feed
+    miner: {slug: fx-fxratesapi, question: {base: USD, quote: EUR}}
+    request:
+      url: "https://api.fxratesapi.com/latest?base={base}&currencies={quote}"
+    cache_ttl_s: 300
+    value: [{json: "rates.{quote}"}]
+    timestamp: [{json: timestamp, epoch: s}]
+    entity:
+      base: [{json: base}]
+
+  - id: kraken-fx
+    name: Kraken FX ticker
+    publisher: kraken.com
+    kind: cex
+    miner: {slug: fx-kraken, question: {base: USD, quote: CAD}}
+    notes: Capture defaults to USDCAD (ZUSDZCAD). Cross-check uses CAD, not EUR.
+    request:
+      url: "https://api.kraken.com/0/public/Ticker?pair={base}{quote}"
+    cache_ttl_s: 60
+    value: [{json: "result.*.c.0"}]
+
+template:
+  answer: "1 {base} = {value} {quote}."
+  extras:
+    - "{amount} {base} = {converted} {quote}."
+  footer: "Median of {agreeing_count} agreeing independent sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the {base} to {quote} exchange rate. Reason: {reason}."
+
+tests:
+  - {id: usd-eur, inputs: {base: USD, quote: EUR}}
+  - {id: usd-pkr, inputs: {base: USD, quote: PKR}}
+  - {id: eur-jpy-by-name, inputs: {base: euro, quote: japanese yen}}

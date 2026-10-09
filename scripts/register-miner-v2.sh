@@ -2,12 +2,14 @@
 # Semantic Register V2 — answer-correct / format-agnostic path.
 #
 # Fail-closed gates (automatic — do not skip):
-#   1) auto_review_samples.py --gate  (hard + heuristic + LLM; must approve)
+#   1) auto_review_samples.py --gate  (hard + minercheck sample check + heuristic + LLM; must approve)
 #   2) v2_golden_gate.py              (must PASS if candidates/*.json has slug)
-#   3) validate_miner_yaml.py
-#   4) live re-probe of captured request_url
-#   5) hosted YAML bytes == local
-#   6) registerMiner / updateMiner
+#   3) validate_miner_yaml.py + pin_consistency_check.py
+#   4) sample request == the request the node will send (same question)
+#   5) minercheck gate: live answer verified vs independent sources (SKIP if no intents/<INTENT>.yaml)
+#   6) live probe of the YAML request (content family)
+#   7) hosted YAML bytes == local
+#   8) registerMiner / updateMiner
 #
 # Manual set_sample_status approved alone does NOT unlock gas.
 #
@@ -38,10 +40,12 @@ Usage: $(basename "$0") --file YAML --url PUBLIC_URL --sample apiOutputSamples/I
 V2 gates (fail-closed, automatic):
   1) auto_review + LLM must APPROVE the sample (rejects / needs_human = no gas)
   2) golden suite PASS if candidates/*.json defines the slug
-  3) validate_miner_yaml.py
-  4) live re-probe of captured request_url
-  5) hosted YAML bytes == local
-  6) registerMiner / updateMiner
+  3) validate_miner_yaml.py + shared pin / distinct publisher
+  4) sample asked the same question the node will ask
+  5) minercheck: live answer verified against independent sources (intents/<INTENT>.yaml)
+  6) live probe of the YAML request
+  7) hosted YAML bytes == local
+  8) registerMiner / updateMiner
 
 Capture first, then register (review is inside the gate — do not hand-approve to skip):
   python3 scripts/capture_api_output.py --intent … --slug … --url …
@@ -79,8 +83,12 @@ DIAMOND="${DIAMOND:-0x5a2324aA18613FAD4e44bDF0d6c73Ec1f6D87ff8}"
 RPC_URL="${RPC_URL:-https://sepolia.base.org}"
 MIN_PRICE_USDC="${MIN_PRICE_USDC:-10000}"
 
+# Gates need PyYAML (validate_miner_yaml, pin check, minercheck): prefer the project venv.
+PY="${PYTHON:-$ROOT/.venv/bin/python}"
+[[ -x "$PY" ]] || PY=python3
+
 echo "=== Semantic Register V2 gates (fail-closed) ==="
-python3 "$ROOT/scripts/register_gates_v2.py" --file "$FILE" --sample "$SAMPLE" || {
+"$PY" "$ROOT/scripts/register_gates_v2.py" --file "$FILE" --sample "$SAMPLE" || {
   echo "FATAL: register_gates_v2.py failed — NOT sending registerMiner." >&2
   exit 1
 }
@@ -142,7 +150,13 @@ fi
 
 TX=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('transactionHash',''))")
 STATUS=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('status',''))")
-NEW_ID=$(cast call "$DIAMOND" "minerCount()(uint256)" --rpc-url "$RPC_URL")
+# Registration ID comes from the receipt's MinerRegistered / MinerUpdated event —
+# NOT minerCount() (stale RPC / concurrent registrants gave duplicate IDs 2026-10-05).
+# Also fails closed if the tx reverted (status != 0x1).
+NEW_ID=$(echo "$OUT" | python3 "$ROOT/scripts/reg_id_from_receipt.py" --diamond "$DIAMOND" --mode "$MODE") || {
+  echo "FAIL: tx $TX did not produce a registration (status=$STATUS). Nothing recorded." >&2
+  exit 1
+}
 
 mkdir -p "$ROOT/out"
 REPORT="$ROOT/out/last-registration-v2.json"
@@ -162,13 +176,13 @@ Path("$REPORT").write_text(json.dumps({
   "sample": "$SAMPLE",
   "yaml_hash": "$YAML_HASH",
   "intents": $INTENTS_JSON,
-  "gates": "register_gates_v2.py (auto_review+LLM + golden-if-any + yaml + live + byte-match)",
+  "gates": "register_gates_v2.py (auto_review+LLM + golden-if-any + yaml + pin + question + minercheck + live + byte-match)",
 }, indent=2) + "\n")
 print(Path("$REPORT").read_text())
 PY
 
 echo ""
 echo "=== DONE (V2) ==="
-echo "Registration ID (latest counter): $NEW_ID"
+echo "Registration ID (from receipt event): $NEW_ID"
 echo "TX: https://sepolia.basescan.org/tx/$TX"
 echo "Poll: curl -s https://devnode.telegraphprotocol.com/api/miners/$NEW_ID | jq '.miner|{slug,activation_status,rejection_reason}'"

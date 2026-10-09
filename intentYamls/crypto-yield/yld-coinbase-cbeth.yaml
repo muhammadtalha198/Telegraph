@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190184
+slug: yld-coinbase-cbeth
+protocol: generic
+name: "Yld Coinbase Cbeth"
+description: "Semantic V2 miner for CRYPTO_YIELD_RATE. Tracks annualized percentage yields (APY), staking reward rates, and lending pool yields across DeFi protocols. Capture pin answers: Must return the current annualized yield, as a percent number, for the protocol-specific pool/asset named by the test (ETH liquid-staking rate for cbETH; USDC l"
+
+base_url: https://api.exchange.coinbase.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.exchange.coinbase.com/
+  website: https://api.exchange.coinbase.com
+
+endpoints:
+  - path: /query
+    external_path: /wrapped-assets/CBETH
+    method: GET
+    description: Query for intent CRYPTO_YIELD_RATE via Yld Coinbase Cbeth.
+    intents: [CRYPTO_YIELD_RATE]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CRYPTO_YIELD_RATE
+
+on_chain:
+  description: Stores signal for CRYPTO_YIELD_RATE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

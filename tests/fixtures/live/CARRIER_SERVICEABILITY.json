@@ -1,0 +1,16 @@
+[
+ {
+  "test": "oslo",
+  "source": "bring",
+  "url": "https://api.bring.com/shippingguide/api/postalCode.json?country=NO&pnr=0150",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:14 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"postalCodeType\": \"NORMAL\", \"result\": \"OSLO\", \"valid\": true}",
+  "fetched_at": "2026-10-09T05:19:11.850750+00:00"
+ }
+]

@@ -67,6 +67,18 @@ from pathlib import Path
 from urllib.parse import parse_qs, quote, urlencode, urlparse, unquote
 from urllib.request import Request, urlopen
 
+# Substitution policy (2026-10-07): when a venue's own upstream can't answer, the proxy used to
+# silently answer from a DIFFERENT source (cerns->Open-Meteo, CVE.org->NVD, another ship's MMSI,
+# text-processing->HF/Twinword). That makes the miner a clone of another miner or answers a
+# different question. Default now: fail with an honest error. Set TRUTH_ALLOW_SUBSTITUTES=1 to
+# restore the old behaviour (only if Usman explicitly wants substitutes).
+ALLOW_SUBSTITUTES = os.environ.get("TRUTH_ALLOW_SUBSTITUTES", "").strip() == "1"
+
+
+def _no_substitute(what: str) -> None:
+    if not ALLOW_SUBSTITUTES:
+        raise ValueError(f"{what} (substitute source disabled: TRUTH_ALLOW_SUBSTITUTES!=1)")
+
 UA = "TeleGraphSemanticProxy/1.0"
 OASIS = "https://oasis.caiso.com/oasisapi/SingleZip"
 WBTC_POR = "0xa81FE04086865e63E12dD3776978E49DEEa2ea4e"
@@ -428,7 +440,7 @@ def cveorg_cvss(cve_id: str) -> dict:
         if score is not None:
             break
     if score is None:
-        # fall back to NVD
+        _no_substitute(f"cve.org has no CVSS base score for {cve_id}")
         return {**nvd_cvss(cve_id), "source": "cveorg_fallback_nvd"}
     return {
         "cve_id": cve_id,
@@ -2218,9 +2230,66 @@ def ti_flag(venue: str = "cymru", ioc_type: str = "md5",
 
 
 # AIR_QUALITY_INDEX -> pm25_ugm3_x10
+#
+# Shared-pin doctrine (Usman, Discord 2026-10-06): every ranked AQI miner must answer
+# the SAME place. The ask is `site=<lat>,<lon>` for all venues; venues keyed by native
+# station ids map that pin through _AQ_SHARED_PINS. A venue with no entry for the pin
+# cannot answer that question and errors loudly (it is out of the rank set) instead of
+# silently answering a different place. Native ids still work for backward compat.
+_LATLON_RE = re.compile(r"^\s*-?\d{1,2}(?:\.\d+)?\s*,\s*-?\d{1,3}(?:\.\d+)?\s*$")
+_AQ_SHARED_PINS: dict[str, dict[str, str]] = {
+    # Berlin (proposed shared pin; confirm with Usman)
+    "52.52,13.41": {
+        "uba": "DEBE034",      # UBA Berlin station already used by the keeper
+        "infranode": "berlin",  # NOTE: infranode re-serves UBA data -> same publisher as uba
+        "cerns": "berlin",      # NOTE: cerns is dead; this venue proxies Open-Meteo -> clone
+    },
+}
+_AQ_LATLON_NATIVE = ("openmeteo", "sensorcommunity")  # take lat,lon directly
+_AQ_PM_SENSOR_TYPES = ("SDS011", "SPS30", "PMS1003", "PMS3003", "PMS5003", "PMS6003", "PMS7003",
+                       "HPM", "NEXTPM", "SDS021", "IPS-7100")
+
+
+def _aq_native_site(v: str, s: str) -> str:
+    """Translate a shared lat,lon pin to this venue's native site id (or raise)."""
+    if not _LATLON_RE.match(s) or v in _AQ_LATLON_NATIVE:
+        return s
+    la, lo = (round(float(x), 2) for x in s.split(","))
+    key = f"{la:.2f},{lo:.2f}"
+    native = _AQ_SHARED_PINS.get(key, {}).get(v)
+    if not native:
+        raise ValueError(f"{v}: network has no station for shared pin {key} — cannot answer this question")
+    return native
+
+
+def _aq_sensorcommunity_area(la: float, lo: float, radius_km: float = 2.0) -> tuple[float | None, str | None]:
+    """Median PM2.5 of all PM sensors within radius — robust to single bad low-cost sensors."""
+    rows = http_json(f"https://data.sensor.community/airrohr/v1/filter/area={la},{lo},{radius_km}")
+    vals, when = [], None
+    for r in rows or []:
+        st = (((r.get("sensor") or {}).get("sensor_type") or {}).get("name") or "").upper()
+        if not any(st.startswith(t) for t in _AQ_PM_SENSOR_TYPES):
+            continue
+        p2 = next((x.get("value") for x in r.get("sensordatavalues") or [] if x.get("value_type") == "P2"), None)
+        try:
+            vals.append(float(p2))
+        except (TypeError, ValueError):
+            continue
+        ts = r.get("timestamp")
+        if ts and (when is None or ts > when):
+            when = ts
+    if not vals:
+        return None, None
+    vals.sort()
+    n = len(vals)
+    med = vals[n // 2] if n % 2 else (vals[n // 2 - 1] + vals[n // 2]) / 2
+    return med, when
+
+
 def aq_pm25(venue: str = "openmeteo", site: str = "52.52,13.41") -> dict:
     v = venue.strip().lower()
-    s = site.strip()
+    pin = site.strip()
+    s = _aq_native_site(v, pin)
     when = None
     if v == "openmeteo":
         la, lo = [float(x) for x in s.split(",")]
@@ -2253,6 +2322,9 @@ def aq_pm25(venue: str = "openmeteo", site: str = "52.52,13.41") -> dict:
         item = ((d.get("data") or {}).get("items") or [{}])[0]
         val = ((item.get("readings") or {}).get("pm25_one_hourly") or {}).get(region)
         when = item.get("date") or item.get("timestamp")
+    elif v == "sensorcommunity" and _LATLON_RE.match(s):
+        la, lo = [float(x) for x in s.split(",")]
+        val, when = _aq_sensorcommunity_area(la, lo)
     elif v == "sensorcommunity":
         sid = _need(s, r"\d{1,7}", "sensor id")
         rows = http_json(f"https://data.sensor.community/airrohr/v1/sensor/{sid}/")
@@ -2262,6 +2334,7 @@ def aq_pm25(venue: str = "openmeteo", site: str = "52.52,13.41") -> dict:
         val = next((x.get("value") for x in row.get("sensordatavalues") or [] if x.get("value_type") == "P2"), None)
         when = row.get("timestamp")
     elif v == "cerns":
+        _no_substitute("cerns.io upstream is dead; this venue would answer from Open-Meteo (clone of aqi-openmeteo)")
         # cerns.io public city AQI is dead (502). Re-sourced to Open-Meteo air-quality
         # for the same Berlin pin used by keepers (site=berlin → 52.52,13.41).
         coords = {
@@ -2288,7 +2361,7 @@ def aq_pm25(venue: str = "openmeteo", site: str = "52.52,13.41") -> dict:
     if val is None:
         raise ValueError(f"{v}: no PM2.5 value for {s}")
     val = float(val)
-    return {"venue": v, "site": s, "pm25_ugm3": val, "pm25_ugm3_x10": int(round(val * 10)),
+    return {"venue": v, "site": pin, "native_site": s, "pm25_ugm3": val, "pm25_ugm3_x10": int(round(val * 10)),
             "measured_at": when, "source": f"aq_{v}"}
 
 
@@ -2564,7 +2637,8 @@ _VESSEL_FALLBACKS = (
 def vessel_sog(mmsi: str = "230981000") -> dict:
     requested = _need(mmsi, r"\d{9}", "mmsi")
     tried = []
-    candidates = [requested] + [x for x in _VESSEL_FALLBACKS if x != requested]
+    # Another ship's speed is a different answer, not a fallback: only with ALLOW_SUBSTITUTES.
+    candidates = [requested] + ([x for x in _VESSEL_FALLBACKS if x != requested] if ALLOW_SUBSTITUTES else [])
 
     last_err = None
     for m in candidates:
@@ -2749,7 +2823,7 @@ def is_positive(venue: str = "textprocessing", text: str = "I love this wonderfu
     if v == "textprocessing":
         # text-processing.com often 503; use HF twitter-roberta when keyed, else twinword.
         key = (os.environ.get("HF_TOKEN") or os.environ.get("HUGGINGFACE_HUB_TOKEN") or "").strip()
-        if key:
+        if key and ALLOW_SUBSTITUTES:  # HF model is a different publisher (== cls-hf-twitter-roberta)
             d = http_json(
                 "https://router.huggingface.co/hf-inference/models/"
                 "cardiffnlp/twitter-roberta-base-sentiment-latest",
@@ -2780,7 +2854,8 @@ def is_positive(venue: str = "textprocessing", text: str = "I love this wonderfu
                 )
                 label = str(d.get("label") or "")
                 src = "sentiment_textprocessing"
-            except Exception:
+            except Exception as e:
+                _no_substitute(f"text-processing.com failed ({e}); twinword is a separate miner")
                 d = http_json(f"https://api.twinword.com/api/sentiment/analyze/latest/?text={quote(t)}")
                 label = str(d.get("type") or "")
                 src = "sentiment_textprocessing_twinword_fallback"

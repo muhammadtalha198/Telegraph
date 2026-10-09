@@ -1,0 +1,71 @@
+# Intent spec: CORPORATE_REGISTRY_LOOKUP. Sources checked live 2026-10-08 (SK id 31322832 = SLOVNAFT, active).
+# The national business register is the authority for its own companies; GLEIF (LEI) confirms.
+intent: CORPORATE_REGISTRY_LOOKUP
+description: Incorporation status of a company in its national business register.
+answer_type: boolean
+scope: current
+
+catalog:
+  intent: CORPORATE_REGISTRY_LOOKUP
+  description: "Queries national business registers for incorporation status, registered agent details, and beneficial ownership filings."
+  facets:
+    - {text: "incorporation status", covered_by: value, required: true,
+       note: "active vs dissolved. RPO: a current (no validTo) registered record = active; full dissolved-date detection is not implemented, noted as a gap"}
+    - {text: "registered agent details", covered_by: "extra:name", note: "the registered legal name"}
+    - {text: "beneficial ownership filings", covered_by: none, note: "not in the free register endpoints used"}
+  allowed_kinds: [registry, lei_registry]
+
+inputs:
+  country: {kind: enum, required: false, default: SK, values: [SK], description: "Register country (RPO = Slovakia)"}
+  identifier: {kind: text, required: true, description: "National company id (IČO for SK)"}
+
+validation:
+  freshness: {max_age_s: 0}            # register record, no per-call timestamp
+  cross_check:
+    tolerance: {abs: 0}
+    min_sources: 1                     # the national register is authoritative; GLEIF confirms when present
+    target_sources: 2
+
+extras:
+  name: {quantity: text}
+
+sources:
+  - id: rpo-sk
+    name: Slovak RPO
+    publisher: statistics.sk
+    kind: registry
+    authority: true
+    miner: {slug: corp-sk-rpo, question: {country: SK, identifier: "31322832"}}
+    notes: >
+      A returned record with an establishment date and a current full name is treated as an active
+      registration. Dissolved-company detection (a validTo on the current name) is not implemented.
+    request:
+      url: "https://api.statistics.sk/rpo/v1/search?identifier={identifier}"
+      timeout_s: 25
+    cache_ttl_s: 3600
+    value: [{json: "results.0.establishment", exists: true}]
+    extras:
+      name: [{json: "results.0.fullNames.0.value"}]
+
+  - id: gleif
+    name: GLEIF LEI
+    publisher: gleif.org
+    kind: lei_registry
+    authority: true
+    notes: entity.status ACTIVE/INACTIVE; GLEIF is an official LEI registry, so it also confirms on its own.
+    request:
+      url: "https://api.gleif.org/api/v1/lei-records?filter%5Bentity.registeredAs%5D={identifier}&filter%5Bentity.legalAddress.country%5D={country}"
+    cache_ttl_s: 3600
+    value: [{json: "data.0.attributes.entity.status", map: {active: true, inactive: false, null: false}}]
+    extras:
+      name: [{json: "data.0.attributes.entity.legalName.name"}]
+
+template:
+  answer: "{value}"
+  "yes": "{name} (id {identifier}) is an active registered company."
+  "no": "Company id {identifier} is not an active registration."
+  footer: "Per {verified_by} at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the registration of id {identifier}. Reason: {reason}."
+
+tests:
+  - {id: slovnaft, inputs: {identifier: "31322832"}}

@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190185
+slug: fx-fxratesapi
+protocol: generic
+name: "Fx Fxratesapi"
+description: "Semantic V2 miner for FX_NOW. Provides real-time institutional foreign exchange mid-market rates, spreads, and currency conversion quotes. Capture pin answers: Must return the current exchange rate (units of quote currency per 1 unit of base currency) for the pair asked."
+
+base_url: https://api.fxratesapi.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.fxratesapi.com/
+  website: https://api.fxratesapi.com
+
+endpoints:
+  - path: /query
+    external_path: /latest
+    method: GET
+    description: Query for intent FX_NOW via Fx Fxratesapi.
+    intents: [FX_NOW]
+    params:
+      query:
+        required:
+          - name: base
+            type: string
+            intents: ["*"]
+            description: base
+          - name: currencies
+            type: string
+            intents: ["*"]
+            description: currencies
+
+input_schema:
+  type: object
+  required: ["base", "currencies"]
+  properties:
+    "base": {type: string, description: "base", default: "USD"}
+    "currencies": {type: string, description: "currencies", default: "EUR"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - FX_NOW
+
+on_chain:
+  description: Stores signal for FX_NOW (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

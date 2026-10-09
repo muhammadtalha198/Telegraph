@@ -1,0 +1,4 @@
+{
+  "_doc": "Locked shared question per intent (Usman 2026-10-06: rankable miners must answer ONE question). Enforced at register by scripts/pin_consistency_check.py --file. Add an intent only after Usman confirms the pin.",
+  "AIR_QUALITY_INDEX": {"site": "52.52,13.41"}
+}

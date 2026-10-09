@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190201
+slug: cp-phemex
+protocol: generic
+name: "Cp Phemex"
+description: "Semantic V2 miner for CRYPTO_PRICE via Phemex spot ticker (lastEp x1e-8 = USDT)."
+
+base_url: https://api.phemex.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://phemex-docs.github.io/
+  website: https://api.phemex.com
+
+endpoints:
+  - path: /query
+    external_path: /md/spot/ticker/24hr
+    method: GET
+    description: Query for intent CRYPTO_PRICE via Cp Phemex.
+    intents: [CRYPTO_PRICE]
+    params:
+      query:
+        required:
+          - name: symbol
+            type: string
+            intents: ["*"]
+            description: symbol
+
+input_schema:
+  type: object
+  required: [symbol]
+  properties:
+    symbol: {type: string, description: "symbol", default: "sBTCUSDT"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CRYPTO_PRICE
+
+on_chain:
+  description: Stores signal for CRYPTO_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

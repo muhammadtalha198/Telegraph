@@ -1,0 +1,106 @@
+# Intent spec: TOKEN_TOTAL_SUPPLY_VERIFY. Sources checked live 2026-10-08 (LINK = 1e9 tokens = 1e27 base units).
+# Canonical = base units (the on-chain integer). Token-unit sources are scaled up by 10^decimals.
+intent: TOKEN_TOTAL_SUPPLY_VERIFY
+description: Total minted supply of an on-chain token, in base units.
+answer_type: number
+scope: current
+
+catalog:
+  intent: TOKEN_TOTAL_SUPPLY_VERIFY
+  description: "Verifies token circulating supply, burnt token balances, and total minted token counts on-chain."
+  facets:
+    - {text: "total minted token counts", covered_by: value, required: true,
+       note: "ERC-20 totalSupply(): fixed integer for a pinned token; the on-chain canonical"}
+    - {text: "circulating supply", covered_by: "extra:circulating",
+       note: "published figure where available (CoinLore csupply, CoinGecko circulating_supply), token units"}
+    - {text: "burnt token balances", covered_by: none,
+       note: "burns are implicit in total vs max supply; not returned as a separate figure"}
+  allowed_kinds: [token_explorer, price_aggregator, chain_node]
+
+inputs:
+  token: {kind: table, table: tokens, required: true, description: "Token symbol or name (LINK, chainlink, UNI, ...)"}
+
+# Per-token ids + base-unit scale (10^decimals). A token not listed is rejected with the known list.
+normalize:
+  tokens:
+    LINK: {name: ChainLink, aliases: [chainlink], coinlore: "2751", coingecko: chainlink,
+           address: "0x514910771AF9Ca656af840dff83E8264EcF986CA", token_scale: "1000000000000000000"}
+    UNI: {name: Uniswap, aliases: [uniswap], coinlore: "48531", coingecko: uniswap,
+          address: "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", token_scale: "1000000000000000000"}
+    AAVE: {name: Aave, aliases: [aave], coinlore: "45405", coingecko: aave,
+           address: "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9", token_scale: "1000000000000000000"}
+
+units:
+  canonical: "base units"
+
+validation:
+  sanity: {min: 1000, max: 1.0e+36}
+  freshness: {max_age_s: 0}            # totalSupply has no per-call timestamp; cross-check is the guard
+  cross_check:
+    tolerance: {rel: 0.0001}           # a fixed integer: independent reads must match to ~1 bp
+    min_sources: 2
+    target_sources: 3
+
+extras:
+  circulating: {quantity: number, sanity: {min: 0, max: 1.0e+12}}
+
+sources:
+  - id: coinlore
+    name: CoinLore
+    publisher: coinlore.net
+    kind: price_aggregator
+    miner: {slug: supply-coinlore, question: {token: LINK}}
+    notes: tsupply/csupply are in whole token units; scaled to base units for cross-check.
+    request:
+      url: "https://api.coinlore.net/api/ticker/?id={coinlore}"
+    cache_ttl_s: 120
+    value: [{json: "0.tsupply", scale: "{token_scale}"}]
+    entity:
+      symbol: [{json: "0.symbol"}]
+    extras:
+      circulating: [{json: "0.csupply"}]
+
+  - id: blockscout
+    name: Blockscout
+    publisher: blockscout.com
+    kind: token_explorer
+    request:
+      url: "https://eth.blockscout.com/api/v2/tokens/{address}"
+    cache_ttl_s: 120
+    value: [{json: total_supply}]      # already base units
+    entity:
+      symbol: [{json: symbol}]
+
+  - id: ethplorer
+    name: Ethplorer
+    publisher: ethplorer.io
+    kind: token_explorer
+    request:
+      url: "https://api.ethplorer.io/getTokenInfo/{address}?apiKey=freekey"
+    cache_ttl_s: 120
+    value: [{json: totalSupply}]      # base units
+    entity:
+      symbol: [{json: symbol}]
+
+  - id: coingecko
+    name: CoinGecko
+    publisher: coingecko.com
+    kind: price_aggregator
+    request:
+      url: "https://api.coingecko.com/api/v3/coins/{coingecko}?localization=false&tickers=false&market_data=true&community_data=false&developer_data=false"
+    cache_ttl_s: 300
+    value: [{json: market_data.total_supply, scale: "{token_scale}"}]
+    entity:
+      symbol: [{json: symbol}]
+    extras:
+      circulating: [{json: market_data.circulating_supply}]
+
+template:
+  answer: "{name} total supply is {value} base units."
+  extras:
+    - "Circulating supply: {circulating} tokens."
+  footer: "Confirmed by {agreeing_count} independent sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the total supply of {name}. Reason: {reason}."
+
+tests:
+  - {id: link, inputs: {token: LINK}}

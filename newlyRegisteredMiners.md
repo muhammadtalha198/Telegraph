@@ -17,6 +17,27 @@ Not registered from the same 66 LLM-approved set (gates failed): `filing-sec-ato
 
 ---
 
+## New miner hunt — 2026-10-09 (6 registered)
+
+**6 miners / 3 intents.** New free, no-key providers found via a dedicated miner-hunt round (`miner_candidates/2026-10-09/`), each run through the full `minercheck` catalog-bound verifier (E1 extract → E5 type → E2 sanity → E4 freshness → E5 entity → E3 cross-check against the existing registered consensus) **and** the full fail-closed `register-miner-v2.sh` gate chain (auto_review+Ollama LLM → golden-if-any → validate_miner_yaml → pin_consistency_check → sample-question==node-request → `minercheck gate` → live probe → hosted byte-match) before any gas was spent. YAML host: **Omni SSH** (`omni-chat.13.237.89.59.sslip.io`).
+
+| Slug | Intent | Reg ID | Publisher | YAML | Tx |
+|------|--------|-------:|-----------|------|-----|
+| `cp-phemex` | `CRYPTO_PRICE` | 4804 | phemex.com | [yaml](https://omni-chat.13.237.89.59.sslip.io/miner-yamls/cp-phemex.yaml) | [tx](https://sepolia.basescan.org/tx/0xad76ba8f1ccd4fed87d893a5b3db018cd7415f83896ffd485ce01de5641944f2) |
+| `cp-xt` | `CRYPTO_PRICE` | 4805 | xt.com | [yaml](https://omni-chat.13.237.89.59.sslip.io/miner-yamls/cp-xt.yaml) | [tx](https://sepolia.basescan.org/tx/0xeaa1ab82e80196e03d9223502a9ca781a9a0236f311f7a44a72cee88582cacc8) |
+| `cp-bitrue` | `CRYPTO_PRICE` | 4806 | bitrue.com | [yaml](https://omni-chat.13.237.89.59.sslip.io/miner-yamls/cp-bitrue.yaml) | [tx](https://sepolia.basescan.org/tx/0xa50deb2a6dae50ba832c00380d6b9d7f882bc053fde31d2b9372c42d738386ac) |
+| `cp-hitbtc` | `CRYPTO_PRICE` | 4807 | hitbtc.com | [yaml](https://omni-chat.13.237.89.59.sslip.io/miner-yamls/cp-hitbtc.yaml) | [tx](https://sepolia.basescan.org/tx/0xb85341fd3518811c7450389fe4e1d0fdf1c729465450b9238f5c0c864bed8470) |
+| `cp-digifinex` | `CRYPTO_PRICE` | 4808 | digifinex.com | [yaml](https://omni-chat.13.237.89.59.sslip.io/miner-yamls/cp-digifinex.yaml) | [tx](https://sepolia.basescan.org/tx/0x6eeb4c5d1b669f34ef42e99ef62cb66740bc53284f6547962fef18a78fd00400) |
+| `stock-stockanalysis` | `STOCK_PRICE` | 4809 | stockanalysis.com | [yaml](https://omni-chat.13.237.89.59.sslip.io/miner-yamls/stock-stockanalysis.yaml) | [tx](https://sepolia.basescan.org/tx/0xf591afe98b872e69aafb14fd555277dd7f3cbe75555e78323390e8b8a2fcb670) |
+
+All 6 confirmed `activation_status: active` via `GET /api/miners/<id>` after registration. All are new publishers (none duplicate an existing registered endpoint).
+
+**From the same 2026-10-09 hunt, NOT registered:**
+- `dns-dnssb` (dns.sb DoH) and `dns-dnspod` (DNSPod doh.pub) — **dropped as duplicates**: `dns-dnssb` slug is already taken (reg 2894, different truth-proxy signal) and `dns-dnspod` (reg 4671, Active) is the literal same `doh.pub/dns-query` endpoint already registered. Caught during the dedupe pass before any capture/gas.
+- `wx-brightsky-de` (Bright Sky / DWD current-weather, Germany-only) — sample **rejected by the Ollama LLM judge** (`qwen2.5:3b` wrongly said the response has no temperature field; it does — `weather.temperature` is present in the captured body). Per CLAUDE.md, manual override does not unlock gas and was not attempted. Candidate YAML + sample kept in `miner_candidates/2026-10-09/` for a future re-run of auto_review.
+
+---
+
 ## Active summary — Pack Semantic V2 (2026-10-05)
 
 | Intent | Miners | ≈reg notes |

@@ -13,25 +13,15 @@ auto_review + LLM. Use this only for bookkeeping / forcing pending_review.
 from __future__ import annotations
 
 import argparse
-import re
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sample_file import replace_or_add  # noqa: E402
+
 ALLOWED = {"pending_review", "approved", "rejected"}
-
-
-def replace_or_add(fm: str, key: str, value: str) -> str:
-    pat = re.compile(rf"(?m)^{re.escape(key)}:\s*.*$")
-    safe = value.replace("\\", "\\\\").replace('"', "'")
-    if key in ("reviewer_note", "capture_note"):
-        line = f'{key}: "{safe}"'
-    else:
-        line = f"{key}: {value}"
-    if pat.search(fm):
-        return pat.sub(line, fm, count=1)
-    return fm.rstrip() + "\n" + line + "\n"
 
 
 def main() -> int:

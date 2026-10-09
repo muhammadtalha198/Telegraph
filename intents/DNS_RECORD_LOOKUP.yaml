@@ -1,0 +1,86 @@
+# Intent spec: DNS_RECORD_LOOKUP. Sources checked live 2026-10-08.
+# answer_type record_set: the set of records (order/case ignored) must match across resolvers.
+intent: DNS_RECORD_LOOKUP
+description: Authoritative DNS records of a given type for a hostname.
+answer_type: record_set
+scope: current
+
+catalog:
+  intent: DNS_RECORD_LOOKUP
+  description: "Resolves and validates authoritative DNS records (A, AAAA, CNAME, MX, TXT) across global resolvers."
+  facets:
+    - {text: "authoritative dns records", covered_by: value, required: true,
+       note: "the full set of records of the asked type; set must match across independent resolvers"}
+    - {text: "a, aaaa, cname, mx, txt", covered_by: "input:rtype", note: "record type is a request parameter"}
+    - {text: "across global resolvers", covered_by: none,
+       note: "cross-check does this: ≥2 independent resolvers must return the same record set"}
+  allowed_kinds: [dns_resolver, dns_tool]
+
+inputs:
+  host: {kind: text, required: true, description: "Hostname, e.g. dns.google"}
+  # table kind so the DoH numeric type ({rtype_num}) is available to rules (RFC 1035 type codes)
+  rtype: {kind: table, table: rtypes, required: false, default: A, description: "Record type (A, AAAA, CNAME, MX, TXT, NS)"}
+
+normalize:
+  rtypes:
+    A: {rtype_num: "1"}
+    AAAA: {rtype_num: "28"}
+    CNAME: {rtype_num: "5"}
+    MX: {rtype_num: "15"}
+    TXT: {rtype_num: "16"}
+    NS: {rtype_num: "2"}
+
+validation:
+  freshness: {max_age_s: 0}            # DNS has no per-answer timestamp; TTL governs, cross-check governs truth
+  cross_check:
+    tolerance: {abs: 0}                # record sets must match exactly
+    min_sources: 2
+    target_sources: 3
+
+sources:
+  - id: cloudflare
+    name: Cloudflare DoH (1.1.1.1)
+    publisher: cloudflare-dns.com
+    kind: dns_resolver
+    request:
+      url: "https://cloudflare-dns.com/dns-query?name={host}&type={rtype}"
+      headers: {accept: application/dns-json}
+    cache_ttl_s: 30
+    value: [{json: Answer, each: data, where: {type: "{rtype_num}"}}]
+
+  - id: google
+    name: Google DoH (8.8.8.8)
+    publisher: dns.google
+    kind: dns_resolver
+    request:
+      url: "https://dns.google/resolve?name={host}&type={rtype}"
+    cache_ttl_s: 30
+    value: [{json: Answer, each: data, where: {type: "{rtype_num}"}}]
+
+  - id: alidns
+    name: AliDNS DoH
+    publisher: alidns.com
+    kind: dns_resolver
+    request:
+      url: "https://dns.alidns.com/resolve?name={host}&type={rtype_num}"
+    cache_ttl_s: 30
+    value: [{json: Answer, each: data, where: {type: "{rtype_num}"}}]
+
+  - id: networkcalc
+    name: NetworkCalc DNS
+    publisher: networkcalc.com
+    kind: dns_tool
+    miner: {slug: dns-networkcalc, question: {host: dns.google, rtype: A}}
+    notes: records nested under records.<TYPE> as objects; A/AAAA have .address, others vary.
+    request:
+      url: "https://networkcalc.com/api/dns/lookup/{host}"
+    cache_ttl_s: 30
+    value: [{json: "records.{rtype}", each: address}]
+
+template:
+  answer: "{host} {rtype} records: {value}."
+  footer: "Confirmed by {agreeing_count} independent resolvers ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the {rtype} records for {host}. Reason: {reason}."
+
+tests:
+  - {id: google-a, inputs: {host: dns.google, rtype: A}}

@@ -1,7 +1,7 @@
 ---
 intent: CRYPTO_TRANSFER_VERIFY
 slug: xfer-trezor-blockbook
-status: approved
+status: pending_review
 captured_at: 2026-10-05T09:28:05Z
 request_url: https://btc1.trezor.io/api/v2/tx/a1075db55d416d3ca199f55b6084e2115b9345e16c5cf302fc80e9d5fbf5d48d
 content_type: application/json
@@ -13,11 +13,11 @@ answer_requirement: |
   Must return the on-chain status of the transaction (confirmed, block, parties/amounts).
 capture_note: |
   golden-test PASS: Trezor Blockbook
-reviewer_note: "auto_review: [1.00|heuristic+llm] The response contains transaction inputs but lacks the required on-chain status information."
-reviewed_at: 2026-10-05T11:25:44Z
-review_source: auto_review
-review_mode: heuristic+llm
-llm_used: true
+reviewer_note: "2026-10-07 re-review: judge approved but its own reason says the answer is missing (enum-echo/contradiction bug, fixed)"
+reviewed_at: ""
+review_source: manual
+review_mode: manual
+llm_used: false
 review_confidence: 1.000
 ---
 

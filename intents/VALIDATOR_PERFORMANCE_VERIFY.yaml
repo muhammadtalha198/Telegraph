@@ -1,0 +1,86 @@
+# Intent spec: VALIDATOR_PERFORMANCE_VERIFY. Beacon nodes checked live 2026-10-08 (validator 1, finalized).
+# Canonical consensus state: independent beacon nodes read the same finalized checkpoint, so ~0 divergence.
+intent: VALIDATOR_PERFORMANCE_VERIFY
+description: Consensus-layer state of an Ethereum validator (effective balance, status, slashing).
+answer_type: number
+scope: current
+
+catalog:
+  intent: VALIDATOR_PERFORMANCE_VERIFY
+  description: "Tracks consensus voting uptime, proposed block rates, slashing penalties, and staking APR for network validators."
+  facets:
+    - {text: "slashing penalties", covered_by: "extra:slashed", required: true,
+       note: "slashed flag from the validator record; a core on-chain fact"}
+    - {text: "consensus voting uptime", covered_by: value, required: true,
+       note: "effective_balance_gwei + status: a validator below 32 ETH effective or not active_ongoing has missed duties"}
+    - {text: "proposed block rates", covered_by: none, note: "not in the per-validator state record"}
+    - {text: "staking apr", covered_by: none, note: "APR is derived network-wide, not a per-validator state field"}
+  allowed_kinds: [beacon_node]
+
+inputs:
+  index: {kind: text, required: false, default: "1", description: "Validator index"}
+  state: {kind: enum, required: false, default: finalized, values: [finalized, head, justified]}
+
+units:
+  canonical: gwei
+
+validation:
+  sanity: {min: 1000000000, max: 100000000000}    # 1-100 ETH effective balance, in gwei
+  freshness: {max_age_s: 0}                        # finalized checkpoint; cross-check across nodes is the guard
+  cross_check:
+    tolerance: {rel: 0.001}                        # same consensus state: nodes must match to ~1 bp
+    min_sources: 2
+    target_sources: 3
+
+extras:
+  slashed: {quantity: boolean}
+  status: {quantity: text}
+
+sources:
+  - id: publicnode
+    name: publicnode beacon
+    publisher: publicnode.com
+    kind: beacon_node
+    request:
+      url: "https://ethereum-beacon-api.publicnode.com/eth/v1/beacon/states/{state}/validators/{index}"
+    cache_ttl_s: 60
+    value: [{json: data.validator.effective_balance}]
+    extras:
+      slashed: [{json: data.validator.slashed}]
+      status: [{json: data.status}]
+
+  - id: lodestar
+    name: ChainSafe Lodestar
+    publisher: chainsafe.io
+    kind: beacon_node
+    request:
+      url: "https://lodestar-mainnet.chainsafe.io/eth/v1/beacon/states/{state}/validators/{index}"
+    cache_ttl_s: 60
+    value: [{json: data.validator.effective_balance}]
+    extras:
+      slashed: [{json: data.validator.slashed}]
+      status: [{json: data.status}]
+
+  - id: nimbus
+    name: Nimbus (testing)
+    publisher: nimbus.team
+    kind: beacon_node
+    miner: {slug: val-beacon-nimbus, question: {index: "1", state: finalized}}
+    request:
+      url: "http://testing.mainnet.beacon-api.nimbus.team/eth/v1/beacon/states/{state}/validators/{index}"
+    cache_ttl_s: 60
+    value: [{json: data.validator.effective_balance}]
+    extras:
+      slashed: [{json: data.validator.slashed}]
+      status: [{json: data.status}]
+
+template:
+  answer: "Validator {index} has an effective balance of {value} gwei."
+  extras:
+    - "Status: {status}."
+    - "Slashed: {slashed}."
+  footer: "Confirmed by {agreeing_count} independent beacon nodes ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify validator {index}. Reason: {reason}."
+
+tests:
+  - {id: validator-1, inputs: {index: "1"}}

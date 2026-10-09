@@ -1,0 +1,72 @@
+# Intent spec: ONCHAIN_METRIC_VERIFY. Sources checked live 2026-10-08.
+# Native-coin balance of an address, in wei. blockscout + blockcypher returned the identical integer;
+# ethplorer reports ETH units (scaled to wei). A canonical chain read: independent explorers agree exactly.
+intent: ONCHAIN_METRIC_VERIFY
+description: Native-coin balance of a blockchain address, in wei.
+answer_type: number
+scope: current
+
+catalog:
+  intent: ONCHAIN_METRIC_VERIFY
+  description: "Validates smart contract event logs, gas consumption, token balances, and wallet transaction states directly on-chain."
+  facets:
+    - {text: "token balances", covered_by: value, required: true,
+       note: "native-coin balance of the pinned address, read from independent explorers/nodes"}
+    - {text: "wallet transaction states", covered_by: none, note: "balance is the checkable scalar; tx-state is per-hash (CRYPTO_TRANSFER_VERIFY)"}
+    - {text: "smart contract event logs", covered_by: none, note: "logs are not a single comparable value"}
+    - {text: "gas consumption", covered_by: none, note: "per-tx; not an address-level scalar"}
+  allowed_kinds: [chain_node, token_explorer]
+
+inputs:
+  address: {kind: text, required: true, description: "EVM address (0x...)"}
+
+units:
+  canonical: wei
+
+validation:
+  sanity: {min: 0, max: 1.0e+30}
+  freshness: {max_age_s: 0}            # 'latest' block differs by seconds across nodes; cross-check guards value
+  cross_check:
+    tolerance: {rel: 0.001}            # ~0 divergence expected; 1 bp absorbs float rounding + 1-block lag
+    min_sources: 2
+    target_sources: 3
+
+sources:
+  - id: blockscout
+    name: Blockscout
+    publisher: blockscout.com
+    kind: token_explorer
+    miner: {slug: ocm-blockscout-eth, question: {address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}}
+    request:
+      url: "https://eth.blockscout.com/api/v2/addresses/{address}"
+    cache_ttl_s: 30
+    value: [{json: coin_balance}]      # wei
+
+  - id: blockcypher
+    name: BlockCypher
+    publisher: blockcypher.com
+    kind: chain_node
+    miner: {slug: ocm-blockcypher-eth, question: {address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}}
+    request:
+      url: "https://api.blockcypher.com/v1/eth/main/addrs/{address}/balance"
+    cache_ttl_s: 30
+    value: [{json: balance}]           # wei
+
+  - id: ethplorer
+    name: Ethplorer
+    publisher: ethplorer.io
+    kind: token_explorer
+    miner: {slug: ocm-ethplorer-addr, question: {address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}}
+    notes: ETH.balance is in whole ETH; scaled to wei for cross-check.
+    request:
+      url: "https://api.ethplorer.io/getAddressInfo/{address}?apiKey=freekey"
+    cache_ttl_s: 30
+    value: [{json: ETH.balance, scale: "1000000000000000000"}]
+
+template:
+  answer: "Address {address} holds {value} wei."
+  footer: "Confirmed by {agreeing_count} independent on-chain sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the balance of {address}. Reason: {reason}."
+
+tests:
+  - {id: vitalik, inputs: {address: "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"}}

@@ -1,0 +1,61 @@
+# Intent spec: LOAN_INTEREST_RATE_QUOTE. Sources checked live 2026-10-08 (US 2019 ~5.28%).
+# The World Bank "lending interest rate" tracks the prime lending rate; FRED MPRIME confirms it.
+intent: LOAN_INTEREST_RATE_QUOTE
+description: Published benchmark lending (prime) interest rate for a country and year.
+answer_type: percent
+scope: historical
+
+catalog:
+  intent: LOAN_INTEREST_RATE_QUOTE
+  description: "Aggregates residential mortgage APRs, prime lending rates, and personal loan interest quotes."
+  facets:
+    - {text: "prime lending rates", covered_by: value, required: true,
+       note: "the benchmark bank lending/prime rate for the pinned country+year"}
+    - {text: "residential mortgage aprs", covered_by: none, note: "a different product rate; not this series"}
+    - {text: "personal loan interest quotes", covered_by: none, note: "a different product rate; not this series"}
+  allowed_kinds: [lending_rate, stats_agency]
+
+inputs:
+  country: {kind: table, table: countries, required: true, description: "Country (us, ...)"}
+  year: {kind: text, required: false, default: "2019", description: "Year"}
+
+normalize:
+  countries:
+    us: {name: "United States", aliases: [us, usa, "united states"], wb_country: US, fred_series: MPRIME}
+
+validation:
+  sanity: {min: 0, max: 100}
+  freshness: {max_age_s: 0}            # settled annual figure
+  cross_check:
+    tolerance: {rel: 0.03, abs: 0.1}   # prime vs "lending rate" definitions differ slightly
+    min_sources: 2
+    target_sources: 2
+
+sources:
+  - id: worldbank
+    name: World Bank FR.INR.LEND
+    publisher: worldbank.org
+    kind: lending_rate
+    miner: {slug: lnr-worldbank-lending, question: {country: us, year: "2019"}}
+    request:
+      url: "https://api.worldbank.org/v2/country/{wb_country}/indicator/FR.INR.LEND?date={year}&format=json"
+    cache_ttl_s: 86400
+    value: [{json: "1.0.value"}]
+
+  - id: fred
+    name: FRED bank prime loan rate
+    publisher: stlouisfed.org
+    kind: stats_agency
+    notes: annual average of MPRIME for the year; CSV, last row.
+    request:
+      url: "https://fred.stlouisfed.org/graph/fredgraph.csv?id={fred_series}&cosd={year}-01-01&coed={year}-12-31&fq=Annual&fam=avg"
+    cache_ttl_s: 86400
+    value: [{csv: "{fred_series}", row: -1}]
+
+template:
+  answer: "The prime lending rate for {name} in {year} was {value}."
+  footer: "Confirmed by {agreeing_count} independent sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the lending rate for {name} in {year}. Reason: {reason}."
+
+tests:
+  - {id: us-2019, inputs: {country: us, year: "2019"}}

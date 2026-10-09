@@ -1,0 +1,30 @@
+[
+ {
+  "test": "cbeth",
+  "source": "coinbase",
+  "url": "https://api.exchange.coinbase.com/wrapped-assets/CBETH",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:40 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"id\": \"CBETH\", \"circulating_supply\": \"166267.756893513544798102\", \"total_supply\": \"373334.0782232124394134\", \"conversion_rate\": \"1.1412290487875757\", \"apy\": \"0.0236\", \"redeem_time_estimate_days\": \"15.99\"}",
+  "fetched_at": "2026-10-09T05:19:39.704030+00:00"
+ },
+ {
+  "test": "cbeth",
+  "source": "defillama",
+  "url": "https://yields.llama.fi/chart/0f45d730-b279-4629-8e11-ccb5cc3038b4",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:41 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"status\": \"success\", \"data\": [{\"timestamp\": \"2023-01-16T23:01:14.615Z\", \"tvlUsd\": 1684417052, \"apy\": 4.06797, \"apyBase\": 4.06797, \"apyReward\": null, \"il7d\": null, \"apyBase7d\": null, \"pricePerShare\": 1.02238}, {\"timestamp\": \"2026-10-09T04:01:16.213Z\", \"tvlUsd\": 473483109, \"apy\": 2.42006, \"apyBase\": 2.42006, \"apyReward\": null, \"il7d\": null, \"apyBase7d\": null, \"pricePerShare\": 1.14123}]}",
+  "fetched_at": "2026-10-09T05:19:40.768110+00:00"
+ }
+]

@@ -21,6 +21,10 @@ Old one-off / bypass scripts were moved to [`../archive/legacy-scripts/`](../arc
 | `register-miner-v2.sh` | **Only** gas path for V2 |
 | `register_approved_v2_batch.py` | Batch: host + `register-miner-v2.sh` for approved set |
 | `validate_miner_yaml.py` | YAML schema check (used by V2 + legacy) |
+| `sample_file.py` | The one sample (`apiOutputSamples/*.md`) parser/writer — imported by the scripts above |
+
+Answer verification lives in the `minercheck` package (repo root), driven by `intents/*.yaml`;
+`register_gates_v2.py` calls `python -m minercheck gate`. See `docs/INTENT_SPEC_GUIDE.md`.
 
 Typical flow:
 

@@ -7,7 +7,7 @@ name: Frankfurter FX Now
 description: >
   ECB mid-market FX via Frankfurter. Intent FX_NOW. Direct Request shows FX input fields in Alexandria.
 
-base_url: https://api.frankfurter.app
+base_url: https://api.frankfurter.dev
 
 auth:
   type: none
@@ -23,7 +23,7 @@ docs:
 
 endpoints:
   - path: /query
-    external_path: /latest
+    external_path: /v1/latest
     method: GET
     description: FX mid-market rates for intent FX_NOW via Frankfurter FX Now.
     intents: [FX_NOW]

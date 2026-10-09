@@ -4,3 +4,8 @@ yaml/*.yaml
 !yaml/.gitkeep
 *.pem
 *.key
+__pycache__/
+
+.env.bak
+**/.env.bak
+.backup-*/.env.bak

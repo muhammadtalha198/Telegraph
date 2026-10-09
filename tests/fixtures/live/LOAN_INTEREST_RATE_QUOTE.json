@@ -1,0 +1,30 @@
+[
+ {
+  "test": "us-2019",
+  "source": "worldbank",
+  "url": "https://api.worldbank.org/v2/country/US/indicator/FR.INR.LEND?date=2019&format=json",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:20:10 GMT",
+   "content-type": "application/json;charset=utf-8"
+  },
+  "body": "[{\"page\": 1, \"pages\": 1, \"per_page\": 50, \"total\": 1, \"sourceid\": \"2\", \"lastupdated\": \"2026-10-08\"}, [{\"indicator\": {\"id\": \"FR.INR.LEND\", \"value\": \"Lending interest rate (%)\"}, \"country\": {\"id\": \"US\", \"value\": \"United States\"}, \"countryiso3code\": \"USA\", \"date\": \"2019\", \"value\": 5.2825, \"unit\": \"\", \"obs_status\": \"\", \"decimal\": 1}]]",
+  "fetched_at": "2026-10-09T05:20:09.384337+00:00"
+ },
+ {
+  "test": "us-2019",
+  "source": "fred",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=MPRIME&cosd=2019-01-01&coed=2019-12-31&fq=Annual&fam=avg",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/csv",
+   "date": "Fri, 09 Oct 2026 05:20:11 GMT"
+  },
+  "body": "observation_date,MPRIME\n2019-01-01,5.28",
+  "fetched_at": "2026-10-09T05:20:10.131898+00:00"
+ }
+]

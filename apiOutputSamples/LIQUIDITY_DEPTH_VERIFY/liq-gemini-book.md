@@ -1,7 +1,7 @@
 ---
 intent: LIQUIDITY_DEPTH_VERIFY
 slug: liq-gemini-book
-status: approved
+status: pending_review
 captured_at: 2026-10-05T09:27:34Z
 request_url: https://api.gemini.com/v1/book/btcusd
 content_type: application/json
@@ -13,11 +13,11 @@ answer_requirement: |
   Must return the live bid/ask order book (depth levels) for the pair asked.
 capture_note: |
   golden-test PASS: Gemini
-reviewer_note: "auto_review: [1.00|heuristic+llm] The response contains bid prices and amounts but lacks the corresponding ask prices and total ask amounts."
-reviewed_at: 2026-10-05T12:41:08Z
-review_source: auto_review
-review_mode: heuristic+llm
-llm_used: true
+reviewer_note: "2026-10-07 re-review: judge approved but its own reason says the answer is missing (enum-echo/contradiction bug, fixed)"
+reviewed_at: ""
+review_source: manual
+review_mode: manual
+llm_used: false
 review_confidence: 1.000
 ---
 

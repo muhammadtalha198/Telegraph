@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190091
+slug: filing-esma-esef
+protocol: generic
+name: "Filing Esma Esef"
+description: "Semantic V2 miner for REGULATORY_FILING_MONITOR. PACK READY - only 6 candidates; 5 keyless. US filings are fully keyless via SEC (3-4 distinct endpoints, one publisher). Other regulators need keys or have no API. Distinct publishers: 6. Capture pin answers: Must satisfy catalog intent REGULATORY_FILING_MONITOR via upstream filings.xbrl.org (ESEF)"
+
+base_url: https://filings.xbrl.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://filings.xbrl.org/
+  website: https://filings.xbrl.org
+
+endpoints:
+  - path: /query
+    external_path: /api/filings
+    method: GET
+    description: Query for intent REGULATORY_FILING_MONITOR via Filing Esma Esef.
+    intents: [REGULATORY_FILING_MONITOR]
+    params:
+      query:
+        required:
+          - name: page[size]
+            type: string
+            intents: ["*"]
+            description: page[size]
+
+input_schema:
+  type: object
+  required: [page[size]]
+  properties:
+    page[size]: {type: string, description: "page[size]", default: "1"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - REGULATORY_FILING_MONITOR
+
+on_chain:
+  description: Stores signal for REGULATORY_FILING_MONITOR (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

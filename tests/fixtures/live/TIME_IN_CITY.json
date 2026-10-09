@@ -1,0 +1,200 @@
+[
+ {
+  "test": "tokyo",
+  "source": "timeapi",
+  "url": "https://timeapi.io/api/time/current/zone?timeZone=Asia/Tokyo",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:09 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"year\": 2026, \"month\": 10, \"day\": 9, \"hour\": 14, \"minute\": 21, \"seconds\": 9, \"milliSeconds\": 501, \"dateTime\": \"2026-10-09T14:21:09.501131\", \"date\": \"10/09/2026\", \"time\": \"14:21\", \"timeZone\": \"Asia/Tokyo\", \"dayOfWeek\": \"Friday\", \"dstActive\": false}",
+  "fetched_at": "2026-10-09T05:21:08.783829+00:00"
+ },
+ {
+  "test": "tokyo",
+  "source": "time-now",
+  "url": "https://time.now/developer/api/timezone/Asia/Tokyo",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:10 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"abbreviation\": \"JST\", \"client_ip\": \"203.0.113.1\", \"datetime\": \"2026-10-09T14:21:10.280334+09:00\", \"day_of_week\": 5, \"day_of_year\": 282, \"dst\": false, \"dst_from\": null, \"dst_offset\": 0, \"dst_until\": null, \"raw_offset\": 32400, \"timezone\": \"Asia/Tokyo\", \"unixtime\": 1791523270, \"utc_datetime\": \"2026-10-09T05:21:10.280390Z\", \"utc_offset\": \"+09:00\", \"week_number\": 41}",
+  "fetched_at": "2026-10-09T05:21:09.373089+00:00"
+ },
+ {
+  "test": "tokyo",
+  "source": "cloudflare",
+  "url": "https://www.cloudflare.com/cdn-cgi/trace",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:10 GMT",
+   "content-type": "text/plain"
+  },
+  "body": "fl=207f61\nh=www.cloudflare.com\nip=203.0.113.1\nts=1791523270.000\nvisit_scheme=https\nuag=minercheck/1.0 (+https://github.com/telegraph; MinerCreator verifier)\ncolo=XX\nsliver=none\nhttp=http/1.1\nloc=XX\ntls=TLSv1.3\nsni=plaintext\nwarp=off\ngateway=off\nrbi=off\nkex=X25519MLKEM768",
+  "fetched_at": "2026-10-09T05:21:10.279575+00:00"
+ },
+ {
+  "test": "tokyo",
+  "source": "google-date",
+  "url": "https://www.google.com/generate_204",
+  "status": "ok",
+  "http_status": 204,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:10 GMT"
+  },
+  "body": "",
+  "fetched_at": "2026-10-09T05:21:10.455816+00:00"
+ },
+ {
+  "test": "tokyo",
+  "source": "worldtimeapi",
+  "url": "https://worldtimeapi.org/api/timezone/Asia/Tokyo",
+  "status": "network_error",
+  "http_status": null,
+  "error": "[Errno 54] Connection reset by peer",
+  "headers": {},
+  "body": "",
+  "fetched_at": "2026-10-09T05:21:11.586043+00:00"
+ },
+ {
+  "test": "new-york",
+  "source": "timeapi",
+  "url": "https://timeapi.io/api/time/current/zone?timeZone=America/New_York",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:13 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"year\": 2026, \"month\": 10, \"day\": 9, \"hour\": 1, \"minute\": 21, \"seconds\": 13, \"milliSeconds\": 291, \"dateTime\": \"2026-10-09T01:21:13.2912088\", \"date\": \"10/09/2026\", \"time\": \"01:21\", \"timeZone\": \"America/New_York\", \"dayOfWeek\": \"Friday\", \"dstActive\": true}",
+  "fetched_at": "2026-10-09T05:21:12.179996+00:00"
+ },
+ {
+  "test": "new-york",
+  "source": "time-now",
+  "url": "https://time.now/developer/api/timezone/America/New_York",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:13 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"abbreviation\": \"EDT\", \"client_ip\": \"203.0.113.1\", \"datetime\": \"2026-10-09T01:21:13.746252-04:00\", \"day_of_week\": 5, \"day_of_year\": 282, \"dst\": true, \"dst_from\": null, \"dst_offset\": 3600, \"dst_until\": null, \"raw_offset\": -18000, \"timezone\": \"America/New_York\", \"unixtime\": 1791523273, \"utc_datetime\": \"2026-10-09T05:21:13.746312Z\", \"utc_offset\": \"-04:00\", \"week_number\": 41}",
+  "fetched_at": "2026-10-09T05:21:13.164141+00:00"
+ },
+ {
+  "test": "new-york",
+  "source": "cloudflare",
+  "url": "https://www.cloudflare.com/cdn-cgi/trace",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:14 GMT",
+   "content-type": "text/plain"
+  },
+  "body": "fl=207f84\nh=www.cloudflare.com\nip=203.0.113.1\nts=1791523274.000\nvisit_scheme=https\nuag=minercheck/1.0 (+https://github.com/telegraph; MinerCreator verifier)\ncolo=XX\nsliver=none\nhttp=http/1.1\nloc=XX\ntls=TLSv1.3\nsni=plaintext\nwarp=off\ngateway=off\nrbi=off\nkex=X25519MLKEM768",
+  "fetched_at": "2026-10-09T05:21:13.774484+00:00"
+ },
+ {
+  "test": "new-york",
+  "source": "google-date",
+  "url": "https://www.google.com/generate_204",
+  "status": "ok",
+  "http_status": 204,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:14 GMT"
+  },
+  "body": "",
+  "fetched_at": "2026-10-09T05:21:13.875554+00:00"
+ },
+ {
+  "test": "new-york",
+  "source": "worldtimeapi",
+  "url": "https://worldtimeapi.org/api/timezone/America/New_York",
+  "status": "network_error",
+  "http_status": null,
+  "error": "[Errno 54] Connection reset by peer",
+  "headers": {},
+  "body": "",
+  "fetched_at": "2026-10-09T05:21:14.634669+00:00"
+ },
+ {
+  "test": "paris-texas",
+  "source": "timeapi",
+  "url": "https://timeapi.io/api/time/current/zone?timeZone=America/Chicago",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:15 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"year\": 2026, \"month\": 10, \"day\": 9, \"hour\": 0, \"minute\": 21, \"seconds\": 15, \"milliSeconds\": 484, \"dateTime\": \"2026-10-09T00:21:15.4848246\", \"date\": \"10/09/2026\", \"time\": \"00:21\", \"timeZone\": \"America/Chicago\", \"dayOfWeek\": \"Friday\", \"dstActive\": true}",
+  "fetched_at": "2026-10-09T05:21:14.868668+00:00"
+ },
+ {
+  "test": "paris-texas",
+  "source": "time-now",
+  "url": "https://time.now/developer/api/timezone/America/Chicago",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:16 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"abbreviation\": \"CDT\", \"client_ip\": \"203.0.113.1\", \"datetime\": \"2026-10-09T00:21:15.821330-05:00\", \"day_of_week\": 5, \"day_of_year\": 282, \"dst\": true, \"dst_from\": null, \"dst_offset\": 3600, \"dst_until\": null, \"raw_offset\": -21600, \"timezone\": \"America/Chicago\", \"unixtime\": 1791523275, \"utc_datetime\": \"2026-10-09T05:21:15.821391Z\", \"utc_offset\": \"-05:00\", \"week_number\": 41}",
+  "fetched_at": "2026-10-09T05:21:15.347518+00:00"
+ },
+ {
+  "test": "paris-texas",
+  "source": "cloudflare",
+  "url": "https://www.cloudflare.com/cdn-cgi/trace",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:16 GMT",
+   "content-type": "text/plain"
+  },
+  "body": "fl=207f34\nh=www.cloudflare.com\nip=203.0.113.1\nts=1791523276.000\nvisit_scheme=https\nuag=minercheck/1.0 (+https://github.com/telegraph; MinerCreator verifier)\ncolo=XX\nsliver=none\nhttp=http/1.1\nloc=XX\ntls=TLSv1.3\nsni=plaintext\nwarp=off\ngateway=off\nrbi=off\nkex=X25519MLKEM768",
+  "fetched_at": "2026-10-09T05:21:15.819119+00:00"
+ },
+ {
+  "test": "paris-texas",
+  "source": "google-date",
+  "url": "https://www.google.com/generate_204",
+  "status": "ok",
+  "http_status": 204,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:16 GMT"
+  },
+  "body": "",
+  "fetched_at": "2026-10-09T05:21:15.901297+00:00"
+ },
+ {
+  "test": "paris-texas",
+  "source": "worldtimeapi",
+  "url": "https://worldtimeapi.org/api/timezone/America/Chicago",
+  "status": "network_error",
+  "http_status": null,
+  "error": "[Errno 54] Connection reset by peer",
+  "headers": {},
+  "body": "",
+  "fetched_at": "2026-10-09T05:21:16.739700+00:00"
+ }
+]

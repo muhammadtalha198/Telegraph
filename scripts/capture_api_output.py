@@ -131,6 +131,9 @@ def main() -> int:
     if not re.match(r"^[a-z0-9][a-z0-9_-]*$", a.slug):
         print("FAIL  slug must be lowercase alphanumeric / - _", file=sys.stderr)
         return 1
+    if re.search(r"\{\w+\}|%7B\w+%7D", a.url):
+        print(f"FAIL  URL has an unfilled {{placeholder}}; fill the real value first: {a.url}", file=sys.stderr)
+        return 1
 
     ctype, body = fetch(a.url, timeout=a.timeout)
     if not body.strip():

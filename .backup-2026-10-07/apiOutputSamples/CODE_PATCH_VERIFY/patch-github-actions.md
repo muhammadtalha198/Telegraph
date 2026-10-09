@@ -1,0 +1,281 @@
+---
+intent: CODE_PATCH_VERIFY
+slug: patch-github-actions
+status: pending_review
+captured_at: 2026-10-05T09:38:34Z
+request_url: https://api.github.com/repos/psf/requests/actions/runs?per_page=1
+content_type: application/json
+inputs: |
+  {}
+intent_description: |
+  Validates that software patch commits compile, resolve targeted defects, and introduce no regression side effects.
+answer_requirement: |
+  Must report whether the code compiles/runs and what it outputs (pass/fail of the patch).
+capture_note: |
+  golden-test PASS: GitHub Actions
+reviewer_note: ""
+reviewed_at: ""
+---
+
+## Raw API output
+
+```json
+{
+  "total_count": 2149,
+  "workflow_runs": [
+    {
+      "id": 37246313776,
+      "name": "Lock Threads",
+      "node_id": "WFR_kwLOABTKOs8AAAAIrA2lMA",
+      "head_branch": "main",
+      "head_sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+      "path": ".github/workflows/lock-issues.yml",
+      "display_title": "Lock Threads",
+      "run_number": 8000,
+      "event": "schedule",
+      "status": "completed",
+      "conclusion": "success",
+      "workflow_id": 12530612,
+      "check_suite_id": 100884500144,
+      "check_suite_node_id": "CS_kwDOABTKOs8AAAAXfS9OsA",
+      "url": "https://api.github.com/repos/psf/requests/actions/runs/37246313776",
+      "html_url": "https://github.com/psf/requests/actions/runs/37246313776",
+      "pull_requests": [
+        {
+          "url": "https://api.github.com/repos/yipaolu/requests/pulls/12",
+          "id": 811615746,
+          "number": 12,
+          "head": {
+            "ref": "main",
+            "sha": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+            "repo": {
+              "id": 1362490,
+              "url": "https://api.github.com/repos/psf/requests",
+              "name": "requests"
+            }
+          },
+          "base": {
+            "ref": "main",
+            "sha": "d09659997cd1e3eca49a07c59ece5557071c0ab9",
+            "repo": {
+              "id": 406438260,
+              "url": "https://api.github.com/repos/yipaolu/requests",
+              "name": "requests"
+            }
+          }
+        }
+      ],
+      "created_at": "2026-10-05T00:08:34Z",
+      "updated_at": "2026-10-05T00:08:44Z",
+      "actor": {
+        "login": "nateprewitt",
+        "id": 5271761,
+        "node_id": "MDQ6VXNlcjUyNzE3NjE=",
+        "avatar_url": "https://avatars.githubusercontent.com/u/5271761?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/nateprewitt",
+        "html_url": "https://github.com/nateprewitt",
+        "followers_url": "https://api.github.com/users/nateprewitt/followers",
+        "following_url": "https://api.github.com/users/nateprewitt/following{/other_user}",
+        "gists_url": "https://api.github.com/users/nateprewitt/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/nateprewitt/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/nateprewitt/subscriptions",
+        "organizations_url": "https://api.github.com/users/nateprewitt/orgs",
+        "repos_url": "https://api.github.com/users/nateprewitt/repos",
+        "events_url": "https://api.github.com/users/nateprewitt/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/nateprewitt/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "run_attempt": 1,
+      "referenced_workflows": [],
+      "run_started_at": "2026-10-05T00:08:34Z",
+      "triggering_actor": {
+        "login": "nateprewitt",
+        "id": 5271761,
+        "node_id": "MDQ6VXNlcjUyNzE3NjE=",
+        "avatar_url": "https://avatars.githubusercontent.com/u/5271761?v=4",
+        "gravatar_id": "",
+        "url": "https://api.github.com/users/nateprewitt",
+        "html_url": "https://github.com/nateprewitt",
+        "followers_url": "https://api.github.com/users/nateprewitt/followers",
+        "following_url": "https://api.github.com/users/nateprewitt/following{/other_user}",
+        "gists_url": "https://api.github.com/users/nateprewitt/gists{/gist_id}",
+        "starred_url": "https://api.github.com/users/nateprewitt/starred{/owner}{/repo}",
+        "subscriptions_url": "https://api.github.com/users/nateprewitt/subscriptions",
+        "organizations_url": "https://api.github.com/users/nateprewitt/orgs",
+        "repos_url": "https://api.github.com/users/nateprewitt/repos",
+        "events_url": "https://api.github.com/users/nateprewitt/events{/privacy}",
+        "received_events_url": "https://api.github.com/users/nateprewitt/received_events",
+        "type": "User",
+        "user_view_type": "public",
+        "site_admin": false
+      },
+      "jobs_url": "https://api.github.com/repos/psf/requests/actions/runs/37246313776/jobs",
+      "logs_url": "https://api.github.com/repos/psf/requests/actions/runs/37246313776/logs",
+      "check_suite_url": "https://api.github.com/repos/psf/requests/check-suites/100884500144",
+      "artifacts_url": "https://api.github.com/repos/psf/requests/actions/runs/37246313776/artifacts",
+      "cancel_url": "https://api.github.com/repos/psf/requests/actions/runs/37246313776/cancel",
+      "rerun_url": "https://api.github.com/repos/psf/requests/actions/runs/37246313776/rerun",
+      "previous_attempt_url": null,
+      "workflow_url": "https://api.github.com/repos/psf/requests/actions/workflows/12530612",
+      "head_commit": {
+        "id": "611c6162cbc4ac2020a2f91c7cfa4f3abf9bbb60",
+        "tree_id": "10caa09e09cd366febe74c2afa345939ffd5691f",
+        "message": "Bump the actions group with 3 updates (#7628)\n\nBumps the actions group with 3 updates: [github/codeql-action/init](https://github.com/github/codeql-action), [github/codeql-action/autobuild](https://github.com/github/codeql-action) and [github/codeql-action/analyze](https://github.com/github/codeql-action).\n\n\nUpdates `github/codeql-action/init` from 4.37.0 to 4.38.0\n- [Release notes](https://github.com/github/codeql-action/releases)\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/github/codeql-action/compare/99df26d4f13ea111d4ec1a7dddef6063f76b97e9...b96794f015dfd88f77b49b1c93e0fa7110f94c63)\n\nUpdates `github/codeql-action/autobuild` from 4.37.0 to 4.38.0\n- [Release notes](https://github.com/github/codeql-action/releases)\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/github/codeql-action/compare/99df26d4f13ea111d4ec1a7dddef6063f76b97e9...b96794f015dfd88f77b49b1c93e0fa7110f94c63)\n\nUpdates `github/codeql-action/analyze` from 4.37.0 to 4.38.0\n- [Release notes](https://github.com/github/codeql-action/releases)\n- [Changelog](https://github.com/github/codeql-action/blob/main/CHANGELOG.md)\n- [Commits](https://github.com/github/codeql-action/compare/99df26d4f13ea111d4ec1a7dddef6063f76b97e9...b96794f015dfd88f77b49b1c93e0fa7110f94c63)\n\n---\nupdated-dependencies:\n- dependency-name: github/codeql-action/init\n  dependency-version: 4.38.0\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: actions\n- dependency-name: github/codeql-action/autobuild\n  dependency-version: 4.38.0\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: actions\n- dependency-name: github/codeql-action/analyze\n  dependency-version: 4.38.0\n  dependency-type: direct:production\n  update-type: version-update:semver-minor\n  dependency-group: actions\n...\n\nSigned-off-by: dependabot[bot] <support@github.com>\nCo-authored-by: dependabot[bot] <49699333+dependabot[bot]@users.noreply.github.com>",
+        "timestamp": "2026-09-21T20:22:33Z",
+        "author": {
+          "name": "dependabot[bot]",
+          "email": "49699333+dependabot[bot]@users.noreply.github.com"
+        },
+        "committer": {
+          "name": "GitHub",
+          "email": "noreply@github.com"
+        }
+      },
+      "repository": {
+        "id": 1362490,
+        "node_id": "MDEwOlJlcG9zaXRvcnkxMzYyNDkw",
+        "name": "requests",
+        "full_name": "psf/requests",
+        "private": false,
+        "owner": {
+          "login": "psf",
+          "id": 50630501,
+          "node_id": "MDEyOk9yZ2FuaXphdGlvbjUwNjMwNTAx",
+          "avatar_url": "https://avatars.githubusercontent.com/u/50630501?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/psf",
+          "html_url": "https://github.com/psf",
+          "followers_url": "https://api.github.com/users/psf/followers",
+          "following_url": "https://api.github.com/users/psf/following{/other_user}",
+          "gists_url": "https://api.github.com/users/psf/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/psf/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/psf/subscriptions",
+          "organizations_url": "https://api.github.com/users/psf/orgs",
+          "repos_url": "https://api.github.com/users/psf/repos",
+          "events_url": "https://api.github.com/users/psf/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/psf/received_events",
+          "type": "Organization",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "html_url": "https://github.com/psf/requests",
+        "description": "A simple, yet elegant, HTTP library.",
+        "fork": false,
+        "url": "https://api.github.com/repos/psf/requests",
+        "forks_url": "https://api.github.com/repos/psf/requests/forks",
+        "keys_url": "https://api.github.com/repos/psf/requests/keys{/key_id}",
+        "collaborators_url": "https://api.github.com/repos/psf/requests/collaborators{/collaborator}",
+        "teams_url": "https://api.github.com/repos/psf/requests/teams",
+        "hooks_url": "https://api.github.com/repos/psf/requests/hooks",
+        "issue_events_url": "https://api.github.com/repos/psf/requests/issues/events{/number}",
+        "events_url": "https://api.github.com/repos/psf/requests/events",
+        "assignees_url": "https://api.github.com/repos/psf/requests/assignees{/user}",
+        "branches_url": "https://api.github.com/repos/psf/requests/branches{/branch}",
+        "tags_url": "https://api.github.com/repos/psf/requests/tags",
+        "blobs_url": "https://api.github.com/repos/psf/requests/git/blobs{/sha}",
+        "git_tags_url": "https://api.github.com/repos/psf/requests/git/tags{/sha}",
+        "git_refs_url": "https://api.github.com/repos/psf/requests/git/refs{/sha}",
+        "trees_url": "https://api.github.com/repos/psf/requests/git/trees{/sha}",
+        "statuses_url": "https://api.github.com/repos/psf/requests/statuses/{sha}",
+        "languages_url": "https://api.github.com/repos/psf/requests/languages",
+        "stargazers_url": "https://api.github.com/repos/psf/requests/stargazers",
+        "contributors_url": "https://api.github.com/repos/psf/requests/contributors",
+        "subscribers_url": "https://api.github.com/repos/psf/requests/subscribers",
+        "subscription_url": "https://api.github.com/repos/psf/requests/subscription",
+        "commits_url": "https://api.github.com/repos/psf/requests/commits{/sha}",
+        "git_commits_url": "https://api.github.com/repos/psf/requests/git/commits{/sha}",
+        "comments_url": "https://api.github.com/repos/psf/requests/comments{/number}",
+        "issue_comment_url": "https://api.github.com/repos/psf/requests/issues/comments{/number}",
+        "contents_url": "https://api.github.com/repos/psf/requests/contents/{+path}",
+        "compare_url": "https://api.github.com/repos/psf/requests/compare/{base}...{head}",
+        "merges_url": "https://api.github.com/repos/psf/requests/merges",
+        "archive_url": "https://api.github.com/repos/psf/requests/{archive_format}{/ref}",
+        "downloads_url": "https://api.github.com/repos/psf/requests/downloads",
+        "issues_url": "https://api.github.com/repos/psf/requests/issues{/number}",
+        "pulls_url": "https://api.github.com/repos/psf/requests/pulls{/number}",
+        "milestones_url": "https://api.github.com/repos/psf/requests/milestones{/number}",
+        "notifications_url": "https://api.github.com/repos/psf/requests/notifications{?since,all,participating}",
+        "labels_url": "https://api.github.com/repos/psf/requests/labels{/name}",
+        "releases_url": "https://api.github.com/repos/psf/requests/releases{/id}",
+        "deployments_url": "https://api.github.com/repos/psf/requests/deployments"
+      },
+      "head_repository": {
+        "id": 1362490,
+        "node_id": "MDEwOlJlcG9zaXRvcnkxMzYyNDkw",
+        "name": "requests",
+        "full_name": "psf/requests",
+        "private": false,
+        "owner": {
+          "login": "psf",
+          "id": 50630501,
+          "node_id": "MDEyOk9yZ2FuaXphdGlvbjUwNjMwNTAx",
+          "avatar_url": "https://avatars.githubusercontent.com/u/50630501?v=4",
+          "gravatar_id": "",
+          "url": "https://api.github.com/users/psf",
+          "html_url": "https://github.com/psf",
+          "followers_url": "https://api.github.com/users/psf/followers",
+          "following_url": "https://api.github.com/users/psf/following{/other_user}",
+          "gists_url": "https://api.github.com/users/psf/gists{/gist_id}",
+          "starred_url": "https://api.github.com/users/psf/starred{/owner}{/repo}",
+          "subscriptions_url": "https://api.github.com/users/psf/subscriptions",
+          "organizations_url": "https://api.github.com/users/psf/orgs",
+          "repos_url": "https://api.github.com/users/psf/repos",
+          "events_url": "https://api.github.com/users/psf/events{/privacy}",
+          "received_events_url": "https://api.github.com/users/psf/received_events",
+          "type": "Organization",
+          "user_view_type": "public",
+          "site_admin": false
+        },
+        "html_url": "https://github.com/psf/requests",
+        "description": "A simple, yet elegant, HTTP library.",
+        "fork": false,
+        "url": "https://api.github.com/repos/psf/requests",
+        "forks_url": "https://api.github.com/repos/psf/requests/forks",
+        "keys_url": "https://api.github.com/repos/psf/requests/keys{/key_id}",
+        "collaborators_url": "https://api.github.com/repos/psf/requests/collaborators{/collaborator}",
+        "teams_url": "https://api.github.com/repos/psf/requests/teams",
+        "hooks_url": "https://api.github.com/repos/psf/requests/hooks",
+        "issue_events_url": "https://api.github.com/repos/psf/requests/issues/events{/number}",
+        "events_url": "https://api.github.com/repos/psf/requests/events",
+        "assignees_url": "https://api.github.com/repos/psf/requests/assignees{/user}",
+        "branches_url": "https://api.github.com/repos/psf/requests/branches{/branch}",
+        "tags_url": "https://api.github.com/repos/psf/requests/tags",
+        "blobs_url": "https://api.github.com/repos/psf/requests/git/blobs{/sha}",
+        "git_tags_url": "https://api.github.com/repos/psf/requests/git/tags{/sha}",
+        "git_refs_url": "https://api.github.com/repos/psf/requests/git/refs{/sha}",
+        "trees_url": "https://api.github.com/repos/psf/requests/git/trees{/sha}",
+        "statuses_url": "https://api.github.com/repos/psf/requests/statuses/{sha}",
+        "languages_url": "https://api.github.com/repos/psf/requests/languages",
+        "stargazers_url": "https://api.github.com/repos/psf/requests/stargazers",
+        "contributors_url": "https://api.github.com/repos/psf/requests/contributors",
+        "subscribers_url": "https://api.github.com/repos/psf/requests/subscribers",
+        "subscription_url": "https://api.github.com/repos/psf/requests/subscription",
+        "commits_url": "https://api.github.com/repos/psf/requests/commits{/sha}",
+        "git_commits_url": "https://api.github.com/repos/psf/requests/git/commits{/sha}",
+        "comments_url": "https://api.github.com/repos/psf/requests/comments{/number}",
+        "issue_comment_url": "https://api.github.com/repos/psf/requests/issues/comments{/number}",
+        "contents_url": "https://api.github.com/repos/psf/requests/contents/{+path}",
+        "compare_url": "https://api.github.com/repos/psf/requests/compare/{base}...{head}",
+        "merges_url": "https://api.github.com/repos/psf/requests/merges",
+        "archive_url": "https://api.github.com/repos/psf/requests/{archive_format}{/ref}",
+        "downloads_url": "https://api.github.com/repos/psf/requests/downloads",
+        "issues_url": "https://api.github.com/repos/psf/requests/issues{/number}",
+        "pulls_url": "https://api.github.com/repos/psf/requests/pulls{/number}",
+        "milestones_url": "https://api.github.com/repos/psf/requests/milestones{/number}",
+        "notifications_url": "https://api.github.com/repos/psf/requests/notifications{?since,all,participating}",
+        "labels_url": "https://api.github.com/repos/psf/requests/labels{/name}",
+        "releases_url": "https://api.github.com/repos/psf/requests/releases{/id}",
+        "deployments_url": "https://api.github.com/repos/psf/requests/deployments"
+      }
+    }
+  ]
+}
+```
+
+## Why this matches (or not)
+
+_Pending your manual review. Approve only if this output clearly answers the intent
+description — format does not matter (LLM normalizes on Usman's side)._

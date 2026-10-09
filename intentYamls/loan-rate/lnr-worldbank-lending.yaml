@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190192
+slug: lnr-worldbank-lending
+protocol: generic
+name: "Lnr Worldbank Lending"
+description: "Semantic V2 miner for LOAN_INTEREST_RATE_QUOTE. Aggregates residential mortgage APRs, prime lending rates, and personal loan interest quotes. Capture pin answers: Must return a published lending / policy / benchmark interest rate (percent) for the pinned country and date or period."
+
+base_url: https://api.worldbank.org
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.worldbank.org/
+  website: https://api.worldbank.org
+
+endpoints:
+  - path: /query
+    external_path: /v2/country/US/indicator/FR.INR.LEND
+    method: GET
+    description: Query for intent LOAN_INTEREST_RATE_QUOTE via Lnr Worldbank Lending.
+    intents: [LOAN_INTEREST_RATE_QUOTE]
+    params:
+      query:
+        required:
+          - name: date
+            type: string
+            intents: ["*"]
+            description: date
+          - name: format
+            type: string
+            intents: ["*"]
+            description: format
+
+input_schema:
+  type: object
+  required: ["date", "format"]
+  properties:
+    "date": {type: string, description: "date", default: "2019"}
+    "format": {type: string, description: "format", default: "json"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - LOAN_INTEREST_RATE_QUOTE
+
+on_chain:
+  description: Stores signal for LOAN_INTEREST_RATE_QUOTE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

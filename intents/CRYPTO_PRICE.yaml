@@ -1,0 +1,326 @@
+# Intent spec: CRYPTO_PRICE (catalog CRYPTO_PRICE_LOOKUP).
+# Every source below was checked live on 2026-10-08 (BTC: all within 0.1% of each other).
+intent: CRYPTO_PRICE
+aliases: [CRYPTO_PRICE_LOOKUP]
+description: Current spot price of a cryptocurrency in a quote currency (USD by default; USDT/USDC count as USD).
+answer_type: price
+scope: current
+
+catalog:
+  intent: CRYPTO_PRICE_LOOKUP
+  description: "Fetches real-time spot and volume-weighted average prices for crypto assets across major exchanges."
+  facets:
+    - {text: "real-time spot", covered_by: value, required: true,
+       note: "last trade / spot price of the asset asked; timestamped answers older than 15 min are stale"}
+    - {text: "volume-weighted average prices", covered_by: "extra:vwap",
+       note: "24 h VWAP where the venue publishes it (Binance, Bitstamp, Kraken)"}
+  allowed_kinds: [cex, dex, dex_indexer, price_aggregator, index]
+  notes: "'across major exchanges' is what the cross-check does: a price is accepted only when independent venues agree."
+
+inputs:
+  asset: {kind: asset, required: true, description: "Ticker, name or id: BTC, bitcoin, btc-bitcoin, XBT"}
+  quote: {kind: currency, required: false, default: USD, description: "Quote currency (ISO code)"}
+
+# Per-API identifiers. A source whose URL needs a field the asset lacks is skipped
+# with a clear reason ("no input/normalized value named 'kraken'"), never guessed.
+normalize:
+  assets:
+    BTC: {name: Bitcoin, aliases: [bitcoin, xbt, wbtc], coingecko: bitcoin, paprika: btc-bitcoin, kraken: XBT, ir: xbt,
+          wrapped_sym: WBTC,   # WBTC tracks BTC 1:1; accepted as the asset for the on-chain price
+          dexscreener_pool: "0x99ac8cA7087fA4A2A1FB6357269965A2014ABc35"}   # WBTC/USDC Uniswap v3
+    ETH: {name: Ethereum, aliases: [ethereum, ether], coingecko: ethereum, paprika: eth-ethereum, kraken: ETH, ir: eth}
+    SOL: {name: Solana, aliases: [solana], coingecko: solana, paprika: sol-solana, kraken: SOL}
+    XRP: {name: XRP, aliases: [ripple], coingecko: ripple, paprika: xrp-xrp, kraken: XRP}
+    DOGE: {name: Dogecoin, aliases: [dogecoin, xdg], coingecko: dogecoin, paprika: doge-dogecoin, kraken: XDG}
+    ADA: {name: Cardano, aliases: [cardano], coingecko: cardano, paprika: ada-cardano, kraken: ADA}
+    LTC: {name: Litecoin, aliases: [litecoin], coingecko: litecoin, paprika: ltc-litecoin, kraken: LTC}
+
+units:
+  canonical: "{quote}"
+
+validation:
+  sanity: {min: 0.00000001, max: 10000000}     # no negative/zero price, no 8-digit BTC
+  freshness: {max_age_s: 1800, max_future_s: 120}   # 30 min: thin venues trade less often; cross-check guards value
+  cross_check:
+    tolerance: {rel: 0.015}                    # 1.5%: venues and USD-vs-USDT quotes differ by ~0.1%
+    min_sources: 2
+    target_sources: 3
+
+extras:
+  change_24h: {quantity: percent, signed: true, sanity: {min: -100, max: 1000}}
+  vwap: {quantity: money, sanity: {min: 0.00000001, max: 10000000}}
+
+sources:
+  - id: coingecko
+    name: CoinGecko
+    publisher: coingecko.com
+    kind: price_aggregator
+    miner: {slug: cp-coingecko, question: {asset: ETH}}
+    request:
+      url: "https://api.coingecko.com/api/v3/simple/price?ids={coingecko}&vs_currencies={quote_lower}&include_24hr_change=true&include_last_updated_at=true"
+    cache_ttl_s: 60
+    rate_limit_per_min: 10                    # free tier is roughly 10-30 calls/min
+    free_tier: {requests_per_month: 10000}
+    value: [{json: "{coingecko}.{quote_lower}", unit: "{quote}"}]
+    timestamp: [{json: "{coingecko}.last_updated_at", epoch: s}]
+    extras:
+      change_24h: [{json: "{coingecko}.{quote_lower}_24h_change"}]
+
+  - id: coinbase
+    name: Coinbase
+    publisher: coinbase.com
+    kind: cex
+    miner: {slug: cp-coinbase, question: {asset: BTC}}
+    request:
+      url: "https://api.coinbase.com/v2/prices/{symbol}-{quote}/spot"
+    cache_ttl_s: 30
+    value: [{json: data.amount, unit: "{quote}"}]
+    entity:
+      symbol: [{json: data.base}]
+      quote: [{json: data.currency}]
+
+  - id: kraken
+    name: Kraken
+    publisher: kraken.com
+    kind: cex
+    miner: {slug: cp-kraken, question: {asset: BTC}}
+    request:
+      url: "https://api.kraken.com/0/public/Ticker?pair={kraken}{quote}"
+    cache_ttl_s: 30
+    value: [{json: "result.*.c.0", unit: "{quote}"}]      # result key varies: XXBTZUSD, SOLUSD, ...
+    extras:
+      vwap: [{json: "result.*.p.1"}]                        # 24 h volume-weighted average
+
+  - id: binance
+    name: Binance
+    publisher: binance.com
+    kind: cex
+    miner: {slug: cp-binance, question: {asset: BTC}}
+    notes: USDT quote (counts as USD). Geo-blocked (HTTP 451) from some regions.
+    request:
+      url: "https://api.binance.com/api/v3/ticker/24hr?symbol={symbol}USDT"
+    cache_ttl_s: 30
+    value:
+      - {json: lastPrice, unit: USDT}          # /ticker/24hr
+      - {json: price, unit: USDT}              # /ticker/price (the registered miner's endpoint)
+    timestamp: [{json: closeTime, epoch: ms}]
+    entity:
+      symbol: [{json: symbol}]
+    extras:
+      change_24h: [{json: priceChangePercent}]
+      vwap: [{json: weightedAvgPrice}]
+
+  - id: bitstamp
+    name: Bitstamp
+    publisher: bitstamp.net
+    kind: cex
+    miner: {slug: cp-bitstamp, question: {asset: BTC}}
+    request:
+      url: "https://www.bitstamp.net/api/v2/ticker/{symbol_lower}{quote_lower}/"
+    cache_ttl_s: 30
+    value: [{json: last, unit: "{quote}"}]
+    timestamp: [{json: timestamp, epoch: s}]
+    extras:
+      change_24h: [{json: percent_change_24}]
+      vwap: [{json: vwap}]
+
+  - id: coinpaprika
+    name: CoinPaprika
+    publisher: coinpaprika.com
+    kind: price_aggregator
+    miner: {slug: cp-coinpaprika, question: {asset: BTC}}
+    request:
+      url: "https://api.coinpaprika.com/v1/tickers/{paprika}?quotes={quote}"
+    cache_ttl_s: 120
+    free_tier: {requests_per_month: 20000}
+    value: [{json: "quotes.{quote}.price", unit: "{quote}"}]
+    timestamp: [{json: last_updated}]
+    entity:
+      symbol: [{json: symbol}]
+    extras:
+      change_24h: [{json: "quotes.{quote}.percent_change_24h"}]
+
+  - id: gemini
+    name: Gemini
+    publisher: gemini.com
+    kind: cex
+    miner: {slug: cp-gemini, question: {asset: BTC}}
+    request:
+      url: "https://api.gemini.com/v1/pubticker/{symbol_lower}{quote_lower}"
+    cache_ttl_s: 30
+    value:
+      - {json: last, unit: "{quote}"}          # v1 pubticker
+      - {json: close, unit: "{quote}"}         # v2 ticker (the registered miner's endpoint)
+    timestamp: [{json: volume.timestamp, epoch: ms}]
+    entity:
+      symbol: [{json: symbol}]
+
+  # Wave2 miners (2026-10-08). The asset comes from the question (was hard-coded to BTC, so an
+  # ETH question got a BTC price back). Checked live for BTC and ETH.
+  - id: bingx
+    name: BingX
+    publisher: bingx.com
+    kind: cex
+    miner: {slug: cp-bingx, question: {asset: BTC}}
+    request:
+      url: "https://open-api.bingx.com/openApi/spot/v1/ticker/price?symbol={symbol}-USDT"
+    cache_ttl_s: 30
+    value:
+      - {json: "data.0.trades.0.price", unit: USDT}
+      - {json: "data.0.price", unit: USDT}
+    timestamp: [{json: timestamp, epoch: ms}]
+    entity:
+      symbol: [{json: data.0.symbol}]
+
+  - id: deribit
+    name: Deribit index
+    publisher: deribit.com
+    kind: index
+    miner: {slug: cp-deribit, question: {asset: BTC}}
+    notes: Composite USD index from several exchanges (Deribit publishes btc_usd, eth_usd, sol_usd, xrp_usd ...).
+    request:
+      url: "https://www.deribit.com/api/v2/public/get_index_price?index_name={symbol_lower}_usd"
+    cache_ttl_s: 30
+    value: [{json: result.index_price, unit: USD}]
+
+  - id: dexscreener
+    name: DexScreener pool price
+    publisher: dexscreener.com
+    kind: dex_indexer
+    miner: {slug: cp-dexscreener, question: {asset: BTC}}
+    notes: >
+      The registered miner reads a WBTC/USDC Uniswap pool. WBTC (and WETH) are wrapped tokens,
+      not the native asset, so the entity check rejects them (lookalike asset). No asset row has
+      a dexscreener_pool, so this source is only used to judge that miner.
+    request:
+      url: "https://api.dexscreener.com/latest/dex/pairs/ethereum/{dexscreener_pool}"
+    cache_ttl_s: 60
+    value: [{json: pairs.0.priceUsd, unit: USD}]
+    entity:
+      symbol: [{json: pairs.0.baseToken.symbol}]
+
+  - id: independentreserve
+    name: Independent Reserve
+    publisher: independentreserve.com
+    kind: cex
+    miner: {slug: cp-independentreserve, question: {asset: BTC}}
+    request:
+      url: "https://api.independentreserve.com/Public/GetMarketSummary?primaryCurrencyCode={ir}&secondaryCurrencyCode={quote_lower}"
+    cache_ttl_s: 30
+    value: [{json: LastPrice, unit: "{quote}"}]
+    timestamp: [{json: CreatedTimestampUtc}]
+    entity:
+      symbol: [{json: PrimaryCurrencyCode}]
+
+  - id: lbank
+    name: LBank
+    publisher: lbank.com
+    kind: cex
+    miner: {slug: cp-lbank, question: {asset: BTC}}
+    request:
+      url: "https://api.lbank.info/v2/ticker/24hr.do?symbol={symbol_lower}_usdt"
+    cache_ttl_s: 30
+    value: [{json: "data.0.ticker.latest", unit: USDT}]
+    timestamp: [{json: data.0.timestamp, epoch: ms}]
+    entity:
+      symbol: [{json: data.0.symbol}]
+
+  - id: poloniex
+    name: Poloniex
+    publisher: poloniex.com
+    kind: cex
+    miner: {slug: cp-poloniex, question: {asset: BTC}}
+    request:
+      url: "https://api.poloniex.com/markets/{symbol}_USDT/price"
+    cache_ttl_s: 30
+    value: [{json: price, unit: USDT}]
+    timestamp: [{json: ts, epoch: ms}]
+    entity:
+      symbol: [{json: symbol}]
+
+  - id: upbit
+    name: Upbit
+    publisher: upbit.com
+    kind: cex
+    miner: {slug: cp-upbit, question: {asset: BTC}}
+    request:
+      url: "https://api.upbit.com/v1/ticker?markets=USDT-{symbol}"
+    cache_ttl_s: 30
+    value: [{json: "0.trade_price", unit: USDT}]
+    timestamp: [{json: "0.trade_timestamp", epoch: ms}]
+    entity:
+      symbol: [{json: "0.market"}]
+
+  - id: whitebit
+    name: WhiteBIT
+    publisher: whitebit.com
+    kind: cex
+    miner: {slug: cp-whitebit, question: {asset: BTC}}
+    request:
+      url: "https://whitebit.com/api/v1/public/ticker?market={symbol}_USDT"
+    cache_ttl_s: 30
+    value: [{json: result.last, unit: USDT}]
+
+  # New candidates (2026-10-09 miner hunt) — verified live, agreed with consensus on BTC/ETH/SOL
+  - id: phemex
+    name: Phemex
+    publisher: phemex.com
+    kind: cex
+    miner: {slug: cp-phemex, question: {asset: BTC}}
+    notes: lastEp is price x1e8 fixed-point.
+    request:
+      url: "https://api.phemex.com/md/spot/ticker/24hr?symbol=s{symbol}USDT"
+    cache_ttl_s: 30
+    value: [{json: result.lastEp, scale: "0.00000001", unit: USDT}]
+
+  - id: xt
+    name: XT
+    publisher: xt.com
+    kind: cex
+    miner: {slug: cp-xt, question: {asset: BTC}}
+    request:
+      url: "https://sapi.xt.com/v4/public/ticker/price?symbol={symbol_lower}_usdt"
+    cache_ttl_s: 30
+    value: [{json: "result.0.p", unit: USDT}]
+
+  - id: bitrue
+    name: Bitrue
+    publisher: bitrue.com
+    kind: cex
+    miner: {slug: cp-bitrue, question: {asset: BTC}}
+    request:
+      url: "https://openapi.bitrue.com/api/v1/ticker/price?symbol={symbol}USDT"
+    cache_ttl_s: 30
+    value: [{json: price, unit: USDT}]
+
+  - id: hitbtc
+    name: HitBTC
+    publisher: hitbtc.com
+    kind: cex
+    miner: {slug: cp-hitbtc, question: {asset: BTC}}
+    request:
+      url: "https://api.hitbtc.com/api/3/public/ticker/{symbol}USDT"
+    cache_ttl_s: 30
+    value: [{json: last, unit: USDT}]
+
+  - id: digifinex
+    name: DigiFinex
+    publisher: digifinex.com
+    kind: cex
+    miner: {slug: cp-digifinex, question: {asset: BTC}}
+    request:
+      url: "https://openapi.digifinex.com/v3/ticker?symbol={symbol_lower}_usdt"
+    cache_ttl_s: 30
+    value: [{json: "ticker.0.last", unit: USDT}]
+
+template:
+  answer: "{asset_name} ({symbol}) is {value}."
+  extras:
+    - "24-hour change: {change_24h}."
+    - "24-hour volume-weighted average: {vwap}."
+  footer: "Median of {agreeing_count} agreeing independent sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the price of {asset_name} ({symbol}). Reason: {reason}."
+
+tests:
+  - {id: btc, inputs: {asset: BTC}}
+  - {id: eth-by-name, inputs: {asset: ethereum}}

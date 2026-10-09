@@ -1,0 +1,30 @@
+[
+ {
+  "test": "eth",
+  "source": "dia",
+  "url": "https://api.diadata.org/v1/assetQuotation/Ethereum/0x0000000000000000000000000000000000000000",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:15 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"Symbol\": \"ETH\", \"Name\": \"Ether\", \"Address\": \"0x0000000000000000000000000000000000000000\", \"Blockchain\": \"Ethereum\", \"Price\": 2490.6446120901087, \"PriceYesterday\": 2567.9240344846153, \"VolumeYesterdayUSD\": 4317316254.557616, \"Time\": \"2026-10-09T05:17:59Z\", \"Source\": \"diadata.org\", \"Signature\": \"0xd44c4f8a8cdc4e0dc469b6fee3c7f4701b65fb381c32cbd8224cb5f4e1e03d3a0d3e169c3c9a9a30ab00b035c6898ece92a919148c9bfbca292e6a5036e579c301\"}",
+  "fetched_at": "2026-10-09T05:19:14.090256+00:00"
+ },
+ {
+  "test": "eth",
+  "source": "coingecko",
+  "url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:16 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"ethereum\": {\"usd\": 2491.35}}",
+  "fetched_at": "2026-10-09T05:19:15.097465+00:00"
+ }
+]

@@ -1,0 +1,76 @@
+# Intent spec: COLLATERAL_HAIRCUT_VALUATION. Price source checked live 2026-10-08.
+# Catalog requires a risk HAIRCUT, not just a price. The one Wave2 miner (coll-dia-eth) returns only a
+# mark-to-market price, so it fails the required-facet check with a catalog-grounded reason.
+intent: COLLATERAL_HAIRCUT_VALUATION
+description: Mark-to-market valuation AND risk haircut for a pledged asset.
+answer_type: price
+scope: current
+
+catalog:
+  intent: COLLATERAL_HAIRCUT_VALUATION
+  description: "Calculates mark-to-market valuations and risk haircuts for pledged securities and digital collateral."
+  facets:
+    - {text: "mark-to-market valuations", covered_by: value, required: true,
+       note: "current market price of the pledged asset (USD)"}
+    - {text: "risk haircuts", covered_by: "extra:haircut", required: true,
+       note: "the risk haircut percentage. A price-only feed (e.g. DIA quotation) does NOT provide this and fails here."}
+    - {text: "digital collateral", covered_by: "input:asset", note: "the pinned asset (ETH) is the digital collateral"}
+    - {text: "pledged securities", covered_by: none, note: "equities not covered by the free crypto price feeds"}
+  allowed_kinds: [price_aggregator, dex_indexer, cex]
+  notes: "Haircut is a margin-engine modelling output; no free price feed supplies it, so price-only miners FAIL on the required haircut facet."
+
+inputs:
+  asset: {kind: table, table: assets, required: true, description: "Pledged asset (eth, ...)"}
+
+normalize:
+  assets:
+    eth: {name: Ether, aliases: [eth, ether, ethereum], coingecko: ethereum, dia: Ethereum,
+          dia_address: "0x0000000000000000000000000000000000000000"}
+
+units:
+  canonical: USD
+
+validation:
+  sanity: {min: 0.01, max: 10000000}
+  freshness: {max_age_s: 3600}
+  cross_check:
+    tolerance: {rel: 0.02}
+    min_sources: 2
+    target_sources: 2
+
+extras:
+  haircut: {quantity: percent, sanity: {min: 0, max: 100}}
+
+sources:
+  - id: dia
+    name: DIA asset quotation
+    publisher: diadata.org
+    kind: price_aggregator
+    miner: {slug: coll-dia-eth, question: {asset: eth}}
+    notes: Returns a price only; no haircut. Fails the required haircut facet (catalog mismatch).
+    request:
+      url: "https://api.diadata.org/v1/assetQuotation/{dia}/{dia_address}"
+    cache_ttl_s: 120
+    value: [{json: Price, unit: USD}]
+    timestamp: [{json: Time}]
+    entity:
+      symbol: [{json: Symbol}]
+
+  - id: coingecko
+    name: CoinGecko
+    publisher: coingecko.com
+    kind: price_aggregator
+    request:
+      url: "https://api.coingecko.com/api/v3/simple/price?ids={coingecko}&vs_currencies=usd"
+    cache_ttl_s: 60
+    value: [{json: "{coingecko}.usd", unit: USD}]
+
+template:
+  answer: "{name} mark-to-market is {value}."
+  extras:
+    - "Risk haircut: {haircut}."
+  footer: "Confirmed by {agreeing_count} independent sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the valuation of {name}. Reason: {reason}."
+
+tests:
+  - {id: eth, inputs: {asset: eth}}

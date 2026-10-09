@@ -1,0 +1,58 @@
+[
+ {
+  "test": "google-a",
+  "source": "cloudflare",
+  "url": "https://cloudflare-dns.com/dns-query?name=dns.google&type=A",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:52 GMT",
+   "content-type": "application/dns-json"
+  },
+  "body": "{\"Status\": 0, \"TC\": false, \"RD\": true, \"RA\": true, \"AD\": true, \"CD\": false, \"Question\": [{\"name\": \"dns.google\", \"type\": 1}], \"Answer\": [{\"name\": \"dns.google\", \"type\": 1, \"TTL\": 420, \"data\": \"203.0.113.1\"}, {\"name\": \"dns.google\", \"type\": 1, \"TTL\": 420, \"data\": \"203.0.113.1\"}]}",
+  "fetched_at": "2026-10-09T05:19:49.089635+00:00"
+ },
+ {
+  "test": "google-a",
+  "source": "google",
+  "url": "https://dns.google/resolve?name=dns.google&type=A",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:52 GMT",
+   "content-type": "application/json; charset=UTF-8"
+  },
+  "body": "{\"Status\": 0, \"TC\": false, \"RD\": true, \"RA\": true, \"AD\": true, \"CD\": false, \"Question\": [{\"name\": \"dns.google.\", \"type\": 1}], \"Answer\": [{\"name\": \"dns.google.\", \"type\": 1, \"TTL\": 183, \"data\": \"203.0.113.1\"}, {\"name\": \"dns.google.\", \"type\": 1, \"TTL\": 183, \"data\": \"203.0.113.1\"}]}",
+  "fetched_at": "2026-10-09T05:19:52.324144+00:00"
+ },
+ {
+  "test": "google-a",
+  "source": "alidns",
+  "url": "https://dns.alidns.com/resolve?name=dns.google&type=1",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json",
+   "date": "Fri, 09 Oct 2026 05:19:53 GMT"
+  },
+  "body": "{\"Status\": 0, \"TC\": false, \"RD\": true, \"RA\": true, \"AD\": false, \"CD\": false, \"Question\": {\"name\": \"dns.google.\", \"type\": 1}, \"Answer\": [{\"name\": \"dns.google.\", \"TTL\": 347, \"type\": 1, \"data\": \"203.0.113.1\"}, {\"name\": \"dns.google.\", \"TTL\": 347, \"type\": 1, \"data\": \"203.0.113.1\"}]}",
+  "fetched_at": "2026-10-09T05:19:52.572672+00:00"
+ },
+ {
+  "test": "google-a",
+  "source": "networkcalc",
+  "url": "https://networkcalc.com/api/dns/lookup/dns.google",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:54 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"status\": \"OK\", \"hostname\": \"dns.google\", \"records\": {\"A\": [{\"address\": \"203.0.113.1\", \"ttl\": 30}, {\"address\": \"203.0.113.1\", \"ttl\": 30}], \"CNAME\": [], \"MX\": [], \"NS\": [{\"nameserver\": \"ns4.zdns.google\"}, {\"nameserver\": \"ns2.zdns.google\"}], \"SOA\": [{\"nameserver\": \"ns1.zdns.google\", \"hostmaster\": \"cloud-dns-hostmaster.google.com\"}], \"TXT\": [\"v=spf1 -all\", \"https://xkcd.com/1361/\"]}}",
+  "fetched_at": "2026-10-09T05:19:52.922198+00:00"
+ }
+]

@@ -157,7 +157,13 @@ fi
 
 TX=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('transactionHash',''))")
 STATUS=$(echo "$OUT" | python3 -c "import json,sys; print(json.load(sys.stdin).get('status',''))")
-NEW_ID=$(cast call "$DIAMOND" "minerCount()(uint256)" --rpc-url "$RPC_URL")
+# Registration ID comes from the receipt's MinerRegistered / MinerUpdated event —
+# NOT minerCount() (stale RPC / concurrent registrants gave duplicate IDs 2026-10-05).
+# Also fails closed if the tx reverted (status != 0x1).
+NEW_ID=$(echo "$OUT" | python3 "$ROOT/scripts/reg_id_from_receipt.py" --diamond "$DIAMOND" --mode "$MODE") || {
+  echo "FAIL: tx $TX did not produce a registration (status=$STATUS). Nothing recorded." >&2
+  exit 1
+}
 
 mkdir -p "$ROOT/out"
 REPORT="$ROOT/out/last-registration.json"
@@ -187,6 +193,6 @@ PY
 
 echo ""
 echo "=== DONE ==="
-echo "Registration ID (latest counter): $NEW_ID"
+echo "Registration ID (from receipt event): $NEW_ID"
 echo "TX: https://sepolia.basescan.org/tx/$TX"
 echo "Poll: curl -s https://devnode.telegraphprotocol.com/api/miners/$NEW_ID | jq '.miner|{slug,activation_status,rejection_reason}'"

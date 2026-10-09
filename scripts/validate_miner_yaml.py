@@ -18,6 +18,7 @@ generate-yaml.sh / local_validate_keepers.py so bad YAML never ships again.
 from __future__ import annotations
 
 import argparse
+import os
 import re
 import sys
 from pathlib import Path
@@ -78,7 +79,11 @@ def try_pyyaml_load(text: str) -> tuple[Any | None, str | None]:
     try:
         import yaml  # type: ignore
     except Exception:
-        return None, None
+        # Fail CLOSED: without a real parser, broken YAML (e.g. `[sort, page[size]]`) passed
+        # this gate and was registered on 2026-10-05. Install PyYAML: pip3 install pyyaml
+        if os.environ.get("ALLOW_NO_PYYAML") == "1":
+            return None, None
+        return None, "PyYAML not installed — cannot verify YAML parses (pip3 install pyyaml)"
     safe = getattr(yaml, "safe_load", None)
     if not callable(safe):
         return None, None

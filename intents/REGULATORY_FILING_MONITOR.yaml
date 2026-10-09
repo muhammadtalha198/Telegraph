@@ -1,0 +1,73 @@
+# Intent spec: REGULATORY_FILING_MONITOR. Sources checked live 2026-10-08 (ASX BHP, Nasdaq Nordic Nokia).
+# Each official exchange/portal is the authority for its own issuers' disclosures.
+intent: REGULATORY_FILING_MONITOR
+description: Whether an official disclosure portal lists statutory filings for an issuer.
+answer_type: boolean
+scope: current
+
+catalog:
+  intent: REGULATORY_FILING_MONITOR
+  description: "Parses statutory regulatory filings, 10-K/10-Q disclosures, and disclosure updates from financial oversight portals."
+  facets:
+    - {text: "disclosure updates from financial oversight portals", covered_by: value, required: true,
+       note: "the official portal lists statutory disclosures for the issuer ('a filing appeared or it did not')"}
+    - {text: "statutory regulatory filings", covered_by: "extra:latest", note: "headline of the most recent disclosure"}
+    - {text: "10-k/10-q disclosures", covered_by: none, note: "US EDGAR form types; these portals use their own disclosure categories"}
+  allowed_kinds: [filing_portal]
+  notes: "Each exchange is the sole authority for its listed issuers, so a source verifies on its own."
+
+inputs:
+  market: {kind: enum, required: false, default: asx, values: [asx, nasdaq-nordic],
+           aliases: {asx: asx, "nasdaq-nordic": nasdaq-nordic}}
+  company: {kind: text, required: true, description: "Issuer ticker/name on that market"}
+
+validation:
+  freshness: {max_age_s: 0}            # presence check; the portal is authoritative
+  cross_check:
+    tolerance: {abs: 0}
+    min_sources: 1
+    target_sources: 1
+
+extras:
+  latest: {quantity: text}
+
+sources:
+  - id: asx
+    name: ASX announcements
+    publisher: asx.com.au
+    kind: filing_portal
+    authority: true
+    when: {market: asx}
+    miner: {slug: filing-asx-announcements, question: {market: asx, company: BHP}}
+    request:
+      url: "https://asx.api.markitdigital.com/asx-research/1.0/companies/{company}/announcements"
+    cache_ttl_s: 600
+    value: [{json: "data.items.0.headline", exists: true}]
+    extras:
+      latest: [{json: "data.items.0.headline"}]
+
+  - id: nasdaq-nordic
+    name: Nasdaq Nordic exchange notices
+    publisher: nasdaq.com
+    kind: filing_portal
+    authority: true
+    when: {market: nasdaq-nordic}
+    miner: {slug: filing-nasdaq-nordic-notices, question: {market: nasdaq-nordic, company: Nokia}}
+    notes: JSONP (cb(...)); the reader unwraps it.
+    request:
+      url: "https://api.news.eu.nasdaq.com/news/query.action?globalGroup=exchangeNotice&displayLanguage=en&timeZone=CET&company={company}&start=0&limit=5&countResults=false&globalName=NordicAllMarkets&dir=DESC&callback=cb"
+    cache_ttl_s: 600
+    value: [{json: "results.item.0.headline", exists: true}]
+    extras:
+      latest: [{json: "results.item.0.headline"}]
+
+template:
+  answer: "{value}"
+  "yes": "{company} has statutory disclosures on {market}."
+  "no": "No statutory disclosures found for {company} on {market}."
+  footer: "Per {verified_by} at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify disclosures for {company} on {market}. Reason: {reason}."
+
+tests:
+  - {id: asx-bhp, inputs: {market: asx, company: BHP}}
+  - {id: nasdaq-nokia, inputs: {market: nasdaq-nordic, company: Nokia}}

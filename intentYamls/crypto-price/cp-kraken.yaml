@@ -38,7 +38,7 @@ input_schema:
   type: object
   required: [pair]
   properties:
-    pair: {type: string, description: "pair", default: "{kraken_pair}"}
+    pair: {type: string, description: "pair", default: "XBTUSD"}
 
 semantics:
   signal_mapping:

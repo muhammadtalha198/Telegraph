@@ -1,0 +1,29 @@
+[
+ {
+  "test": "ca-unemp-2019",
+  "source": "statcan",
+  "url": "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorByReferencePeriodRange?vectorIds=%222062815%22&startRefPeriod=2019-12-01&endReferencePeriod=2019-12-01",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json"
+  },
+  "body": "[{\"status\": \"SUCCESS\", \"object\": {\"responseStatusCode\": 0, \"productId\": 14100287, \"vectorId\": 2062815, \"vectorDataPoint\": [{\"refPer\": \"2019-12-01\", \"value\": 5.6, \"decimals\": 1, \"frequencyCode\": 6}]}}]",
+  "fetched_at": "2026-10-09T05:20:11.275121+00:00"
+ },
+ {
+  "test": "ca-unemp-2019",
+  "source": "fred",
+  "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=LRUNTTTTCAM156S&cosd=2019-12-01&coed=2019-12-01",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/csv",
+   "date": "Fri, 09 Oct 2026 05:20:13 GMT"
+  },
+  "body": "observation_date,LRUNTTTTCAM156S\n2019-12-01,5.6",
+  "fetched_at": "2026-10-09T05:20:12.708400+00:00"
+ }
+]

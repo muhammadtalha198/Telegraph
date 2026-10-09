@@ -1,0 +1,30 @@
+[
+ {
+  "test": "visa-dk",
+  "source": "binlist",
+  "url": "https://lookup.binlist.net/45717360",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:20:17 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"number\": {}, \"scheme\": \"visa\", \"type\": \"debit\", \"brand\": \"Visa Classic/Dankort\", \"country\": {\"numeric\": \"208\", \"alpha2\": \"DK\", \"name\": \"Denmark\", \"emoji\": \"🇩🇰\", \"currency\": \"DKK\", \"latitude\": 56, \"longitude\": 10}, \"bank\": {\"name\": \"Jyske Bank A/S\"}}",
+  "fetched_at": "2026-10-09T05:20:16.209281+00:00"
+ },
+ {
+  "test": "visa-dk",
+  "source": "handyapi",
+  "url": "https://data.handyapi.com/bin/45717360",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:20:17 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"Status\": \"SUCCESS\", \"Scheme\": \"VISA\", \"Type\": \"DEBIT\", \"Issuer\": \"JYSKE BANK\", \"CardTier\": \"DANKORT\", \"Country\": {\"A2\": \"DK\", \"A3\": \"DNK\", \"N3\": \"208\", \"ISD\": \"45\", \"Name\": \"Denmark\", \"Cont\": \"Europe\"}, \"Luhn\": true}",
+  "fetched_at": "2026-10-09T05:20:16.959041+00:00"
+ }
+]

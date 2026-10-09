@@ -1,0 +1,44 @@
+[
+ {
+  "test": "validator-1",
+  "source": "publicnode",
+  "url": "https://ethereum-beacon-api.publicnode.com/eth/v1/beacon/states/finalized/validators/1",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:20 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"execution_optimistic\": false, \"finalized\": true, \"data\": {\"index\": \"1\", \"balance\": \"32005186804\", \"status\": \"active_ongoing\", \"validator\": {\"pubkey\": \"0xa1d1ad0714035353258038e964ae9675dc0252ee22cea896825c01458e1807bfad2f9969338798548d9858a571f7425c\", \"withdrawal_credentials\": \"0x02000000000000000000000015f4b914a0ccd14333d850ff311d6dafbfbaa32b\", \"effective_balance\": \"32000000000\", \"slashed\": false, \"activation_eligibility_epoch\": \"0\", \"activation_epoch\": \"0\", \"exit_epoch\": \"18446744073709551615\", \"withdrawable_epoch\": \"18446744073709551615\"}}}",
+  "fetched_at": "2026-10-09T05:21:19.126834+00:00"
+ },
+ {
+  "test": "validator-1",
+  "source": "lodestar",
+  "url": "https://lodestar-mainnet.chainsafe.io/eth/v1/beacon/states/finalized/validators/1",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:21 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"data\": {\"index\": \"1\", \"balance\": \"32005186804\", \"status\": \"active_ongoing\", \"validator\": {\"pubkey\": \"0xa1d1ad0714035353258038e964ae9675dc0252ee22cea896825c01458e1807bfad2f9969338798548d9858a571f7425c\", \"withdrawal_credentials\": \"0x02000000000000000000000015f4b914a0ccd14333d850ff311d6dafbfbaa32b\", \"effective_balance\": \"32000000000\", \"slashed\": false, \"activation_eligibility_epoch\": \"0\", \"activation_epoch\": \"0\", \"exit_epoch\": \"18446744073709551615\", \"withdrawable_epoch\": \"18446744073709551615\"}}, \"execution_optimistic\": false, \"finalized\": true}",
+  "fetched_at": "2026-10-09T05:21:19.960140+00:00"
+ },
+ {
+  "test": "validator-1",
+  "source": "nimbus",
+  "url": "http://testing.mainnet.beacon-api.nimbus.team/eth/v1/beacon/states/finalized/validators/1",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:21:23 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"execution_optimistic\": true, \"finalized\": true, \"data\": {\"index\": \"1\", \"balance\": \"32005186804\", \"status\": \"active_ongoing\", \"validator\": {\"pubkey\": \"0xa1d1ad0714035353258038e964ae9675dc0252ee22cea896825c01458e1807bfad2f9969338798548d9858a571f7425c\", \"withdrawal_credentials\": \"0x02000000000000000000000015f4b914a0ccd14333d850ff311d6dafbfbaa32b\", \"effective_balance\": \"32000000000\", \"slashed\": false, \"activation_eligibility_epoch\": \"0\", \"activation_epoch\": \"0\", \"exit_epoch\": \"18446744073709551615\", \"withdrawable_epoch\": \"18446744073709551615\"}}}",
+  "fetched_at": "2026-10-09T05:21:21.152555+00:00"
+ }
+]

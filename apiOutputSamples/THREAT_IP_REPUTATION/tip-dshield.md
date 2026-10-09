@@ -1,7 +1,7 @@
 ---
 intent: THREAT_IP_REPUTATION
 slug: tip-dshield
-status: approved
+status: pending_review
 captured_at: 2026-10-05T09:33:28Z
 request_url: https://isc.sans.edu/api/ip/1.1.1.1?json
 content_type: application/json
@@ -13,11 +13,11 @@ answer_requirement: |
   Must return a malicious-activity risk assessment / reputation for the IP asked.
 capture_note: |
   golden-test PASS: SANS ISC DShield
-reviewer_note: "auto_review: [1.00|heuristic+llm] The response contains details about the IP's network and associations but lacks a risk assessment."
-reviewed_at: 2026-10-05T11:56:01Z
-review_source: auto_review
-review_mode: heuristic+llm
-llm_used: true
+reviewer_note: "2026-10-07 re-review: judge approved but its own reason says the answer is missing (enum-echo/contradiction bug, fixed)"
+reviewed_at: ""
+review_source: manual
+review_mode: manual
+llm_used: false
 review_confidence: 1.000
 ---
 

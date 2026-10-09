@@ -1,0 +1,84 @@
+# Intent spec: today's full calendar date in a timezone.
+# Not an on-chain catalog intent (local verifier only). It is the clearest test of the
+# answer_type rule: "Wednesday" or "2026-W41" are TRUE-but-wrong-type answers and must be rejected.
+intent: DATE_TODAY
+description: Today's full calendar date (day, month, year) in a timezone or city (UTC by default).
+answer_type: date
+scope: today
+
+catalog: {local_only: true, notes: "not an Intent Catalog intent; local verifier for the date/time examples"}
+
+inputs:
+  timezone: {kind: timezone, required: false, default: UTC, description: "IANA zone (Asia/Karachi), 'UTC', or a city"}
+
+validation:
+  sanity: {max_days_from_today: 1}            # vs our own clock: catches 1970 / epoch-zero answers
+  freshness: {max_age_s: 120}                 # near midnight, sources may straddle the date change
+  cross_check:
+    tolerance: {abs: 0}                       # dates must match exactly
+    min_sources: 2
+    target_sources: 3
+
+sources:
+  - id: timeapi
+    name: TimeAPI.io
+    publisher: timeapi.io
+    kind: clock
+    request:
+      url: "https://timeapi.io/api/time/current/zone?timeZone={timezone}"
+    cache_ttl_s: 30
+    value: [{json: date, date_order: MDY}]    # "10/08/2026"
+    entity:
+      timezone: [{json: timeZone}]
+
+  - id: time-now
+    name: time.now
+    publisher: time.now
+    kind: clock
+    request:
+      url: "https://time.now/developer/api/timezone/{timezone}"
+    cache_ttl_s: 30
+    value: [{json: datetime}]                 # ISO with offset
+    entity:
+      timezone: [{json: timezone}]
+
+  - id: cloudflare
+    name: Cloudflare trace (text)
+    publisher: cloudflare.com
+    kind: clock
+    request:
+      url: "https://www.cloudflare.com/cdn-cgi/trace"
+    cache_ttl_s: 30
+    value: [{regex: '(?m)^ts=(\d+(?:\.\d+)?)\s*$', epoch: s}]
+
+  - id: google-date
+    name: Google HTTP Date header
+    publisher: google.com
+    kind: clock
+    request:
+      url: "https://www.google.com/generate_204"
+    cache_ttl_s: 30
+    value: [{header: Date}]                   # RFC 2822, GMT
+
+  - id: worldtimeapi
+    name: WorldTimeAPI
+    publisher: worldtimeapi.org
+    kind: clock
+    notes: Often resets connections; kept last as a fallback.
+    request:
+      url: "https://worldtimeapi.org/api/timezone/{timezone}"
+      timeout_s: 8
+    cache_ttl_s: 30
+    value: [{json: datetime}]
+    entity:
+      timezone: [{json: timezone}]
+
+template:
+  answer: "Today's date in {tz_label} is {value}."
+  footer: "Checked against {agreeing_count} independent clocks at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify today's date in {tz_label}. Reason: {reason}."
+
+tests:
+  - {id: utc, inputs: {timezone: UTC}}
+  - {id: karachi, inputs: {timezone: Asia/Karachi}}
+  - {id: tokyo-by-city, inputs: {timezone: Tokyo}}

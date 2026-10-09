@@ -87,6 +87,19 @@ upload_omni() {
     echo "YAML_URL=$url"
     return 0
   fi
+  # Built-in sync: scp to the Omni host's nginx dir (OMNI_SSH_KEY = path to telegraphNode1.pem).
+  if [[ -n "${OMNI_SSH_KEY:-}" && -f "${OMNI_SSH_KEY}" ]]; then
+    local target="${OMNI_SSH_TARGET:-ubuntu@13.237.89.59}" dir="${OMNI_YAML_DIR:-/var/www/miner-yamls}"
+    local sshopt=(-i "$OMNI_SSH_KEY" -o StrictHostKeyChecking=accept-new -o ConnectTimeout=15)
+    echo "Uploading $NAME to $target:$dir via SSH" >&2
+    scp -q "${sshopt[@]}" "$ABS" "$target:/tmp/$NAME" \
+      && ssh "${sshopt[@]}" "$target" "sudo install -m 0644 /tmp/$NAME $dir/$NAME && rm -f /tmp/$NAME" \
+      || { echo "omni SSH upload failed" >&2; return 1; }
+    curl -sSL -m 30 -A "Go-http-client/1.1" "$url" -o /tmp/omni-fetched.yaml
+    cmp -s "$ABS" /tmp/omni-fetched.yaml || { echo "omni byte mismatch after SSH upload" >&2; return 1; }
+    echo "YAML_URL=$url"
+    return 0
+  fi
   if [[ -n "${OMNI_YAML_SYNC_CMD:-}" ]]; then
     echo "Running OMNI_YAML_SYNC_CMD for $NAME" >&2
     # shellcheck disable=SC2086
@@ -100,7 +113,8 @@ upload_omni() {
 }
 
 upload_paste() {
-  echo "Dropbox token missing — using paste.rs fallback (set DROPBOX_ACCESS_TOKEN for Dropbox)." >&2
+  echo "WARNING: paste.rs fallback. Anyone can 'curl -X DELETE' a paste.rs URL, and the URL is public" >&2
+  echo "         on-chain — a miner hosted here can be taken down by anyone. Use omni (OMNI_SSH_KEY)." >&2
   local url attempt
   for attempt in 1 2 3 4 5; do
     url=$(curl -sS -m 45 --data-binary @"$ABS" https://paste.rs)
@@ -117,22 +131,20 @@ upload_paste() {
     echo "paste.rs byte mismatch attempt $attempt" >&2
     sleep $((attempt * 3))
   done
-  # secondary public paste host
-  echo "Trying 0x0.st fallback…" >&2
-  url=$(curl -sS -m 45 -F "file=@${ABS}" https://0x0.st)
-  [[ "$url" == https://* ]] || { echo "0x0.st failed: $url" >&2; return 1; }
-  curl -sS -m 20 -A "Go-http-client/1.1" "$url" -o /tmp/paste-fetched.yaml
-  cmp -s "$ABS" /tmp/paste-fetched.yaml || { echo "0x0.st byte mismatch" >&2; return 1; }
-  echo "YAML_URL=$url"
+  # 0x0.st fallback removed 2026-10-07: it auto-expires files (30d-1y) -> miner silently dies.
+  echo "paste.rs failed after 5 attempts" >&2
+  return 1
 }
 
-if [[ -n "${DROPBOX_ACCESS_TOKEN:-}" ]]; then
-  upload_dropbox
-elif upload_omni; then
+# Order: omni (our server) -> Dropbox -> paste.rs only if ALLOW_PASTE_FALLBACK=true.
+if upload_omni; then
   :
-elif [[ "${ALLOW_PASTE_FALLBACK:-true}" == "true" ]]; then
+elif [[ -n "${DROPBOX_ACCESS_TOKEN:-}" ]] && upload_dropbox; then
+  :
+elif [[ "${ALLOW_PASTE_FALLBACK:-false}" == "true" ]]; then
   upload_paste
 else
-  echo "ERROR: no host path (Dropbox / omni / paste)" >&2
+  echo "ERROR: no durable host. Set OMNI_SSH_KEY=/path/to/telegraphNode1.pem (preferred) or" >&2
+  echo "       DROPBOX_ACCESS_TOKEN. paste.rs is unsafe (public DELETE) and is off by default." >&2
   exit 1
 fi

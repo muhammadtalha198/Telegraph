@@ -9,8 +9,13 @@ Order (mandatory — no bypass without ALLOW_UNSAFE_REGISTER=1):
   3) v2_golden_gate.py --sample SAMPLE
      → if candidates/*.json defines this slug, must PASS; else SKIP (still OK)
   4) validate_miner_yaml.py
-  5) Live probe of sample request_url — non-empty body
-  6) Hosted YAML byte-match is done in register-miner-v2.sh
+  5) pin_consistency_check.py --file (shared pin, distinct publisher, unique slug)
+  6) Sample asks the SAME question as the YAML (sample request_url == the node's request)
+  7) minercheck gate: the miner's live answer, called as the node calls it, passes
+     E1/E5/E2/E4 and agrees with independent sources (intents/<INTENT>.yaml);
+     SKIP if the intent has no spec yet
+  8) Live probe of the YAML request — content family matches the sample
+  9) Hosted YAML byte-match is done in register-miner-v2.sh
 
 Manual set_sample_status.py approved alone does NOT unlock gas — step 2 re-runs LLM review.
 
@@ -24,7 +29,6 @@ from __future__ import annotations
 
 import argparse
 import os
-import re
 import subprocess
 import sys
 import urllib.error
@@ -34,37 +38,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SCRIPTS = Path(__file__).resolve().parent
 UA = "telegraph-register-gates-v2/1"
-
-
-def parse_front_matter(text: str) -> dict[str, str]:
-    if not text.startswith("---"):
-        return {}
-    parts = text.split("---", 2)
-    if len(parts) < 3:
-        return {}
-    fm = parts[1]
-    out: dict[str, str] = {}
-    key = None
-    buf: list[str] = []
-    for line in fm.splitlines():
-        if re.match(r"^[a-z_]+:", line) and not line.startswith(" "):
-            if key is not None:
-                out[key] = "\n".join(buf).strip().strip('"')
-            key, _, rest = line.partition(":")
-            key = key.strip()
-            rest = rest.strip()
-            if rest == "|":
-                buf = []
-            else:
-                buf = [rest]
-                out[key] = rest.strip('"')
-                key = None
-                buf = []
-        elif key is not None:
-            buf.append(line)
-    if key is not None:
-        out[key] = "\n".join(buf).strip().strip('"')
-    return out
+sys.path.insert(0, str(SCRIPTS))
+sys.path.insert(0, str(ROOT))
+from sample_file import parse_front_matter, raw_body  # noqa: E402
 
 
 def run_cmd(argv: list[str], label: str) -> int:
@@ -75,48 +51,84 @@ def run_cmd(argv: list[str], label: str) -> int:
     return p.returncode
 
 
-def live_probe(url: str, timeout: int = 60, *, sample_raw: str = "") -> None:
-    print(f"\n----- live probe -----")
-    print("+ GET", url[:120] + ("…" if len(url) > 120 else ""))
-    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+class _NoCrossHostRedirect(urllib.request.HTTPRedirectHandler):
+    """Follow same-host redirects only. A cross-host 302 (e.g. an RPC host bouncing a GET
+    to its marketing site) is NOT the API answering — it used to pass as 'non-empty body'."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        from urllib.parse import urlparse
+        if urlparse(newurl).hostname != urlparse(req.full_url).hostname:
+            raise urllib.error.HTTPError(req.full_url, code,
+                                         f"cross-host redirect to {newurl}", headers, fp)
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+_OPENER = urllib.request.build_opener(_NoCrossHostRedirect)
+
+
+def yaml_request(ypath: Path) -> tuple[str, str]:
+    """(method, url) exactly as the node will call it: {placeholder} path params are filled
+    from the defaults and dropped from the query (Telegraph generic.go); the rest become
+    query params. Before 2026-10-08 this left '{address}' literally in the path."""
+    import yaml  # validate_miner_yaml already requires PyYAML
+    from minercheck.gate import node_request
     try:
-        with urllib.request.urlopen(req, timeout=timeout) as r:
-            body = r.read()
-    except urllib.error.HTTPError as e:
-        # Many public Ethereum JSON-RPC endpoints reject GET (400/405); probe with eth_blockNumber.
-        looks_rpc = (
-            "/rpc" in url.lower()
-            or url.rstrip("/").endswith(".io")
-            or '"jsonrpc"' in (sample_raw or "")[:200].lower()
-            or "jsonrpc" in (sample_raw or "")[:200].lower()
-        )
-        if e.code in (400, 405, 415, 422) and looks_rpc:
-            print(f"GET → HTTP {e.code}; retrying JSON-RPC POST eth_blockNumber")
-            payload = b'{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}'
-            preq = urllib.request.Request(
-                url,
-                data=payload,
-                method="POST",
-                headers={
-                    "User-Agent": UA,
-                    "Accept": "application/json",
-                    "Content-Type": "application/json",
-                },
-            )
-            with urllib.request.urlopen(preq, timeout=timeout) as r:
-                body = r.read()
-        else:
-            raise
+        return node_request(yaml.safe_load(ypath.read_text(encoding="utf-8")) or {})
+    except Exception as e:  # MinerCheckError / YAML error -> gate failure with the reason
+        raise RuntimeError(str(e)) from e
+
+
+def same_question(sample_url: str, node_url: str) -> bool:
+    """Same host, path (trailing '/' ignored) and non-blank query parameters (any order)."""
+    from urllib.parse import parse_qsl, unquote, urlparse
+    a, b = urlparse(sample_url.strip()), urlparse(node_url.strip())
+    path = lambda u: unquote(u.path).rstrip("/") or "/"  # noqa: E731
+    query = lambda u: sorted(parse_qsl(u.query))  # blank values dropped, as the node drops empty defaults  # noqa: E731
+    return (a.scheme, a.hostname, path(a), query(a)) == (b.scheme, b.hostname, path(b), query(b))
+
+
+def _family(ctype: str, body: bytes) -> str:
+    """Body decides (headers lie); binary media types are trusted."""
+    from minercheck.reader import detect_format
+    c = (ctype or "").lower()
+    if c.startswith(("audio/", "image/", "application/octet")):
+        return "binary"
+    fmt = detect_format(body.decode("utf-8", "replace") if body else "", c)
+    return fmt if fmt in ("json", "html", "binary") else "text"
+
+
+def live_probe(ypath: Path, *, sample_ctype: str = "", sample_raw: str = "", timeout: int = 60) -> None:
+    """Call the miner exactly as its YAML declares (no POST rescue, no cross-host redirects)
+    and require the same content family as the approved sample."""
+    print("\n----- live probe (as the node will call it) -----")
+    method, url = yaml_request(ypath)
+    print(f"+ {method}", url[:160] + ("…" if len(url) > 160 else ""))
+    if method != "GET":
+        # YAML POST bodies are built per-request by the node from on_chain.request fields;
+        # we cannot reproduce that faithfully here, so do not pretend to.
+        raise RuntimeError(f"YAML declares {method}; live probe only verifies GET miners — needs manual review")
+    req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*"})
+    with _OPENER.open(req, timeout=timeout) as r:  # HTTPError (incl. 4xx/5xx/cross-host) -> FAIL
+        body, ctype = r.read(), r.headers.get("Content-Type", "")
     if not body.strip():
         raise RuntimeError("empty response body")
-    print(f"PASS  live probe ({len(body)} bytes)")
+    got = _family(ctype, body)
+    want = _family(sample_ctype, (sample_raw or "").encode())
+    if got == "html" and want != "html":
+        raise RuntimeError("YAML request returned an HTML page, not the API answer the sample shows")
+    if want in ("json", "html") and got != want:
+        raise RuntimeError(f"YAML request returned {got}, but the approved sample is {want} — "
+                           "sample was not captured the way the node calls this miner")
+    print(f"PASS  live probe ({len(body)} bytes, {got})")
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--file", required=True, type=Path, help="miner YAML")
     ap.add_argument("--sample", required=True, type=Path, help="apiOutputSamples/…/*.md")
-    ap.add_argument("--skip-live", action="store_true")
+    ap.add_argument("--skip-live", action="store_true", help="UNSAFE — only with ALLOW_UNSAFE_REGISTER=1")
+    ap.add_argument("--skip-verify", action="store_true",
+                    help="skip minercheck answer verification — only with ALLOW_UNSAFE_REGISTER=1")
     ap.add_argument(
         "--skip-auto-review",
         action="store_true",
@@ -143,6 +155,10 @@ def main() -> int:
         return 1
 
     unsafe = os.environ.get("ALLOW_UNSAFE_REGISTER", "").strip() == "1"
+    for flag, on in (("--skip-live", a.skip_live), ("--skip-verify", a.skip_verify)):
+        if on and not unsafe:
+            print(f"FAIL  {flag} requires ALLOW_UNSAFE_REGISTER=1")
+            return 1
 
     # --- Gate A: auto_review + LLM (mandatory) ---
     if a.skip_auto_review:
@@ -217,22 +233,52 @@ def main() -> int:
     ):
         return 1
 
-    if not a.skip_live:
-        url = (meta.get("request_url") or "").strip()
-        if not url.startswith("http"):
-            print("FAIL  sample front matter missing request_url")
+    if run_cmd(
+        [sys.executable, str(SCRIPTS / "pin_consistency_check.py"), "--file", str(ypath)],
+        "shared pin (shared_pins.json — same question as the intent's rank set)",
+    ):
+        return 1
+
+    # --- Gate C: the approved sample must be THIS miner's question ---
+    print("\n----- sample question == YAML question -----")
+    try:
+        _m, node_url = yaml_request(ypath)
+    except RuntimeError as e:
+        print(f"FAIL  cannot build the node request from the YAML: {e}")
+        return 1
+    sample_url = str(meta.get("request_url") or "")
+    if not same_question(sample_url, node_url):
+        print(f"FAIL  approved sample asked a different question than the YAML will:\n"
+              f"      sample: {sample_url}\n      yaml:   {node_url}\n"
+              "      Re-capture the sample with the YAML's request, or fix the YAML defaults.")
+        return 1
+    print("PASS  sample request == node request")
+
+    # --- Gate D: deterministic answer verification (intents/<INTENT>.yaml) ---
+    if a.skip_verify:
+        print("WARN  skipping minercheck verify (ALLOW_UNSAFE_REGISTER=1)")
+    else:
+        from v2_intent_folders import canonical_intent
+        intent = canonical_intent(meta.get("intent") or spath.parent.name)
+        if run_cmd([sys.executable, "-m", "minercheck", "gate", "--file", str(ypath), "--intent", intent],
+                   "minercheck: miner answer verified against independent sources (SKIP if no spec)"):
+            print("FAIL  miner answer is not verified — do not register")
             return 1
+
+    if not a.skip_live:
         try:
             sample_text = spath.read_text(encoding="utf-8", errors="replace")
-            mraw = re.search(r"```(?:json|text)?\n(.*?)```", sample_text, re.S)
-            live_probe(url, sample_raw=(mraw.group(1) if mraw else "")[:500])
+            live_probe(ypath, sample_ctype=str(meta.get("content_type") or ""),
+                       sample_raw=raw_body(sample_text)[:500])
         except Exception as e:
             print(f"FAIL  live probe: {e}")
             return 1
 
-    print("\nPASS  all V2 gates (auto_review+LLM + golden-if-any + yaml + live) — safe to registerMiner")
+    print("\nPASS  all V2 gates (auto_review+LLM + golden-if-any + yaml + pin + question + verify + live)"
+          " — safe to registerMiner")
     return 0
 
 
 if __name__ == "__main__":
+    sys.stdout.reconfigure(line_buffering=True)  # keep our lines in order with the gate subprocesses' output
     raise SystemExit(main())

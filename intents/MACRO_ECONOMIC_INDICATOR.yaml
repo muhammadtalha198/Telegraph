@@ -1,0 +1,63 @@
+# Intent spec: MACRO_ECONOMIC_INDICATOR. Sources checked live 2026-10-08 (Canada unemployment Dec 2019 = 5.6%).
+intent: MACRO_ECONOMIC_INDICATOR
+description: A published national economic statistic for a pinned country, indicator and period.
+answer_type: percent
+scope: historical
+
+catalog:
+  intent: MACRO_ECONOMIC_INDICATOR
+  description: "Aggregates released central bank interest rates, consumer price index (CPI) updates, and unemployment figures."
+  facets:
+    - {text: "unemployment figures", covered_by: value, required: true,
+       note: "the published rate for the pinned country+indicator+period; here: unemployment %"}
+    - {text: "central bank interest rates", covered_by: none, note: "other indicators pin to other series rows; not this question"}
+    - {text: "consumer price index", covered_by: none, note: "as above"}
+  allowed_kinds: [stats_agency]
+  notes: "The indicator+period is pinned by request; a 'latest value' flag that overrides the period is not used."
+
+inputs:
+  series: {kind: table, table: series, required: true, description: "country+indicator (ca-unemployment, ...)"}
+  period: {kind: text, required: false, default: "2019-12-01", description: "Reference month (YYYY-MM-01)"}
+
+# Each series row maps to the matching feed at every independent compiler.
+normalize:
+  series:
+    ca-unemployment: {name: "Canada unemployment rate", aliases: ["ca-unemployment", "canada-unemployment"],
+                      statcan_vector: "2062815", fred_series: LRUNTTTTCAM156S}
+
+validation:
+  sanity: {min: 0, max: 100}          # a percentage rate
+  freshness: {max_age_s: 0}           # a settled figure for a past period never changes
+  cross_check:
+    tolerance: {rel: 0.015, abs: 0.1}  # 150 bps (Usman) or 0.1pp: honest one-decimal rounding
+    min_sources: 2
+    target_sources: 2
+
+sources:
+  - id: statcan
+    name: Statistics Canada WDS
+    publisher: statcan.gc.ca
+    kind: stats_agency
+    miner: {slug: macro-statcan-wds, question: {series: ca-unemployment, period: "2019-12-01"}}
+    request:
+      url: "https://www150.statcan.gc.ca/t1/wds/rest/getDataFromVectorByReferencePeriodRange?vectorIds=%22{statcan_vector}%22&startRefPeriod={period}&endReferencePeriod={period}"
+    cache_ttl_s: 86400
+    value: [{json: "0.object.vectorDataPoint.-1.value"}]
+
+  - id: fred
+    name: FRED (OECD via St. Louis Fed)
+    publisher: stlouisfed.org
+    kind: stats_agency
+    notes: CSV; the column header is the series id, last row is the pinned month.
+    request:
+      url: "https://fred.stlouisfed.org/graph/fredgraph.csv?id={fred_series}&cosd={period}&coed={period}"
+    cache_ttl_s: 86400
+    value: [{csv: "{fred_series}", row: -1}]
+
+template:
+  answer: "{name} for {period} was {value}."
+  footer: "Confirmed by {agreeing_count} independent statistical agencies ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify {name} for {period}. Reason: {reason}."
+
+tests:
+  - {id: ca-unemp-2019, inputs: {series: ca-unemployment, period: "2019-12-01"}}

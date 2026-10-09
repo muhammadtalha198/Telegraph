@@ -28,6 +28,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 SAMPLES = ROOT / "apiOutputSamples"
 OUT = ROOT / "out"
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(ROOT))
+from sample_file import parse_sample, replace_or_add  # noqa: E402
 
 _env = ROOT / ".env"
 if _env.is_file():
@@ -52,63 +55,50 @@ class Verdict:
     mode: str
 
 
-def parse_sample(path: Path) -> dict:
-    text = path.read_text(encoding="utf-8")
-    if not text.startswith("---"):
-        raise ValueError("missing front matter")
-    parts = text.split("---", 2)
-    fm_raw, body = parts[1], parts[2]
-    meta: dict[str, str] = {}
-    key = None
-    buf: list[str] = []
-    for line in fm_raw.splitlines():
-        if re.match(r"^[a-z_]+:", line) and not line.startswith(" "):
-            if key is not None:
-                meta[key] = "\n".join(buf).strip().strip('"')
-            key, _, rest = line.partition(":")
-            key = key.strip()
-            rest = rest.strip()
-            if rest == "|":
-                buf = []
-            else:
-                meta[key] = rest.strip('"')
-                key = None
-                buf = []
-        elif key is not None:
-            buf.append(line)
-    if key is not None:
-        meta[key] = "\n".join(buf).strip().strip('"')
-    m = re.search(r"```(?:json|text)?\n(.*?)```", body, re.S)
-    raw = m.group(1).strip() if m else ""
-    parsed = None
-    try:
-        parsed = json.loads(raw)
-    except Exception:
-        pass
-    return {"meta": meta, "raw": raw, "json": parsed, "path": path, "full": text}
-
-
 # ---------------------------------------------------------------- layer 1
 BAD = [r"^\s*<!doctype html", r"^\s*<html", r"rate.?limit", r"too many requests", r"\bnot found\b",
        r"access denied", r"forbidden", r"unauthorized", r"invalid api key", r"api key.*(required|missing)",
        r"service unavailable", r"\(empty body\)"]
 
 
+_ERROR_KEYS = ("error", "errors", "message", "msg", "detail", "status", "retmsg", "error_message")
+
+
 def hard_check(raw: str) -> str | None:
     t = raw.strip()
     if not t or t in ("{}", "[]", "null"):
         return "empty body"
-    head = t[:600].lower()
+    try:
+        o = json.loads(t)
+    except Exception:
+        o = None
+    if isinstance(o, dict) and o.get("error") and len(o) <= 3:
+        return "JSON error object"
+    if isinstance(o, (dict, list)):
+        # Structured payload: only error-ish fields may say "rate limit" / "not found". A data key
+        # like "rate_limit" or a record titled "Not Found" used to reject valid answers.
+        texts = [str(v) for k, v in o.items() if str(k).lower() in _ERROR_KEYS] if isinstance(o, dict) else []
+        head = " ".join(texts)[:600].lower()
+    else:
+        head = t[:600].lower()
     for pat in BAD:
         if re.search(pat, head, re.I | re.M):
             return f"error-like body ({pat})"
-    try:
-        o = json.loads(t)
-        if isinstance(o, dict) and o.get("error") and len(o) <= 3:
-            return "JSON error object"
-    except Exception:
-        pass
     return None
+
+
+def deterministic(intent: str, meta: dict, s: dict) -> tuple[str, str] | None:
+    """minercheck verdict on the captured body for intents with a spec (None = not applicable)."""
+    try:
+        from minercheck.sample_check import check_sample
+    except Exception as e:  # PyYAML missing etc.: the LLM path still runs
+        print(f"WARN  minercheck unavailable: {e}", file=sys.stderr)
+        return None
+    try:
+        return check_sample(meta, s["raw"], slug=meta.get("slug") or s["path"].stem, intent=intent)
+    except Exception as e:  # never let the helper crash a review
+        print(f"WARN  minercheck sample check failed: {type(e).__name__}: {e}", file=sys.stderr)
+        return None
 
 
 # ---------------------------------------------------------------- layer 2
@@ -353,8 +343,11 @@ def _extract_judge_json(text: str) -> dict:
             continue
         if isinstance(j, dict) and j.get("verdict"):
             v = str(j.get("verdict")).strip().lower()
-            # small models sometimes echo the schema enum literally
-            if v in ("answers|partial", "answers|partial|no", "answer", "yes", "true"):
+            # small models sometimes echo the schema enum literally — that is NOT a verdict.
+            # (Mapping it to "answers" approved samples whose reason said the answer was missing.)
+            if "|" in v:
+                continue
+            if v in ("answer", "yes", "true"):
                 j["verdict"] = "answers"
                 v = "answers"
             elif v.startswith("answers"):
@@ -405,15 +398,36 @@ def ollama_available() -> bool:
     return _ollama_ok
 
 
+def judge_prompt(intent: str, meta: dict, raw: str) -> str:
+    """The judge is told what the Intent Catalog says the intent means. Sample notes like
+    'PACK READY - meets 10 candidates' are not a description and are not shown as one."""
+    cat = None
+    try:
+        from minercheck.sample_check import catalog_context
+        cat = catalog_context(intent)
+    except Exception:  # noqa: BLE001 - PyYAML/index missing: fall back to the sample's own text
+        cat = None
+    if cat:
+        head = (f"INTENT: {cat['intent']} (catalog class {cat['class']})\n"
+                f"CATALOG DESCRIPTION (this is what a correct answer must provide): {cat['description']}\n"
+                f"WHY IT IS CHECKABLE: {cat['why']}\nDATA SOURCE TYPE: {cat['data_source_type']}\n")
+        req = meta.get("answer_requirement", "")
+        if req and not req.startswith("Must satisfy catalog intent"):
+            head += f"CAPTURE NOTE ON THE QUESTION: {req}\n"
+    else:
+        head = (f"INTENT: {intent}\nDESCRIPTION: {meta.get('intent_description','')}\n"
+                f"A CORRECT ANSWER MUST CONVEY: {meta.get('answer_requirement','')}\n")
+    return (head + f"INPUT USED: {meta.get('inputs','')}\nREQUEST URL: {meta.get('request_url','')}\n\n"
+            f"API RESPONSE (may be truncated):\n{raw[:3500]}")
+
+
 def llm_judge(intent: str, meta: dict, raw: str) -> dict | None:
     omni, oai = os.environ.get("OMNIROUTE_API_KEY", "").strip(), os.environ.get("OPENAI_API_KEY", "").strip()
     base = os.environ.get("BASE_URL", "https://omni-chat.13.237.89.59.sslip.io").rstrip("/")
     use_ollama = ollama_available()
     if not (omni or oai or use_ollama):
         return None
-    prompt = (f"INTENT: {intent}\nDESCRIPTION: {meta.get('intent_description','')}\n"
-              f"A CORRECT ANSWER MUST CONVEY: {meta.get('answer_requirement','')}\nINPUT USED: {meta.get('inputs','')}\n"
-              f"REQUEST URL: {meta.get('request_url','')}\n\nAPI RESPONSE (may be truncated):\n{raw[:3500]}")
+    prompt = judge_prompt(intent, meta, raw)
     # Prefer local Ollama, then OmniRoute, then OpenAI (override with AUTO_REVIEW_PREFER_*).
     endpoints: list[tuple[str, str, str]] = []
     prefer_oai = os.environ.get("AUTO_REVIEW_PREFER_OPENAI", "").strip().lower() in ("1", "true", "yes")
@@ -496,17 +510,33 @@ def llm_judge(intent: str, meta: dict, raw: str) -> dict | None:
 
 
 # ---------------------------------------------------------------- layer 4
+_REASON_SAYS_MISSING = re.compile(
+    r"\b(lacks?|lacking|missing|does not (?:include|contain|provide|specify|answer|return|fully)|"
+    r"doesn't (?:include|contain|provide|answer)|not (?:relevant|related)|irrelevant|unrelated|"
+    r"fails? to|instead of the|no (?:price|value|status|answer|temperature) (?:is|was)?)\b", re.I)
+
+
 def decide(intent: str, meta: dict, s: dict, use_llm: bool, min_conf: float):
     bad = hard_check(s["raw"])
     if bad:
         return Verdict("rejected", 0.95, bad, "hard-check"), None
+    det = deterministic(intent, meta, s)
+    if det and det[0] == "rejected":
+        # extraction / answer type / range / freshness / entity failed on the captured body
+        return Verdict("rejected", 0.95, det[1], "deterministic"), None
     h = heuristic(intent, meta, s["json"], s["raw"])
+    if det:
+        h = Verdict(h.status, h.confidence, f"{h.reason} | {det[1]}", h.mode)
     if h.status == "rejected" and h.confidence >= 0.8:
         return h, None
     j = llm_judge(intent, meta, s["raw"]) if use_llm else None
     if j is None:
         return h, None  # heuristics only
     v, c, why = j.get("verdict"), float(j.get("confidence", 0) or 0), j.get("reason", "")
+    if v == "answers" and _REASON_SAYS_MISSING.search(why or ""):
+        # Verdict and the judge's own reasoning disagree (11 samples approved this way by 2026-10-05).
+        return Verdict("needs_human", min(c, 0.5),
+                       f"LLM verdict=answers but its reason says the answer is missing: {why}", "heuristic+llm"), j
     if v == "answers" and c >= min_conf:
         if h.status == "rejected":
             return Verdict("needs_human", 0.5, f"LLM says answers, heuristic rejects: {h.reason}", "heuristic+llm"), j
@@ -519,13 +549,6 @@ def decide(intent: str, meta: dict, s: dict, use_llm: bool, min_conf: float):
 
 
 # ---------------------------------------------------------------- writing
-def replace_or_add(fm: str, key: str, value: str) -> str:
-    pat = re.compile(rf"(?m)^{re.escape(key)}:\s*.*$")
-    safe = value.replace("\\", "\\\\").replace('"', "'")
-    line = f'{key}: "{safe}"' if key in ("reviewer_note", "capture_note") else f"{key}: {value}"
-    return pat.sub(lambda _m: line, fm, count=1) if pat.search(fm) else fm.rstrip() + "\n" + line + "\n"
-
-
 def apply_status(path: Path, status: str, note: str, *, mode: str = "auto_review", confidence: float | None = None, llm_used: bool = False) -> None:
     text = path.read_text(encoding="utf-8")
     parts = text.split("---", 2)

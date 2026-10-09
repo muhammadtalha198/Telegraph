@@ -1,5 +1,7 @@
 # workingMiners
 
+> **Scope:** wired keepers only (~39), not the full Active list. Count of record = `INTENT_BUILD_SHEET-2026-09-23.md` / `out/ACTIVE_PREACTIVE_MINERS.xlsx`. Live truth = `out/RECONCILED_REG_IDS.md`.
+
 **Rule (Usman):** one miner = one source. Ranking needs distinct upstreams; clones only alphabetise ties.
 
 - YAML host: https://omni-chat.13.237.89.59.sslip.io/miner-yamls/

@@ -1,6 +1,6 @@
 version: "1"
 kind: miner
-id: 31004
+id: 190175
 slug: fx-hnb
 protocol: generic
 name: HNB FX Now

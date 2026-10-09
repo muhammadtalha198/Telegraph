@@ -1,0 +1,107 @@
+# Shared lookup tables for every intent spec (loaded by minercheck.spec.Registry).
+#
+# places: offline gazetteer, tried before the Open-Meteo geocoder. It holds big cities
+#   AND their lookalikes, so "Paris" (France, largest) and "Paris, Texas" resolve
+#   deterministically. Qualifier after a comma matches country, country_code, admin1
+#   or admin1_code ("Paris, TX", "Paris, Texas", "Paris, US").
+# currencies: ISO 4217 codes, plus names/symbols. A list value = ambiguous; the user
+#   is asked to be specific instead of us guessing.
+
+places:
+  - {name: Lahore, country: Pakistan, country_code: PK, admin1: Punjab, lat: 31.5497, lon: 74.3436, timezone: Asia/Karachi, population: 11126285}
+  - {name: Karachi, country: Pakistan, country_code: PK, admin1: Sindh, lat: 24.8608, lon: 67.0104, timezone: Asia/Karachi, population: 14910352}
+  - {name: Islamabad, country: Pakistan, country_code: PK, lat: 33.6938, lon: 73.0652, timezone: Asia/Karachi, population: 1014825}
+  - {name: London, country: United Kingdom, country_code: GB, admin1: England, lat: 51.5085, lon: -0.1257, timezone: Europe/London, population: 8961989}
+  - {name: London, country: Canada, country_code: CA, admin1: Ontario, admin1_code: "ON", lat: 42.9834, lon: -81.2330, timezone: America/Toronto, population: 383822}
+  - {name: Paris, country: France, country_code: FR, admin1: Île-de-France, lat: 48.8534, lon: 2.3488, timezone: Europe/Paris, population: 2138551}
+  - {name: Paris, country: United States, country_code: US, admin1: Texas, admin1_code: TX, lat: 33.6609, lon: -95.5555, timezone: America/Chicago, population: 24782}
+  - {name: Berlin, country: Germany, country_code: DE, lat: 52.5244, lon: 13.4105, timezone: Europe/Berlin, population: 3426354}
+  - {name: Moscow, country: Russia, country_code: RU, lat: 55.7522, lon: 37.6156, timezone: Europe/Moscow, population: 12655050}
+  - {name: Moscow, country: United States, country_code: US, admin1: Idaho, admin1_code: ID, lat: 46.7324, lon: -117.0002, timezone: America/Los_Angeles, population: 25435}
+  - {name: Birmingham, country: United Kingdom, country_code: GB, admin1: England, lat: 52.4814, lon: -1.8998, timezone: Europe/London, population: 984333}
+  - {name: Birmingham, country: United States, country_code: US, admin1: Alabama, admin1_code: AL, lat: 33.5207, lon: -86.8025, timezone: America/Chicago, population: 200733}
+  - {name: Sydney, country: Australia, country_code: AU, admin1: New South Wales, admin1_code: NSW, lat: -33.8678, lon: 151.2073, timezone: Australia/Sydney, population: 4627345}
+  - {name: Sydney, country: Canada, country_code: CA, admin1: Nova Scotia, admin1_code: NS, lat: 46.1351, lon: -60.1831, timezone: America/Glace_Bay, population: 31597}
+  - {name: Tokyo, country: Japan, country_code: JP, lat: 35.6895, lon: 139.6917, timezone: Asia/Tokyo, population: 8336599}
+  - {name: New York, aliases: [NYC, New York City], country: United States, country_code: US, admin1: New York, admin1_code: NY, lat: 40.7143, lon: -74.0060, timezone: America/New_York, population: 8804190}
+  - {name: Los Angeles, aliases: [LA], country: United States, country_code: US, admin1: California, admin1_code: CA, lat: 34.0522, lon: -118.2437, timezone: America/Los_Angeles, population: 3898747}
+  - {name: San Francisco, country: United States, country_code: US, admin1: California, admin1_code: CA, lat: 37.7749, lon: -122.4194, timezone: America/Los_Angeles, population: 864816}
+  - {name: Chicago, country: United States, country_code: US, admin1: Illinois, admin1_code: IL, lat: 41.8500, lon: -87.6500, timezone: America/Chicago, population: 2746388}
+  - {name: Toronto, country: Canada, country_code: CA, admin1: Ontario, admin1_code: "ON", lat: 43.7001, lon: -79.4163, timezone: America/Toronto, population: 2731571}
+  - {name: Vancouver, country: Canada, country_code: CA, admin1: British Columbia, admin1_code: BC, lat: 49.2497, lon: -123.1193, timezone: America/Vancouver, population: 662248}
+  - {name: Mexico City, country: Mexico, country_code: MX, lat: 19.4285, lon: -99.1277, timezone: America/Mexico_City, population: 9209944}
+  - {name: São Paulo, aliases: [Sao Paulo], country: Brazil, country_code: BR, lat: -23.5475, lon: -46.6361, timezone: America/Sao_Paulo, population: 12400232}
+  - {name: Dubai, country: United Arab Emirates, country_code: AE, lat: 25.0772, lon: 55.3093, timezone: Asia/Dubai, population: 3790000}
+  - {name: Riyadh, country: Saudi Arabia, country_code: SA, lat: 24.6877, lon: 46.7219, timezone: Asia/Riyadh, population: 7676654}
+  - {name: Tehran, country: Iran, country_code: IR, lat: 35.6944, lon: 51.4215, timezone: Asia/Tehran, population: 8693706}
+  - {name: Istanbul, country: Turkey, country_code: TR, lat: 41.0138, lon: 28.9497, timezone: Europe/Istanbul, population: 15701602}
+  - {name: Cairo, country: Egypt, country_code: EG, lat: 30.0626, lon: 31.2497, timezone: Africa/Cairo, population: 9606916}
+  - {name: Lagos, country: Nigeria, country_code: NG, lat: 6.4541, lon: 3.3947, timezone: Africa/Lagos, population: 9000000}
+  - {name: Nairobi, country: Kenya, country_code: KE, lat: -1.2833, lon: 36.8167, timezone: Africa/Nairobi, population: 4397073}
+  - {name: Johannesburg, country: South Africa, country_code: ZA, lat: -26.2023, lon: 28.0436, timezone: Africa/Johannesburg, population: 5635127}
+  - {name: Delhi, aliases: [New Delhi], country: India, country_code: IN, lat: 28.6519, lon: 77.2315, timezone: Asia/Kolkata, population: 32941000}
+  - {name: Mumbai, aliases: [Bombay], country: India, country_code: IN, lat: 19.0728, lon: 72.8826, timezone: Asia/Kolkata, population: 12691836}
+  - {name: Dhaka, country: Bangladesh, country_code: BD, lat: 23.7104, lon: 90.4074, timezone: Asia/Dhaka, population: 10356500}
+  - {name: Bangkok, country: Thailand, country_code: TH, lat: 13.7539, lon: 100.5014, timezone: Asia/Bangkok, population: 10539000}
+  - {name: Singapore, country: Singapore, country_code: SG, lat: 1.2897, lon: 103.8501, timezone: Asia/Singapore, population: 5638700}
+  - {name: Jakarta, country: Indonesia, country_code: ID, lat: -6.2146, lon: 106.8451, timezone: Asia/Jakarta, population: 10562088}
+  - {name: Beijing, country: China, country_code: CN, lat: 39.9075, lon: 116.3972, timezone: Asia/Shanghai, population: 21893095}
+  - {name: Shanghai, country: China, country_code: CN, lat: 31.2222, lon: 121.4581, timezone: Asia/Shanghai, population: 24874500}
+  - {name: Hong Kong, country: Hong Kong, country_code: HK, lat: 22.2783, lon: 114.1747, timezone: Asia/Hong_Kong, population: 7491609}
+  - {name: Seoul, country: South Korea, country_code: KR, lat: 37.5660, lon: 126.9784, timezone: Asia/Seoul, population: 9776000}
+  - {name: Madrid, country: Spain, country_code: ES, lat: 40.4165, lon: -3.7026, timezone: Europe/Madrid, population: 3255944}
+  - {name: Rome, country: Italy, country_code: IT, lat: 41.8919, lon: 12.5113, timezone: Europe/Rome, population: 2318895}
+  - {name: Amsterdam, country: Netherlands, country_code: NL, lat: 52.3740, lon: 4.8897, timezone: Europe/Amsterdam, population: 741636}
+  - {name: Zurich, aliases: [Zürich], country: Switzerland, country_code: CH, lat: 47.3667, lon: 8.5500, timezone: Europe/Zurich, population: 341730}
+  - {name: Dublin, country: Ireland, country_code: IE, lat: 53.3331, lon: -6.2489, timezone: Europe/Dublin, population: 1024027}
+  - {name: Kyiv, aliases: [Kiev], country: Ukraine, country_code: UA, lat: 50.4547, lon: 30.5238, timezone: Europe/Kyiv, population: 2952301}
+
+currencies:
+  codes: [AED, AFN, ALL, AMD, ANG, AOA, ARS, AUD, AWG, AZN, BAM, BBD, BDT, BGN, BHD, BIF, BMD, BND, BOB, BRL,
+          BSD, BTN, BWP, BYN, BZD, CAD, CDF, CHF, CLP, CNY, COP, CRC, CUP, CVE, CZK, DJF, DKK, DOP, DZD, EGP,
+          ERN, ETB, EUR, FJD, FKP, GBP, GEL, GHS, GIP, GMD, GNF, GTQ, GYD, HKD, HNL, HTG, HUF, IDR, ILS, INR,
+          IQD, IRR, ISK, JMD, JOD, JPY, KES, KGS, KHR, KMF, KPW, KRW, KWD, KYD, KZT, LAK, LBP, LKR, LRD, LSL,
+          LYD, MAD, MDL, MGA, MKD, MMK, MNT, MOP, MRU, MUR, MVR, MWK, MXN, MYR, MZN, NAD, NGN, NIO, NOK, NPR,
+          NZD, OMR, PAB, PEN, PGK, PHP, PKR, PLN, PYG, QAR, RON, RSD, RUB, RWF, SAR, SBD, SCR, SDG, SEK, SGD,
+          SHP, SLE, SOS, SRD, SSP, STN, SYP, SZL, THB, TJS, TMT, TND, TOP, TRY, TTD, TWD, TZS, UAH, UGX, USD,
+          UYU, UZS, VES, VND, VUV, WST, XAF, XCD, XOF, XPF, YER, ZAR, ZMW, ZWL]
+  names:
+    "$": USD
+    "us$": USD
+    "us dollar": USD
+    "american dollar": USD
+    "c$": CAD
+    "canadian dollar": CAD
+    "a$": AUD
+    "australian dollar": AUD
+    "dollar": [USD, CAD, AUD, NZD, SGD, HKD]
+    "€": EUR
+    "euro": EUR
+    "£": GBP
+    "pound sterling": GBP
+    "british pound": GBP
+    "sterling": GBP
+    "pound": [GBP, EGP, LBP]
+    "¥": [JPY, CNY]
+    "yen": JPY
+    "japanese yen": JPY
+    "yuan": CNY
+    "renminbi": CNY
+    "₹": INR
+    "indian rupee": INR
+    "pakistani rupee": PKR
+    "rupee": [INR, PKR, LKR, NPR]
+    "swiss franc": CHF
+    "uae dirham": AED
+    "dirham": [AED, MAD]
+    "saudi riyal": SAR
+    "riyal": [SAR, QAR, OMR]
+    "ruble": RUB
+    "rouble": RUB
+    "won": KRW
+    "lira": TRY
+    "turkish lira": TRY
+    "real": BRL
+    "mexican peso": MXN
+    "rand": ZAR
+    "naira": NGN

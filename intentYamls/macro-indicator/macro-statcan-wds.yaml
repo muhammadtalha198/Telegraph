@@ -1,0 +1,77 @@
+version: "1"
+kind: miner
+id: 190198
+slug: macro-statcan-wds
+protocol: generic
+name: "Macro Statcan Wds"
+description: "Semantic V2 miner for MACRO_ECONOMIC_INDICATOR. Aggregates released central bank interest rates, consumer price index (CPI) updates, and unemployment figures. Capture pin answers: Must return the unemployment rate (percent of labour force, ages 15+, total sexes) for the pinned country and period as a plain number."
+
+base_url: https://www150.statcan.gc.ca
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://www150.statcan.gc.ca/
+  website: https://www150.statcan.gc.ca
+
+endpoints:
+  - path: /query
+    external_path: /t1/wds/rest/getDataFromVectorByReferencePeriodRange
+    method: GET
+    description: Query for intent MACRO_ECONOMIC_INDICATOR via Macro Statcan Wds.
+    intents: [MACRO_ECONOMIC_INDICATOR]
+    params:
+      query:
+        required:
+          - name: vectorIds
+            type: string
+            intents: ["*"]
+            description: vectorIds
+          - name: startRefPeriod
+            type: string
+            intents: ["*"]
+            description: startRefPeriod
+          - name: endReferencePeriod
+            type: string
+            intents: ["*"]
+            description: endReferencePeriod
+
+input_schema:
+  type: object
+  required: ["vectorIds", "startRefPeriod", "endReferencePeriod"]
+  properties:
+    "vectorIds": {type: string, description: "vectorIds", default: "\"2062815\""}
+    "startRefPeriod": {type: string, description: "startRefPeriod", default: "2019-12-01"}
+    "endReferencePeriod": {type: string, description: "endReferencePeriod", default: "2019-12-01"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - MACRO_ECONOMIC_INDICATOR
+
+on_chain:
+  description: Stores signal for MACRO_ECONOMIC_INDICATOR (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

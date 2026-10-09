@@ -1,0 +1,96 @@
+# Intent spec: STOCK_PRICE_QUOTE. Sources checked live 2026-10-08 (AAPL = $340.42 on Yahoo + Nasdaq).
+intent: STOCK_PRICE_QUOTE
+description: Current market price of a listed equity, in USD.
+answer_type: price
+scope: current
+
+catalog:
+  intent: STOCK_PRICE_QUOTE
+  description: "Retrieves live and official market-close equity quotes, bid-ask spreads, and trading volume."
+  facets:
+    - {text: "equity quotes", covered_by: value, required: true,
+       note: "last/close trade price for the ticker; independent venues must agree"}
+    - {text: "live", covered_by: none, note: "live during market hours, last close otherwise"}
+    - {text: "bid-ask spreads", covered_by: none, note: "not exposed uniformly by the free quote endpoints"}
+    - {text: "trading volume", covered_by: "extra:volume", note: "regular-session volume where published"}
+  allowed_kinds: [price_aggregator, cex]
+
+inputs:
+  symbol: {kind: text, required: true, description: "Ticker, e.g. AAPL"}
+
+units:
+  canonical: USD
+
+validation:
+  sanity: {min: 0.01, max: 1000000}
+  freshness: {max_age_s: 0}            # quote endpoints lack a uniform trade timestamp; cross-check guards value
+  cross_check:
+    tolerance: {rel: 0.01}             # 1%: venues quote within a cent during/after session
+    min_sources: 2
+    target_sources: 2
+
+extras:
+  volume: {quantity: number}
+
+sources:
+  - id: yahoo
+    name: Yahoo Finance
+    publisher: finance.yahoo.com
+    kind: price_aggregator
+    miner: {slug: stock-yahoo, question: {symbol: AAPL}}
+    request:
+      url: "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=1d"
+      headers: {User-Agent: "Mozilla/5.0 (compatible; minercheck/1.0)"}
+    cache_ttl_s: 60
+    value: [{json: "chart.result.0.meta.regularMarketPrice", unit: USD}]
+    entity:
+      symbol: [{json: "chart.result.0.meta.symbol"}]
+    extras:
+      volume: [{json: "chart.result.0.meta.regularMarketVolume"}]
+
+  - id: nasdaq
+    name: Nasdaq
+    publisher: nasdaq.com
+    kind: price_aggregator
+    miner: {slug: stock-nasdaq, question: {symbol: AAPL}}
+    notes: lastSalePrice is like "$340.42"; the leading $ is stripped by the number parser.
+    request:
+      url: "https://api.nasdaq.com/api/quote/{symbol}/info?assetclass=stocks"
+      headers: {User-Agent: "Mozilla/5.0 (compatible; minercheck/1.0)", Accept: "application/json"}
+    cache_ttl_s: 60
+    value: [{json: "data.primaryData.lastSalePrice", unit: USD}]
+    entity:
+      symbol: [{json: "data.symbol"}]
+
+  - id: cnbc
+    name: CNBC
+    publisher: cnbc.com
+    kind: price_aggregator
+    miner: {slug: stock-cnbc, question: {symbol: AAPL}}
+    request:
+      url: "https://quote.cnbc.com/quote-html-webservice/restQuote/symbolType/symbol?symbols={symbol}&requestMethod=itv&noform=1&partnerId=2&fund=1&exthrs=1&output=json"
+    cache_ttl_s: 60
+    value: [{json: "FormattedQuoteResult.FormattedQuote.0.last", unit: USD}]
+    entity:
+      symbol: [{json: "FormattedQuoteResult.FormattedQuote.0.symbol"}]
+
+  # New candidate (2026-10-09 miner hunt) — verified live, agreed on AAPL/MSFT/KO
+  - id: stockanalysis
+    name: stockanalysis.com
+    publisher: stockanalysis.com
+    kind: price_aggregator
+    miner: {slug: stock-stockanalysis, question: {symbol: AAPL}}
+    request:
+      url: "https://stockanalysis.com/api/quotes/s/{symbol}"
+    cache_ttl_s: 60
+    value: [{json: data.p, unit: USD}]
+
+template:
+  answer: "{symbol} is trading at {value}."
+  extras:
+    - "Volume: {volume}."
+  footer: "Confirmed by {agreeing_count} independent sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the price of {symbol}. Reason: {reason}."
+
+tests:
+  - {id: aapl, inputs: {symbol: AAPL}}

@@ -29,6 +29,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 REPO = ROOT.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from sample_file import parse_front_matter  # noqa: E402
 UA = "telegraph-v2-golden-gate/1"
 BAD = [
     r"^\s*<!doctype html",
@@ -178,16 +180,7 @@ def find_candidate(slug: str) -> tuple[dict, dict] | None:
 
 
 def parse_sample_meta(path: Path) -> dict:
-    text = path.read_text(encoding="utf-8")
-    if not text.startswith("---"):
-        return {}
-    fm = text.split("---", 2)[1]
-    out = {}
-    for line in fm.splitlines():
-        if ":" in line and re.match(r"^[a-z_]+:", line):
-            k, _, v = line.partition(":")
-            out[k.strip()] = v.strip().strip('"')
-    return out
+    return parse_front_matter(path.read_text(encoding="utf-8"))
 
 
 def run_golden_for_slug(slug: str) -> tuple[str, str]:

@@ -1,0 +1,408 @@
+[
+ {
+  "test": "btc",
+  "source": "coingecko",
+  "url": "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd&include_24hr_change=true&include_last_updated_at=true",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:21 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"bitcoin\": {\"usd\": 82319, \"usd_24h_change\": -0.5486925454005979, \"last_updated_at\": 1791523092}}",
+  "fetched_at": "2026-10-09T05:19:20.761551+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "coinbase",
+  "url": "https://api.coinbase.com/v2/prices/BTC-USD/spot",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:21 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"data\": {\"amount\": \"82461.105\", \"base\": \"BTC\", \"currency\": \"USD\"}}",
+  "fetched_at": "2026-10-09T05:19:21.155882+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "kraken",
+  "url": "https://api.kraken.com/0/public/Ticker?pair=XBTUSD",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:22 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"error\": [], \"result\": {\"XXBTZUSD\": {\"a\": [\"82493.40000\", \"1\", \"1.000\"], \"b\": [\"82493.30000\", \"2\", \"2.000\"], \"c\": [\"82493.40000\", \"0.02828866\"], \"v\": [\"330.04163872\", \"3796.49221683\"], \"p\": [\"82026.16794\", \"81769.34283\"], \"t\": [27103, 186355], \"l\": [\"81542.80000\", \"80328.60000\"], \"h\": [\"82493.40000\", \"83234.80000\"], \"o\": \"81683.80000\"}}}",
+  "fetched_at": "2026-10-09T05:19:21.582625+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "binance",
+  "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=BTCUSDT",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json;charset=UTF-8",
+   "date": "Fri, 09 Oct 2026 05:19:22 GMT"
+  },
+  "body": "{\"symbol\": \"BTCUSDT\", \"priceChange\": \"-250.35000000\", \"priceChangePercent\": \"-0.302\", \"weightedAvgPrice\": \"81889.87445419\", \"prevClosePrice\": \"82817.39000000\", \"lastPrice\": \"82566.99000000\", \"lastQty\": \"0.00012000\", \"bidPrice\": \"82566.99000000\", \"bidQty\": \"8.83839000\", \"askPrice\": \"82567.00000000\", \"askQty\": \"1.09647000\", \"openPrice\": \"82817.34000000\", \"highPrice\": \"83283.28000000\", \"lowPrice\": \"80393.56000000\", \"volume\": \"20046.19460000\", \"quoteVolume\": \"1641580359.07830280\", \"openTime\": 1791436762013, \"closeTime\": 1791523162013, \"firstId\": 6746546084, \"lastId\": 6750194583, \"count\": 3648500}",
+  "fetched_at": "2026-10-09T05:19:21.870279+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "bitstamp",
+  "url": "https://www.bitstamp.net/api/v2/ticker/btcusd/",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json",
+   "date": "Fri, 09 Oct 2026 05:19:22 GMT"
+  },
+  "body": "{\"timestamp\": \"1791523162\", \"open\": \"81676.03\", \"high\": \"83211.83\", \"low\": \"80307.83\", \"last\": \"82496.02\", \"volume\": \"2250.60377613\", \"vwap\": \"81724.33\", \"bid\": \"82496.01\", \"ask\": \"82496.02\", \"side\": \"0\", \"open_24\": \"82752.06\", \"percent_change_24\": \"-0.31\", \"market_type\": \"SPOT\"}",
+  "fetched_at": "2026-10-09T05:19:22.192009+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "coinpaprika",
+  "url": "https://api.coinpaprika.com/v1/tickers/btc-bitcoin?quotes=USD",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:23 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"id\": \"btc-bitcoin\", \"name\": \"Bitcoin\", \"symbol\": \"BTC\", \"rank\": 1, \"total_supply\": 20095575, \"max_supply\": 21000000, \"beta_value\": 1.02809, \"first_data_at\": \"2010-07-17T00:00:00Z\", \"last_updated\": \"2026-10-09T05:15:14Z\", \"quotes\": {\"USD\": {\"price\": 82306.78560036399, \"volume_24h\": 30632621784.813, \"volume_24h_change_24h\": 5.28000020980835, \"market_cap\": 1654002429961, \"market_cap_change_24h\": -0.6700000166893005, \"percent_change_15m\": 0.07999999821186066, \"percent_change_30m\": 0.10000000149011612, \"percent_change_1h\": -0.11999999731779099, \"percent_change_6h\": 0.6499999761581421, \"percent_change_12h\": 2.059999942779541, \"percent_change_24h\": -0.6700000166893005, \"percent_change_7d\": -4.139999866485596, \"percent_change_30d\": 0, \"percent_change_1y\": 0, \"ath_price\": 126173.1777846797, \"ath_date\": \"2025-10-06T19:00:40Z\", \"percent_from_price_ath\": -34.77}}}",
+  "fetched_at": "2026-10-09T05:19:22.621174+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "gemini",
+  "url": "https://api.gemini.com/v1/pubticker/btcusd",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:24 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"bid\": \"82481.32000\", \"ask\": \"82481.33000\", \"last\": \"82499.99000\", \"volume\": {\"BTC\": \"298.82724734\", \"USD\": \"24653244.9172775266\", \"timestamp\": 1791523140000}}",
+  "fetched_at": "2026-10-09T05:19:23.045331+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "bingx",
+  "url": "https://open-api.bingx.com/openApi/spot/v1/ticker/price?symbol=BTC-USDT",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json",
+   "date": "Fri, 09 Oct 2026 05:19:25 GMT"
+  },
+  "body": "{\"code\": 0, \"timestamp\": 1791523165219, \"data\": [{\"symbol\": \"BTC_USDT\", \"trades\": [{\"timestamp\": 1791523165120, \"tradeId\": \"240919501\", \"price\": \"82558.01\", \"amount\": \"\", \"type\": 2, \"volume\": \"0.016723\"}]}]}",
+  "fetched_at": "2026-10-09T05:19:24.243383+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "deribit",
+  "url": "https://www.deribit.com/api/v2/public/get_index_price?index_name=btc_usd",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:25 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"jsonrpc\": \"2.0\", \"result\": {\"estimated_delivery_price\": 82484.03, \"index_price\": 82484.03}, \"usIn\": 1791523165573408, \"usOut\": 1791523165573718, \"usDiff\": 310, \"testnet\": false}",
+  "fetched_at": "2026-10-09T05:19:25.163099+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "dexscreener",
+  "url": "https://api.dexscreener.com/latest/dex/pairs/ethereum/0x99ac8cA7087fA4A2A1FB6357269965A2014ABc35",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:26 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"schemaVersion\": \"1.0.0\", \"pairs\": [{\"chainId\": \"ethereum\", \"dexId\": \"uniswap\", \"url\": \"https://dexscreener.com/ethereum/0x99ac8ca7087fa4a2a1fb6357269965a2014abc35\", \"pairAddress\": \"0x99ac8cA7087fA4A2A1FB6357269965A2014ABc35\", \"labels\": [\"v3\"], \"baseToken\": {\"address\": \"0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599\", \"name\": \"Wrapped BTC\", \"symbol\": \"WBTC\"}, \"quoteToken\": {\"address\": \"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\", \"name\": \"USD Coin\", \"symbol\": \"USDC\"}, \"priceNative\": \"82117.2599\", \"priceUsd\": \"82117.25\", \"txns\": {\"m5\": {\"buys\": 0, \"sells\": 1}, \"h1\": {\"buys\": 2, \"sells\": 1}, \"h6\": {\"buys\": 36, \"sells\": 7}, \"h24\": {\"buys\": 158, \"sells\": 94}}, \"volume\": {\"h24\": 2694081.33, \"h6\": 247493.44, \"h1\": 13401.49, \"m5\": 2565.04}, \"priceChange\": {\"m5\": -0.01, \"h1\": 0.02, \"h6\": 0.69, \"h24\": -0.62}, \"liquidity\": {\"usd\": 21929823.9, \"base\": 126.4413, \"quote\": 11546803}, \"fdv\": 9536455055, \"marketCap\": 9536455055, \"pairCreatedAt\": 1620241995000}], \"pair\": {\"chainId\": \"ethereum\", \"dexId\": \"uniswap\", \"url\": \"https://dexscreener.com/ethereum/0x99ac8ca7087fa4a2a1fb6357269965a2014abc35\", \"pairAddress\": \"0x99ac8cA7087fA4A2A1FB6357269965A2014ABc35\", \"labels\": [\"v3\"], \"baseToken\": {\"address\": \"0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599\", \"name\": \"Wrapped BTC\", \"symbol\": \"WBTC\"}, \"quoteToken\": {\"address\": \"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48\", \"name\": \"USD Coin\", \"symbol\": \"USDC\"}, \"priceNative\": \"82117.2599\", \"priceUsd\": \"82117.25\", \"txns\": {\"m5\": {\"buys\": 0, \"sells\": 1}, \"h1\": {\"buys\": 2, \"sells\": 1}, \"h6\": {\"buys\": 36, \"sells\": 7}, \"h24\": {\"buys\": 158, \"sells\": 94}}, \"volume\": {\"h24\": 2694081.33, \"h6\": 247493.44, \"h1\": 13401.49, \"m5\": 2565.04}, \"priceChange\": {\"m5\": -0.01, \"h1\": 0.02, \"h6\": 0.69, \"h24\": -0.62}, \"liquidity\": {\"usd\": 21929823.9, \"base\": 126.4413, \"quote\": 11546803}, \"fdv\": 9536455055, \"marketCap\": 9536455055, \"pairCreatedAt\": 1620241995000}}",
+  "fetched_at": "2026-10-09T05:19:25.435770+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "independentreserve",
+  "url": "https://api.independentreserve.com/Public/GetMarketSummary?primaryCurrencyCode=xbt&secondaryCurrencyCode=usd",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:28 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"DayHighestPrice\": 83915.74, \"DayLowestPrice\": 80031, \"DayAvgPrice\": 81973.37, \"DayVolumeXbt\": 36.36, \"DayVolumeXbtInSecondaryCurrrency\": 4.82564652, \"CurrentLowestOfferPrice\": 82568.02, \"CurrentHighestBidPrice\": 82405.8, \"LastPrice\": 82013.61, \"PrimaryCurrencyCode\": \"Xbt\", \"SecondaryCurrencyCode\": \"Usd\", \"CreatedTimestampUtc\": \"2026-10-09T05:19:28.2471439Z\"}",
+  "fetched_at": "2026-10-09T05:19:26.024492+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "lbank",
+  "url": "https://api.lbank.info/v2/ticker/24hr.do?symbol=btc_usdt",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:28 GMT",
+   "content-type": "application/json;charset=UTF-8"
+  },
+  "body": "{\"msg\": \"Success\", \"result\": \"true\", \"data\": [{\"symbol\": \"btc_usdt\", \"ticker\": {\"high\": \"83283.25\", \"vol\": \"6401.4066\", \"low\": \"80403.67\", \"change\": \"-0.39\", \"turnover\": \"524584852.72\", \"latest\": \"82539.34\"}, \"timestamp\": 1791523167815}], \"error_code\": 0, \"ts\": 1791523168659}",
+  "fetched_at": "2026-10-09T05:19:28.169937+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "poloniex",
+  "url": "https://api.poloniex.com/markets/BTC_USDT/price",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json",
+   "date": "Fri, 09 Oct 2026 05:19:29 GMT"
+  },
+  "body": "{\"symbol\": \"BTC_USDT\", \"price\": \"82572.53\", \"dailyChange\": \"-0.0035\", \"time\": 1791523169437, \"ts\": 1791523169445}",
+  "fetched_at": "2026-10-09T05:19:28.512929+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "upbit",
+  "url": "https://api.upbit.com/v1/ticker?markets=USDT-BTC",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:31 GMT",
+   "content-type": "application/json;charset=UTF-8"
+  },
+  "body": "[{\"market\": \"USDT-BTC\", \"trade_date\": \"20261009\", \"trade_time\": \"051921\", \"trade_date_kst\": \"20261009\", \"trade_time_kst\": \"141921\", \"trade_timestamp\": 1791523161484, \"opening_price\": 81908.03, \"high_price\": 82551.21, \"low_price\": 81824.77, \"trade_price\": 82500.0, \"prev_closing_price\": 81908.03, \"change\": \"RISE\", \"change_price\": 591.97, \"change_rate\": 0.0072272523, \"signed_change_price\": 591.97, \"signed_change_rate\": 0.0072272523, \"trade_volume\": 5.323e-05, \"acc_trade_price\": 49916.3745810961, \"acc_trade_price_24h\": 983732.98063128, \"acc_trade_volume\": 0.60738777, \"acc_trade_volume_24h\": 11.99550391, \"highest_52_week_price\": 116381.0, \"highest_52_week_date\": \"2025-10-27\", \"lowest_52_week_price\": 58010.01, \"lowest_52_week_date\": \"2026-07-01\", \"timestamp\": 1791523161632}]",
+  "fetched_at": "2026-10-09T05:19:30.079157+00:00"
+ },
+ {
+  "test": "btc",
+  "source": "whitebit",
+  "url": "https://whitebit.com/api/v1/public/ticker?market=BTC_USDT",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:32 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"success\": true, \"message\": null, \"result\": {\"open\": \"82823.47\", \"bid\": \"82538.93\", \"ask\": \"82538.94\", \"low\": \"80406.63\", \"high\": \"83288.01\", \"last\": \"82553.68\", \"volume\": \"2018.293531\", \"deal\": \"165743166.80970037\", \"change\": \"-0.33\"}}",
+  "fetched_at": "2026-10-09T05:19:31.488959+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "coingecko",
+  "url": "https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd&include_24hr_change=true&include_last_updated_at=true",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:32 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"ethereum\": {\"usd\": 2491.05, \"usd_24h_change\": -3.0115185361790378, \"last_updated_at\": 1791523110}}",
+  "fetched_at": "2026-10-09T05:19:32.149755+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "coinbase",
+  "url": "https://api.coinbase.com/v2/prices/ETH-USD/spot",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:33 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"data\": {\"amount\": \"2495.71\", \"base\": \"ETH\", \"currency\": \"USD\"}}",
+  "fetched_at": "2026-10-09T05:19:32.528615+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "kraken",
+  "url": "https://api.kraken.com/0/public/Ticker?pair=ETHUSD",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:33 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"error\": [], \"result\": {\"XETHZUSD\": {\"a\": [\"2495.21000\", \"5\", \"5.000\"], \"b\": [\"2495.20000\", \"3\", \"3.000\"], \"c\": [\"2495.48000\", \"0.01313825\"], \"v\": [\"3581.65308969\", \"54296.72143886\"], \"p\": [\"2483.67683\", \"2480.91231\"], \"t\": [8133, 78354], \"l\": [\"2469.04000\", \"2405.35000\"], \"h\": [\"2497.85000\", \"2575.55000\"], \"o\": \"2472.90000\"}}}",
+  "fetched_at": "2026-10-09T05:19:32.888420+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "binance",
+  "url": "https://api.binance.com/api/v3/ticker/24hr?symbol=ETHUSDT",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json;charset=UTF-8",
+   "date": "Fri, 09 Oct 2026 05:19:33 GMT"
+  },
+  "body": "{\"symbol\": \"ETHUSDT\", \"priceChange\": \"-72.56000000\", \"priceChangePercent\": \"-2.823\", \"weightedAvgPrice\": \"2486.53558910\", \"prevClosePrice\": \"2569.88000000\", \"lastPrice\": \"2497.33000000\", \"lastQty\": \"0.58240000\", \"bidPrice\": \"2497.33000000\", \"bidQty\": \"6.33690000\", \"askPrice\": \"2497.34000000\", \"askQty\": \"38.59150000\", \"openPrice\": \"2569.89000000\", \"highPrice\": \"2577.39000000\", \"lowPrice\": \"2406.11000000\", \"volume\": \"398804.41490000\", \"quoteVolume\": \"991641370.73843800\", \"openTime\": 1791436773012, \"closeTime\": 1791523173012, \"firstId\": 4415551686, \"lastId\": 4419743476, \"count\": 4191791}",
+  "fetched_at": "2026-10-09T05:19:33.132413+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "bitstamp",
+  "url": "https://www.bitstamp.net/api/v2/ticker/ethusd/",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json",
+   "date": "Fri, 09 Oct 2026 05:19:33 GMT"
+  },
+  "body": "{\"timestamp\": \"1791523173\", \"open\": \"2473.02\", \"high\": \"2575.62\", \"low\": \"2404.86\", \"last\": \"2495.72\", \"volume\": \"18563.876477\", \"vwap\": \"2476.81\", \"bid\": \"2495.03\", \"ask\": \"2495.10\", \"side\": \"1\", \"open_24\": \"2568.25\", \"percent_change_24\": \"-2.82\", \"market_type\": \"SPOT\"}",
+  "fetched_at": "2026-10-09T05:19:33.413399+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "coinpaprika",
+  "url": "https://api.coinpaprika.com/v1/tickers/eth-ethereum?quotes=USD",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:34 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"id\": \"eth-ethereum\", \"name\": \"Ethereum\", \"symbol\": \"ETH\", \"rank\": 2, \"total_supply\": 120232214, \"max_supply\": 0, \"beta_value\": 1.38898, \"first_data_at\": \"2015-08-07T00:00:00Z\", \"last_updated\": \"2026-10-09T05:15:14Z\", \"quotes\": {\"USD\": {\"price\": 2490.4700365439335, \"volume_24h\": 13832493261.575129, \"volume_24h_change_24h\": 6.75, \"market_cap\": 304133491231, \"market_cap_change_24h\": -3.109999895095825, \"percent_change_15m\": 0.09000000357627869, \"percent_change_30m\": 0.10000000149011612, \"percent_change_1h\": -0.09000000357627869, \"percent_change_6h\": 0.5600000023841858, \"percent_change_12h\": 3, \"percent_change_24h\": -3.109999895095825, \"percent_change_7d\": -8.550000190734863, \"percent_change_30d\": 0, \"percent_change_1y\": 0, \"ath_price\": 4946.229669645212, \"ath_date\": \"2025-08-24T19:24:38Z\", \"percent_from_price_ath\": -49.66}}}",
+  "fetched_at": "2026-10-09T05:19:33.743636+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "gemini",
+  "url": "https://api.gemini.com/v1/pubticker/ethusd",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:35 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"bid\": \"2495.29000\", \"ask\": \"2495.30000\", \"last\": \"2495.43000\", \"volume\": {\"ETH\": \"5515.050562\", \"USD\": \"13762422.62393166\", \"timestamp\": 1791523140000}}",
+  "fetched_at": "2026-10-09T05:19:33.963727+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "bingx",
+  "url": "https://open-api.bingx.com/openApi/spot/v1/ticker/price?symbol=ETH-USDT",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json",
+   "date": "Fri, 09 Oct 2026 05:19:35 GMT"
+  },
+  "body": "{\"code\": 0, \"timestamp\": 1791523175976, \"data\": [{\"symbol\": \"ETH_USDT\", \"trades\": [{\"timestamp\": 1791523175548, \"tradeId\": \"229473155\", \"price\": \"2496.89\", \"amount\": \"\", \"type\": 1, \"volume\": \"0.1567\"}]}]}",
+  "fetched_at": "2026-10-09T05:19:35.013999+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "deribit",
+  "url": "https://www.deribit.com/api/v2/public/get_index_price?index_name=eth_usd",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:36 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"jsonrpc\": \"2.0\", \"result\": {\"estimated_delivery_price\": 2494.92, \"index_price\": 2494.92}, \"usIn\": 1791523176299115, \"usOut\": 1791523176299598, \"usDiff\": 483, \"testnet\": false}",
+  "fetched_at": "2026-10-09T05:19:35.922235+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "independentreserve",
+  "url": "https://api.independentreserve.com/Public/GetMarketSummary?primaryCurrencyCode=eth&secondaryCurrencyCode=usd",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:37 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"DayHighestPrice\": 2602.79, \"DayLowestPrice\": 2400.66, \"DayAvgPrice\": 2501.72, \"DayVolumeXbt\": 301.16, \"DayVolumeXbtInSecondaryCurrrency\": 6.82699625, \"CurrentLowestOfferPrice\": 2498.91, \"CurrentHighestBidPrice\": 2493.05, \"LastPrice\": 2506.22, \"PrimaryCurrencyCode\": \"Eth\", \"SecondaryCurrencyCode\": \"Usd\", \"CreatedTimestampUtc\": \"2026-10-09T05:19:37.830752Z\"}",
+  "fetched_at": "2026-10-09T05:19:36.166696+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "lbank",
+  "url": "https://api.lbank.info/v2/ticker/24hr.do?symbol=eth_usdt",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:38 GMT",
+   "content-type": "application/json;charset=UTF-8"
+  },
+  "body": "{\"msg\": \"Success\", \"result\": \"true\", \"data\": [{\"symbol\": \"eth_usdt\", \"ticker\": {\"high\": \"2577.16\", \"vol\": \"87477.1953\", \"low\": \"2408.49\", \"change\": \"-2.87\", \"turnover\": \"217565785.85\", \"latest\": \"2497.21\"}, \"timestamp\": 1791523177052}], \"error_code\": 0, \"ts\": 1791523178175}",
+  "fetched_at": "2026-10-09T05:19:37.763421+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "poloniex",
+  "url": "https://api.poloniex.com/markets/ETH_USDT/price",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "content-type": "application/json",
+   "date": "Fri, 09 Oct 2026 05:19:39 GMT"
+  },
+  "body": "{\"symbol\": \"ETH_USDT\", \"price\": \"2496.71\", \"dailyChange\": \"-0.0287\", \"time\": 1791523178919, \"ts\": 1791523178931}",
+  "fetched_at": "2026-10-09T05:19:38.031172+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "upbit",
+  "url": "https://api.upbit.com/v1/ticker?markets=USDT-ETH",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:39 GMT",
+   "content-type": "application/json;charset=UTF-8"
+  },
+  "body": "[{\"market\": \"USDT-ETH\", \"trade_date\": \"20261009\", \"trade_time\": \"051912\", \"trade_date_kst\": \"20261009\", \"trade_time_kst\": \"141912\", \"trade_timestamp\": 1791523152526, \"opening_price\": 2476.03, \"high_price\": 2495.31, \"low_price\": 2475.34, \"trade_price\": 2495.27, \"prev_closing_price\": 2475.53, \"change\": \"RISE\", \"change_price\": 19.74, \"change_rate\": 0.00797405, \"signed_change_price\": 19.74, \"signed_change_rate\": 0.00797405, \"trade_volume\": 2.86e-05, \"acc_trade_price\": 9803.4981789848, \"acc_trade_price_24h\": 252582.3492397, \"acc_trade_volume\": 3.93036741, \"acc_trade_volume_24h\": 101.15464178, \"highest_52_week_price\": 4270.21, \"highest_52_week_date\": \"2025-10-13\", \"lowest_52_week_price\": 1500.0, \"lowest_52_week_date\": \"2026-06-06\", \"timestamp\": 1791523152901}]",
+  "fetched_at": "2026-10-09T05:19:38.924548+00:00"
+ },
+ {
+  "test": "eth-by-name",
+  "source": "whitebit",
+  "url": "https://whitebit.com/api/v1/public/ticker?market=ETH_USDT",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:19:39 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"success\": true, \"message\": null, \"result\": {\"open\": \"2570.67\", \"bid\": \"2496.55\", \"ask\": \"2496.56\", \"low\": \"2407.49\", \"high\": \"2577.22\", \"last\": \"2497.71\", \"volume\": \"31116.67391\", \"deal\": \"77636074.3310707\", \"change\": \"-2.84\"}}",
+  "fetched_at": "2026-10-09T05:19:39.466455+00:00"
+ }
+]

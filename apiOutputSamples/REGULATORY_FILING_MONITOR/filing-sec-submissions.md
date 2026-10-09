@@ -1,7 +1,7 @@
 ---
 intent: REGULATORY_FILING_MONITOR
 slug: filing-sec-submissions
-status: approved
+status: pending_review
 captured_at: 2026-10-05T09:41:41Z
 request_url: https://data.sec.gov/submissions/CIK0000320193.json
 content_type: application/json
@@ -13,11 +13,11 @@ answer_requirement: |
   Must return the company's regulatory filings (10-K/10-Q etc.) with dates/links.
 capture_note: |
   golden-test PASS: SEC EDGAR submissions
-reviewer_note: "auto_review: [1.00|heuristic+llm] The response provides a list of recent filings but lacks the specific details needed to fully answer the intent."
-reviewed_at: 2026-10-05T11:55:22Z
-review_source: auto_review
-review_mode: heuristic+llm
-llm_used: true
+reviewer_note: "2026-10-07 re-review: judge approved but its own reason says the answer is missing (enum-echo/contradiction bug, fixed)"
+reviewed_at: ""
+review_source: manual
+review_mode: manual
+llm_used: false
 review_confidence: 1.000
 ---
 

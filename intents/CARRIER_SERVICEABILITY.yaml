@@ -1,0 +1,66 @@
+# Intent spec: CARRIER_SERVICEABILITY. Sources checked live 2026-10-08 (NO postcode 0150 = Oslo).
+# The carrier's own system is the authority for whether it serves a postcode.
+intent: CARRIER_SERVICEABILITY
+description: Whether a carrier serves (can deliver to) a given postal code.
+answer_type: boolean
+scope: current
+
+catalog:
+  intent: CARRIER_SERVICEABILITY
+  description: "Evaluates freight and courier delivery coverage, weight limits, and hazardous material restrictions for target routes."
+  facets:
+    - {text: "delivery coverage", covered_by: value, required: true,
+       note: "is the destination postcode in the carrier's delivery coverage"}
+    - {text: "weight limits", covered_by: none, note: "not exposed by the free postcode-coverage endpoints"}
+    - {text: "hazardous material restrictions", covered_by: none, note: "not exposed by the free endpoints"}
+    - {text: "freight", covered_by: none, note: "freight vs courier is the same postcode-coverage lookup"}
+  allowed_kinds: [carrier]
+  notes: >
+    A postcode->place geocoder (e.g. zippopotam) is not a carrier and cannot state coverage;
+    such miners fail the kind check. The carrier's own system is authoritative for its coverage.
+
+inputs:
+  country: {kind: enum, required: false, default: "NO", values: ["NO"], description: "Carrier country (Bring = Norway)"}
+  postcode: {kind: text, required: true, description: "Destination postal code"}
+
+validation:
+  freshness: {max_age_s: 0}            # coverage is a routing-matrix lookup, not time-stamped
+  cross_check:
+    tolerance: {abs: 0}                # boolean must match
+    min_sources: 1                     # the carrier is the authority; it verifies on its own
+    target_sources: 1
+
+sources:
+  - id: bring
+    name: Bring (Posten Norge)
+    publisher: bring.com
+    kind: carrier
+    authority: true
+    miner: {slug: car-bring, question: {country: "NO", postcode: "0150"}}
+    notes: valid=true means the postcode is a real, serviceable Norwegian delivery postcode.
+    request:
+      url: "https://api.bring.com/shippingguide/api/postalCode.json?country={country}&pnr={postcode}"
+    cache_ttl_s: 3600
+    value: [{json: valid}]
+
+  # not a carrier: a postcode->place geocoder cannot state delivery coverage
+  - id: zippopotam
+    name: Zippopotam
+    publisher: zippopotam.us
+    kind: postcode_geocoder
+    enabled: false
+    when: {country: "NO"}
+    miner: {slug: car-zippopotam, question: {country: "NO", postcode: "0150"}}
+    request:
+      url: "https://api.zippopotam.us/no/{postcode}"
+    value: [{json: "places.0.place name", exists: true}]
+
+template:
+  answer: "{value}"
+  "yes": "Postcode {postcode} is serviceable."
+  "no": "Postcode {postcode} is not a serviceable delivery postcode."
+  footer: "Per the carrier's own system ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify serviceability of {postcode}. Reason: {reason}."
+
+tests:
+  - {id: oslo, inputs: {postcode: "0150"}}

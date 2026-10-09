@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190201
+slug: val-beacon-nimbus
+protocol: generic
+name: "Val Beacon Nimbus"
+description: "Semantic V2 miner for VALIDATOR_PERFORMANCE_VERIFY. Tracks consensus voting uptime, proposed block rates, slashing penalties, and staking APR for network validators. Capture pin answers: Must return the validator's effective balance / status for the pinned validator index at the finalized checkpoint."
+
+base_url: http://testing.mainnet.beacon-api.nimbus.team
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: http://testing.mainnet.beacon-api.nimbus.team/
+  website: http://testing.mainnet.beacon-api.nimbus.team
+
+endpoints:
+  - path: /query
+    external_path: /eth/v1/beacon/states/finalized/validators/1
+    method: GET
+    description: Query for intent VALIDATOR_PERFORMANCE_VERIFY via Val Beacon Nimbus.
+    intents: [VALIDATOR_PERFORMANCE_VERIFY]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - VALIDATOR_PERFORMANCE_VERIFY
+
+on_chain:
+  description: Stores signal for VALIDATOR_PERFORMANCE_VERIFY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

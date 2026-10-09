@@ -1,0 +1,87 @@
+# Intent spec: current local time in a city.
+# Not an on-chain catalog intent (local verifier only). Answer must be a time of day WITH a
+# timezone from the response (offset, Z, GMT, epoch, or a timezone field). A date alone is rejected.
+#
+# How the cross-check works for clocks: each answer becomes "seconds off our fetch time"
+# (clock skew), so answers fetched a few seconds apart still compare fairly.
+intent: TIME_IN_CITY
+aliases: [WORLD_TIME]
+description: Current local time (with timezone) in a named city.
+answer_type: datetime_tz
+scope: current
+
+catalog: {local_only: true, notes: "not an Intent Catalog intent; local verifier for the date/time examples"}
+
+inputs:
+  location: {kind: location, required: true, description: "City ('Tokyo', 'Paris, Texas') or 'lat,lon'"}
+
+validation:
+  freshness: {max_age_s: 120}                 # a clock more than 2 min off our fetch time is wrong or stale
+  cross_check:
+    tolerance: {abs: 60}                      # seconds of skew between clocks (network latency included)
+    min_sources: 2
+    target_sources: 3
+
+sources:
+  - id: timeapi
+    name: TimeAPI.io
+    publisher: timeapi.io
+    kind: clock
+    request:
+      url: "https://timeapi.io/api/time/current/zone?timeZone={timezone}"
+    cache_ttl_s: 5
+    value: [{json: dateTime}]                 # naive local time; zone comes from timeZone
+    entity:
+      timezone: [{json: timeZone}]
+
+  - id: time-now
+    name: time.now
+    publisher: time.now
+    kind: clock
+    request:
+      url: "https://time.now/developer/api/timezone/{timezone}"
+    cache_ttl_s: 5
+    value: [{json: datetime}]
+    entity:
+      timezone: [{json: timezone}]
+
+  - id: cloudflare
+    name: Cloudflare trace (text)
+    publisher: cloudflare.com
+    kind: clock
+    request:
+      url: "https://www.cloudflare.com/cdn-cgi/trace"
+    cache_ttl_s: 5
+    value: [{regex: '(?m)^ts=(\d+(?:\.\d+)?)\s*$', epoch: s}]
+
+  - id: google-date
+    name: Google HTTP Date header
+    publisher: google.com
+    kind: clock
+    request:
+      url: "https://www.google.com/generate_204"
+    cache_ttl_s: 5
+    value: [{header: Date}]
+
+  - id: worldtimeapi
+    name: WorldTimeAPI
+    publisher: worldtimeapi.org
+    kind: clock
+    notes: Often resets connections; kept last as a fallback.
+    request:
+      url: "https://worldtimeapi.org/api/timezone/{timezone}"
+      timeout_s: 8
+    cache_ttl_s: 5
+    value: [{json: datetime}]
+    entity:
+      timezone: [{json: timezone}]
+
+template:
+  answer: "The time in {place} is {value} ({tz_abbr}, {utc_offset}) on {weekday}, {date}."
+  footer: "Checked against {agreeing_count} independent clocks at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the time in {place}. Reason: {reason}."
+
+tests:
+  - {id: tokyo, inputs: {location: Tokyo}}
+  - {id: new-york, inputs: {location: New York}}
+  - {id: paris-texas, inputs: {location: "Paris, Texas"}}

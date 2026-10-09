@@ -1,0 +1,67 @@
+version: "1"
+kind: miner
+id: 190178
+slug: cp-dexscreener
+protocol: generic
+name: "Cp Dexscreener"
+description: "Semantic V2 miner for CRYPTO_PRICE. Fetches real-time spot and volume-weighted average prices for crypto assets across major exchanges. Capture pin answers: Must return the current price of the token asked (any quote currency is fine)."
+
+base_url: https://api.dexscreener.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.dexscreener.com/
+  website: https://api.dexscreener.com
+
+endpoints:
+  - path: /query
+    external_path: /latest/dex/pairs/ethereum/{address}
+    method: GET
+    description: Query for intent CRYPTO_PRICE via Cp Dexscreener.
+    intents: [CRYPTO_PRICE]
+    params:
+      path:
+        required:
+          - name: address
+            type: string
+            intents: ["*"]
+            description: address
+
+input_schema:
+  type: object
+  required: ["address"]
+  properties:
+    "address": {type: string, description: "address", default: "0x99ac8cA7087fA4A2A1FB6357269965A2014ABc35"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CRYPTO_PRICE
+
+on_chain:
+  description: Stores signal for CRYPTO_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

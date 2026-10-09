@@ -19,6 +19,7 @@ Usage (from MinerCreator/):
 from __future__ import annotations
 
 import argparse
+import json
 import os
 import re
 import subprocess
@@ -31,6 +32,7 @@ SAMPLES = ROOT / "apiOutputSamples"
 OUT_YAMLS = ROOT / "intentYamls"
 SCRIPTS = Path(__file__).resolve().parent
 sys.path.insert(0, str(SCRIPTS))
+from sample_file import parse_sample as _parse_sample_file  # noqa: E402
 from v2_intent_folders import canonical_intent, intent_folder  # noqa: E402
 
 
@@ -56,32 +58,7 @@ BTC_RE = re.compile(r"\b(bc1[a-zA-HJ-NP-Z0-9]{25,90}|[13][a-km-zA-HJ-NP-Z1-9]{25
 
 
 def parse_sample(path: Path) -> dict:
-    text = path.read_text(encoding="utf-8")
-    if not text.startswith("---"):
-        raise ValueError("missing front matter")
-    parts = text.split("---", 2)
-    fm_raw = parts[1]
-    meta: dict[str, str] = {}
-    key = None
-    buf: list[str] = []
-    for line in fm_raw.splitlines():
-        if re.match(r"^[a-z_]+:", line) and not line.startswith(" "):
-            if key is not None:
-                meta[key] = "\n".join(buf).strip().strip('"')
-            key, _, rest = line.partition(":")
-            key = key.strip()
-            rest = rest.strip()
-            if rest == "|":
-                buf = []
-            else:
-                meta[key] = rest.strip('"')
-                key = None
-                buf = []
-        elif key is not None:
-            buf.append(line)
-    if key is not None:
-        meta[key] = "\n".join(buf).strip().strip('"')
-    return meta
+    return _parse_sample_file(path)["meta"]
 
 
 def q(s: str) -> str:
@@ -225,12 +202,12 @@ def render_yaml(
         props = []
         for n, default in list(path_params.items()) + query:
             props.append(
-                f"    {n}: {{type: string, description: {q(n)}, default: {q(default)}}}"
+                f"    {json.dumps(n)}: {{type: string, description: {q(n)}, default: {q(default)}}}"
             )
         input_schema = (
             "input_schema:\n"
             "  type: object\n"
-            f"  required: [{', '.join(req_names)}]\n"
+            f"  required: [{', '.join(json.dumps(n) for n in req_names)}]\n"
             "  properties:\n"
             + "\n".join(props)
             + "\n"
@@ -343,6 +320,8 @@ def main() -> int:
         if (meta.get("status") or "").strip() != "approved":
             skipped += 1
             continue
+        intent = canonical_intent((meta.get("intent") or path.parent.name).strip().upper())
+        slug = (meta.get("slug") or path.stem).strip()
         # Fail-closed: do not build YAML from manual-only approve
         src = (meta.get("review_source") or "").strip()
         llm = (meta.get("llm_used") or "").strip().lower()
@@ -352,11 +331,14 @@ def main() -> int:
                 print(f"SKIP  {slug}: approved without auto_review+LLM (run auto_review --apply --require-llm)")
                 skipped += 1
                 continue
-        intent = canonical_intent((meta.get("intent") or path.parent.name).strip().upper())
-        slug = (meta.get("slug") or path.stem).strip()
         url = (meta.get("request_url") or "").strip()
         if not url:
             print(f"FAIL  {slug}: no request_url")
+            failed += 1
+            continue
+        if re.search(r"\{\w+\}|%7B\w+%7D", url):
+            # cp-kraken shipped `pair: "{kraken_pair}"` this way: a template, not a question
+            print(f"FAIL  {slug}: request_url still has an unfilled {{placeholder}}: {url}")
             failed += 1
             continue
         folder = intent_dir(intent)

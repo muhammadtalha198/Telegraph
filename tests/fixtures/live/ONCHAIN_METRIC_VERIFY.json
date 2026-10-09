@@ -1,0 +1,44 @@
+[
+ {
+  "test": "vitalik",
+  "source": "blockscout",
+  "url": "https://eth.blockscout.com/api/v2/addresses/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:20:14 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"block_number_balance_updated_at\": 26152717, \"coin_balance\": \"5768184715803065014\", \"creation_status\": \"success\", \"creation_transaction_hash\": null, \"creator_address_hash\": null, \"ens_domain_name\": \"vitalik.eth\", \"exchange_rate\": \"2490.11\", \"has_beacon_chain_withdrawals\": false, \"has_logs\": false, \"has_token_transfers\": true, \"has_tokens\": true, \"has_validated_blocks\": false, \"hash\": \"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\", \"implementations\": [{\"address_hash\": \"0x5A7FC11397E9a8AD41BF10bf13F22B0a63f96f6d\", \"name\": \"AmbireAccount7702\"}], \"is_contract\": true, \"is_scam\": false, \"is_verified\": true, \"metadata\": null, \"name\": null, \"private_tags\": [], \"proxy_type\": \"eip7702\", \"public_tags\": [], \"reputation\": \"ok\", \"token\": null, \"watchlist_address_id\": null, \"watchlist_names\": []}",
+  "fetched_at": "2026-10-09T05:20:13.358196+00:00"
+ },
+ {
+  "test": "vitalik",
+  "source": "blockcypher",
+  "url": "https://api.blockcypher.com/v1/eth/main/addrs/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045/balance",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:20:14 GMT",
+   "content-type": "application/json"
+  },
+  "body": "{\"address\": \"0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045\", \"total_received\": 87406421366347638626711, \"total_sent\": 87589693563485660527532, \"balance\": 5768184715803065014, \"unconfirmed_balance\": 0, \"final_balance\": 5768184715803065014, \"n_tx\": 130393, \"unconfirmed_n_tx\": 0, \"final_n_tx\": 130393, \"nonce\": 5969, \"pool_nonce\": 5969}",
+  "fetched_at": "2026-10-09T05:20:13.956698+00:00"
+ },
+ {
+  "test": "vitalik",
+  "source": "ethplorer",
+  "url": "https://api.ethplorer.io/getAddressInfo/0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045?apiKey=freekey",
+  "status": "ok",
+  "http_status": 200,
+  "error": "",
+  "headers": {
+   "date": "Fri, 09 Oct 2026 05:20:15 GMT",
+   "content-type": "application/json; charset=utf-8"
+  },
+  "body": "{\"address\": \"0xd8da6bf26964af9d7eed9e03e53415d37aa96045\", \"ETH\": {\"price\": {\"rate\": 2490.3944172879146, \"diff\": -3.02, \"diff7d\": -8.83, \"ts\": 1791523020, \"marketCapUsd\": 304124257577.12463, \"availableSupply\": 122118912.35618877, \"volume24h\": 18708343820.76581, \"volDiff1\": -4.988298322571865, \"volDiff7\": 21.060923407199297, \"volDiff30\": 6.687618600352366, \"diff30d\": 0.5852577696533672}, \"balance\": 5.768184715803065, \"rawBalance\": \"5768184715803065014\"}, \"contractInfo\": {}, \"tokens\": [{\"tokenInfo\": {\"address\": \"0xd654bdd32fc99471455e86c2e7f7d7b6437e9179\", \"decimals\": \"1\", \"lastUpdated\": 1770856455, \"name\": \"\", \"owner\": \"0x0000000000000000000000000000000000000001\", \"price\": false, \"symbol\": \"\", \"totalSupply\": \"114870898080602\", \"holdersCount\": 42, \"ethTransfersCount\": 48}, \"balance\": 204337499999999980000, \"rawBalance\": \"204337499999999999180\"}, {\"tokenInfo\": {\"address\": \"0xf6b1117ec07684d3958cad8beb1b302bfd21103f\", \"decimals\": \"18\", \"lastUpdated\": 1791522872, \"name\": \"Tesla (Ondo Tokenized Stock)\", \"owner\": \"\", \"price\": {\"rate\": 377.48692618204285, \"diff\": 0.12, \"diff7d\": 6.07, \"ts\": 1791522840, \"marketCapUsd\": 16900629.340498604, \"availableSupply\": 44771.42960005, \"volume24h\": 4976596.16807224, \"volDiff1\": 4.589195578075007, \"volDiff7\": 9.169944965172917, \"volDiff30\": 18.315076101810774, \"diff30d\": 2.706115805310276, \"currency\": \"USD\"}, \"symbol\": \"TSLAON\", \"totalSupply\": \"19555596470674867582281\", \"holdersCount\": 4511, \"website\": \"https://app.ondo.finance/assets/tslaon\", \"ethTransfersCount\": 0}, \"balance\": 2695543243018481, \"rawBalance\": \"2695543243018481\"}]}",
+  "fetched_at": "2026-10-09T05:20:14.251712+00:00"
+ }
+]

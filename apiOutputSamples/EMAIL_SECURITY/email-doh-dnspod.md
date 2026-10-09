@@ -1,7 +1,7 @@
 ---
 intent: EMAIL_SECURITY
 slug: email-doh-dnspod
-status: approved
+status: pending_review
 captured_at: 2026-10-05T09:40:57Z
 request_url: https://doh.pub/dns-query?name=gmail.com&type=TXT
 content_type: application/json
@@ -13,11 +13,11 @@ answer_requirement: |
   Must return the domain's SPF/DKIM/DMARC records or a spoofing-protection assessment.
 capture_note: |
   golden-test PASS: DNSPod
-reviewer_note: "auto_review: [1.00|heuristic+llm] The response contains relevant SPF and DKIM records but lacks DMARC information needed for a complete email security assessment."
-reviewed_at: 2026-10-05T12:18:49Z
-review_source: auto_review
-review_mode: heuristic+llm
-llm_used: true
+reviewer_note: "2026-10-07 re-review: judge approved but its own reason says the answer is missing (enum-echo/contradiction bug, fixed)"
+reviewed_at: ""
+review_source: manual
+review_mode: manual
+llm_used: false
 review_confidence: 1.000
 ---
 

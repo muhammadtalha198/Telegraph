@@ -1,0 +1,86 @@
+# Intent spec: LIQUIDITY_DEPTH_VERIFY. Sources checked live 2026-10-08 (WETH/USDC pool ~96.6M USD).
+# Catalog scores liquidity "across decentralized pools" (Usman: pool total liquidity in USD cents).
+# CEX order-book miners answer a DIFFERENT quantity (centralized orderbook depth) and fail the kind check.
+intent: LIQUIDITY_DEPTH_VERIFY
+description: Total USD liquidity of a decentralized exchange pool.
+answer_type: price
+scope: current
+
+catalog:
+  intent: LIQUIDITY_DEPTH_VERIFY
+  description: "Measures bid-ask order book depth, cumulative slippage bands, and market maker liquidity across decentralized pools."
+  facets:
+    - {text: "market maker liquidity across decentralized pools", covered_by: value, required: true,
+       note: "total USD liquidity (reserves) of the pinned DEX pool; the quantity the comparator scores"}
+    - {text: "bid-ask order book depth", covered_by: none,
+       note: "CEX order-book depth is a different quantity and venue; such miners fail allowed_kinds"}
+    - {text: "cumulative slippage bands", covered_by: none, note: "not computed from a reserves snapshot"}
+  allowed_kinds: [dex_indexer]
+  notes: >
+    Order-book-depth miners (CEX books: bingx/lbank/poloniex/whitebit; dYdX perp orderbook) are mapped
+    disabled so the gate reports the exact catalog mismatch instead of "unmapped slug".
+
+inputs:
+  pool: {kind: table, table: pools, required: true, description: "DEX pool (weth-usdc, ...)"}
+
+normalize:
+  pools:
+    weth-usdc: {name: "WETH/USDC 0.05% (Uniswap v3, eth)", aliases: ["weth-usdc", "eth-usdc"],
+                network: eth, dexscreener_network: ethereum, address: "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640"}
+
+units:
+  canonical: USD
+
+validation:
+  sanity: {min: 1000, max: 100000000000}   # $1k - $100b of pool liquidity
+  freshness: {max_age_s: 0}                 # reserves snapshot; cross-check across indexers is the guard
+  cross_check:
+    tolerance: {rel: 0.03}                  # 300 bps (Usman): indexers recompute reserves slightly differently
+    min_sources: 2
+    target_sources: 2
+
+sources:
+  - id: geckoterminal
+    name: GeckoTerminal
+    publisher: geckoterminal.com
+    kind: dex_indexer
+    request:
+      url: "https://api.geckoterminal.com/api/v2/networks/{network}/pools/{address}"
+    cache_ttl_s: 120
+    value: [{json: "data.attributes.reserve_in_usd", unit: USD}]
+    entity:
+      symbol: [{json: "data.attributes.address"}]
+
+  - id: dexscreener
+    name: DexScreener
+    publisher: dexscreener.com
+    kind: dex_indexer
+    request:
+      url: "https://api.dexscreener.com/latest/dex/pairs/{dexscreener_network}/{address}"
+    cache_ttl_s: 120
+    value: [{json: "pairs.0.liquidity.usd", unit: USD}]
+
+  # --- order-book-depth miners: answer a different quantity than "decentralized pool liquidity" ---
+  - {id: m-bingx, name: BingX book, publisher: bingx.com, kind: cex, enabled: false,
+     miner: {slug: liq-bingx-book, question: {pool: weth-usdc}},
+     request: {url: "https://open-api.bingx.com/openApi/spot/v1/market/depth?symbol=BTC-USDT"}, value: [{json: code}]}
+  - {id: m-lbank, name: LBank book, publisher: lbank.com, kind: cex, enabled: false,
+     miner: {slug: liq-lbank-book, question: {pool: weth-usdc}},
+     request: {url: "https://api.lbank.info/v2/depth.do?symbol=btc_usdt&size=5"}, value: [{json: result}]}
+  - {id: m-poloniex, name: Poloniex book, publisher: poloniex.com, kind: cex, enabled: false,
+     miner: {slug: liq-poloniex-book, question: {pool: weth-usdc}},
+     request: {url: "https://api.poloniex.com/markets/BTC_USDT/orderBook?limit=5"}, value: [{json: bids}]}
+  - {id: m-whitebit, name: WhiteBIT book, publisher: whitebit.com, kind: cex, enabled: false,
+     miner: {slug: liq-whitebit-book, question: {pool: weth-usdc}},
+     request: {url: "https://whitebit.com/api/v4/public/orderbook/BTC_USDT?limit=5"}, value: [{json: timestamp}]}
+  - {id: m-dydx, name: dYdX perp orderbook, publisher: dydx.trade, kind: dex, enabled: false,
+     miner: {slug: liq-dydx-orderbook, question: {pool: weth-usdc}},
+     request: {url: "https://indexer.dydx.trade/v4/orderbooks/perpetualMarket/BTC-USD"}, value: [{json: bids}]}
+
+template:
+  answer: "{name} holds {value} in liquidity."
+  footer: "Confirmed by {agreeing_count} independent DEX indexers ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the liquidity of {name}. Reason: {reason}."
+
+tests:
+  - {id: weth-usdc, inputs: {pool: weth-usdc}}

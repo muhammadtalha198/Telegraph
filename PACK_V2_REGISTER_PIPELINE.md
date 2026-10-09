@@ -34,6 +34,8 @@ Count: **214** — see `out/pack_v2_queue.jsonl` where `status=ALREADY_REGISTERE
 
 ## Newly registered (pack V2)
 
+> **Reg IDs below are unreliable (found 2026-10-07).** They were read from `minerCount()` after each tx, so many IDs appear twice (e.g. 4564 = `cp-bitget`; `cp-bybit` is really 4565). Use `out/RECONCILED_REG_IDS.md` from `scripts/reconcile_reg_ids.py`. All these YAMLs are on paste.rs (public DELETE): see `scripts/migrate_paste_to_omni.py`.
+
 | Intent | Slug | Reg ID | YAML | TX |
 |--------|------|-------:|------|----|
 | `CRYPTO_PRICE` | `cp-binance` | 4560 | [yaml](https://paste.rs/N44h7) | [tx](https://sepolia.basescan.org/tx/0xa92373be8e1611e8) |

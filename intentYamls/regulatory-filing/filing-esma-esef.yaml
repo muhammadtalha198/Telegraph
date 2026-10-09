@@ -36,7 +36,7 @@ endpoints:
 
 input_schema:
   type: object
-  required: [page[size]]
+  required: ["page[size]"]
   properties:
     page[size]: {type: string, description: "page[size]", default: "1"}
 

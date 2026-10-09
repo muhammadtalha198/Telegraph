@@ -1,0 +1,64 @@
+# Intent spec: CRYPTO_YIELD_RATE. Sources checked live 2026-10-08 (cbETH ~2.35% APY).
+intent: CRYPTO_YIELD_RATE
+description: Current annualized yield (APY) of a DeFi staking or lending position.
+answer_type: percent
+scope: current
+
+catalog:
+  intent: CRYPTO_YIELD_RATE
+  description: "Tracks annualized percentage yields (APY), staking reward rates, and lending pool yields across DeFi protocols."
+  facets:
+    - {text: "annualized percentage yields", covered_by: value, required: true,
+       note: "APY as a percent for the pinned asset/pool"}
+    - {text: "staking reward rates", covered_by: "input:asset", note: "the asset/pool pins which staking yield"}
+    - {text: "lending pool yields across defi protocols", covered_by: none,
+       note: "cross-check: independent yield publishers for the same position must agree"}
+  allowed_kinds: [defi_yield]
+
+inputs:
+  asset: {kind: table, table: assets, required: true, description: "Staked asset / pool (cbeth, ...)"}
+
+# Per-asset ids for each yield publisher.
+normalize:
+  assets:
+    cbeth: {name: Coinbase Wrapped Staked ETH, aliases: [cbeth, "coinbase-wrapped-staked-eth"],
+            coinbase_id: CBETH, llama_pool: "0f45d730-b279-4629-8e11-ccb5cc3038b4"}
+
+validation:
+  sanity: {min: 0, max: 1000}          # percent; no negative APY, no 1000%+ (meme pools excluded by pin)
+  freshness: {max_age_s: 86400}        # APY is published per-day; a day old is fine
+  cross_check:
+    tolerance: {rel: 0.05, abs: 0.2}   # 5% relative or 0.2pp: publishers compute APY slightly differently
+    min_sources: 2
+    target_sources: 2
+
+sources:
+  - id: coinbase
+    name: Coinbase wrapped-asset APY
+    publisher: coinbase.com
+    kind: defi_yield
+    miner: {slug: yld-coinbase-cbeth, question: {asset: cbeth}}
+    notes: apy is a fraction (0.0235 = 2.35%); scaled to percent.
+    request:
+      url: "https://api.exchange.coinbase.com/wrapped-assets/{coinbase_id}"
+    cache_ttl_s: 600
+    value: [{json: apy, scale: "100"}]
+
+  - id: defillama
+    name: DefiLlama pool APY
+    publisher: defillama.com
+    kind: defi_yield
+    notes: pool apy is already a percent (2.35883).
+    request:
+      url: "https://yields.llama.fi/chart/{llama_pool}"
+    cache_ttl_s: 600
+    value: [{json: "data.-1.apy"}]
+    timestamp: [{json: "data.-1.timestamp"}]
+
+template:
+  answer: "{name} yields {value} APY."
+  footer: "Confirmed by {agreeing_count} independent yield sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the yield for {name}. Reason: {reason}."
+
+tests:
+  - {id: cbeth, inputs: {asset: cbeth}}

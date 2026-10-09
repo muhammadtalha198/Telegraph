@@ -40,7 +40,7 @@ endpoints:
 
 input_schema:
   type: object
-  required: [sort, page[size]]
+  required: [sort, "page[size]"]
   properties:
     sort: {type: string, description: "sort", default: "-record_date"}
     page[size]: {type: string, description: "page[size]", default: "1"}

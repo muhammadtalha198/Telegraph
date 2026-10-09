@@ -1,0 +1,166 @@
+# Intent spec: current air temperature at a place.
+# Single source of truth for asking, extracting, checking and rendering this intent.
+# Guide: docs/INTENT_SPEC_GUIDE.md. Every source below was checked live on 2026-10-08.
+intent: WEATHER_CHECK
+aliases: [WEATHER_CURRENT]
+description: Current air temperature (plus humidity, wind, conditions) at a named place or coordinates.
+answer_type: temperature
+scope: current
+
+catalog:
+  intent: WEATHER_CURRENT
+  description: "Provides real-time ambient temperature, humidity, precipitation rate, and wind vectors by coordinates."
+  facets:
+    - {text: "real-time ambient temperature", covered_by: value, required: true,
+       note: "air temperature at the coordinates; data older than 3 h is stale"}
+    - {text: "humidity", covered_by: "extra:humidity"}
+    - {text: "precipitation rate", covered_by: "extra:precipitation", note: "mm in the current/next hour"}
+    - {text: "wind vectors by coordinates", covered_by: "extra:wind_speed", note: "speed + extra:wind_direction"}
+  allowed_kinds: [weather_model, weather_station]
+
+inputs:
+  location: {kind: location, required: true, description: "City ('Lahore', 'Paris, Texas') or 'lat,lon'"}
+  unit: {kind: enum, required: false, default: C, values: [C, F, K],
+         aliases: {celsius: C, fahrenheit: F, kelvin: K, metric: C, imperial: F}}
+
+units:
+  canonical: C
+  render_input: unit
+  render:
+    C: {temperature: C, speed: km/h}
+    F: {temperature: F, speed: mph}
+    K: {temperature: K, speed: m/s}
+
+validation:
+  sanity: {min: -90, max: 60}                 # deg C; record low -89.2, record high 56.7
+  freshness: {max_age_s: 10800, max_future_s: 3600}
+  entity: {max_km: 60}                        # answer coordinates must be this close to the place asked
+  cross_check:
+    tolerance: {abs: 3}                       # deg C: models and stations differ by a few degrees
+    min_sources: 2
+    target_sources: 3
+
+extras:
+  humidity: {quantity: percent, sanity: {min: 0, max: 100}}
+  precipitation: {quantity: precipitation, sanity: {min: 0, max: 500}}
+  wind_speed: {quantity: speed, sanity: {min: 0, max: 400}}
+  wind_direction: {quantity: direction, sanity: {min: 0, max: 360}}
+  conditions: {quantity: text}
+
+sources:
+  - id: open-meteo
+    name: Open-Meteo
+    publisher: open-meteo.com
+    kind: weather_model
+    miner: {slug: wx-openmeteo, question: {location: "52.52,13.41"}}
+    request:
+      url: "https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,wind_direction_10m&timezone=UTC"
+    cache_ttl_s: 300
+    free_tier: {requests_per_day: 10000}
+    value: [{json: current.temperature_2m, unit: C}]
+    timestamp: [{json: current.time, tz: UTC}]          # naive ISO in GMT
+    entity:
+      lat: [{json: latitude}]
+      lon: [{json: longitude}]
+    extras:
+      humidity: [{json: current.relative_humidity_2m}]
+      precipitation: [{json: current.precipitation}]
+      wind_speed: [{json: current.wind_speed_10m, unit: km/h}]
+      wind_direction: [{json: current.wind_direction_10m}]
+
+  - id: met-norway
+    name: MET Norway
+    publisher: met.no
+    kind: weather_model
+    miner: {slug: wx-metno, question: {location: "52.52,13.41"}}
+    request:
+      url: "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat={lat}&lon={lon}"
+      headers: {User-Agent: "TeleGraphMiner/1.0 admin@telegraphprotocol.com"}   # MET requires an identifying UA
+    cache_ttl_s: 600
+    value: [{json: properties.timeseries.0.data.instant.details.air_temperature, unit: C}]
+    timestamp: [{json: properties.timeseries.0.time}]
+    entity:
+      lat: [{json: geometry.coordinates.1}]
+      lon: [{json: geometry.coordinates.0}]
+    extras:
+      humidity: [{json: properties.timeseries.0.data.instant.details.relative_humidity}]
+      precipitation: [{json: properties.timeseries.0.data.next_1_hours.details.precipitation_amount}]
+      wind_speed: [{json: properties.timeseries.0.data.instant.details.wind_speed, unit: m/s}]
+      wind_direction: [{json: properties.timeseries.0.data.instant.details.wind_from_direction}]
+
+  - id: noaa-metar
+    name: NOAA METAR (nearest airport)
+    publisher: aviationweather.gov
+    kind: weather_station
+    request:
+      url: "https://aviationweather.gov/api/data/metar?bbox={bbox}&format=xml"
+    cache_ttl_s: 600
+    value: [{xpath: ".//METAR/temp_c", unit: C}]
+    timestamp: [{xpath: ".//METAR/observation_time"}]
+    entity:
+      lat: [{xpath: ".//METAR/latitude"}]
+      lon: [{xpath: ".//METAR/longitude"}]
+    extras:
+      wind_speed: [{xpath: ".//METAR/wind_speed_kt", unit: kn}]
+      wind_direction: [{xpath: ".//METAR/wind_dir_degrees"}]
+
+  - id: wttr
+    name: wttr.in
+    publisher: wttr.in
+    kind: weather_model
+    miner: {slug: wx-wttr, question: {location: "52.52,13.41"}}
+    request:
+      url: "https://wttr.in/{lat},{lon}?format=j1"
+    cache_ttl_s: 600
+    value: [{json: current_condition.0.temp_C, unit: C}]
+    timestamp: [{json: current_condition.0.observation_time, tz: UTC, time_of_day: true}]   # "06:18 AM" UTC
+    entity:
+      lat: [{json: nearest_area.0.latitude}]
+      lon: [{json: nearest_area.0.longitude}]
+    extras:
+      humidity: [{json: current_condition.0.humidity}]
+      precipitation: [{json: current_condition.0.precipMM}]
+      wind_speed: [{json: current_condition.0.windspeedKmph, unit: km/h}]
+      wind_direction: [{json: current_condition.0.winddirDegree}]
+      conditions: [{json: current_condition.0.weatherDesc.0.value}]
+
+  - id: 7timer
+    name: 7Timer! civil
+    publisher: 7timer.info
+    kind: weather_model
+    miner: {slug: wx-7timer, question: {location: "52.52,13.41"}}
+    notes: Forecast slot from the latest model run (init time), not an observation; stale under "real-time" when the run is older than 3 h.
+    request:
+      url: "http://www.7timer.info/bin/api.pl?lon={lon}&lat={lat}&product=civil&output=json"
+      timeout_s: 20
+    cache_ttl_s: 1800
+    value: [{json: dataseries.0.temp2m, unit: C}]
+    timestamp: [{json: init, format: "%Y%m%d%H", tz: UTC}]
+
+  # New candidate (2026-10-09 miner hunt) — DWD observations, Germany + border coverage only.
+  - id: brightsky
+    name: Bright Sky (DWD)
+    publisher: brightsky.dev
+    kind: weather_station
+    miner: {slug: wx-brightsky-de, question: {location: "52.52,13.41"}}
+    notes: Germany + border areas only; rejects/errors elsewhere (other sources cover those).
+    request:
+      url: "https://api.brightsky.dev/current_weather?lat={lat}&lon={lon}"
+    cache_ttl_s: 300
+    value: [{json: weather.temperature, unit: C}]
+    timestamp: [{json: weather.timestamp}]
+
+template:
+  answer: "The temperature in {place} is {value}."
+  extras:
+    - "Humidity is {humidity}."
+    - "Precipitation is {precipitation}."
+    - "Wind is {wind_speed} from {wind_direction}."
+    - "Conditions: {conditions}."
+  footer: "Checked against {agreeing_count} independent sources ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify the current temperature in {place}. Reason: {reason}."
+
+tests:
+  - {id: berlin, inputs: {location: "52.52,13.41"}}
+  - {id: lahore, inputs: {location: Lahore}}
+  - {id: paris-fahrenheit, inputs: {location: "Paris, France", unit: F}}

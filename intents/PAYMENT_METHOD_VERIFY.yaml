@@ -1,0 +1,59 @@
+# Intent spec: PAYMENT_METHOD_VERIFY. Sources checked live 2026-10-08 (BIN 457173 = Visa, Denmark).
+# The checkable fact for a card BIN is its scheme (network); independent BIN databases must agree.
+intent: PAYMENT_METHOD_VERIFY
+description: Card scheme (network) and country for a card BIN/IIN.
+answer_type: record_set
+scope: current
+
+catalog:
+  intent: PAYMENT_METHOD_VERIFY
+  description: "Verifies card BIN validity, tokenization credentials, bank account routing, and active account standing."
+  facets:
+    - {text: "card bin validity", covered_by: value, required: true,
+       note: "the BIN resolves to a known card scheme + country; independent BIN databases must agree"}
+    - {text: "tokenization credentials", covered_by: none, note: "issuer-only; not in public BIN data"}
+    - {text: "bank account routing", covered_by: none, note: "not a card-BIN field"}
+    - {text: "active account standing", covered_by: none, note: "issuer-only; not publicly checkable"}
+  allowed_kinds: [registry]
+  notes: "Only the BIN->scheme/country mapping is publicly verifiable; the other facets need the issuer and are not checkable for free."
+
+inputs:
+  bin: {kind: text, required: true, description: "First 6-8 digits of a card (BIN/IIN)"}
+
+validation:
+  freshness: {max_age_s: 0}
+  cross_check:
+    tolerance: {abs: 0}                # the {scheme, country} set must match across databases
+    min_sources: 2
+    target_sources: 2
+
+sources:
+  - id: binlist
+    name: binlist.net
+    publisher: binlist.net
+    kind: registry
+    miner: {slug: pay-binlist, question: {bin: "45717360"}}
+    request:
+      url: "https://lookup.binlist.net/{bin}"
+    cache_ttl_s: 3600
+    value: [{json: "scheme+country.alpha2"}]      # e.g. ["visa", "DK"]
+
+  - id: handyapi
+    name: HandyAPI BIN
+    publisher: handyapi.com
+    kind: registry
+    miner: {slug: pay-handyapi, question: {bin: "45717360"}}
+    notes: Scheme/Country.A2 are upper-cased; the set match is case-insensitive.
+    request:
+      url: "https://data.handyapi.com/bin/{bin}"
+      headers: {User-Agent: "Mozilla/5.0 (compatible; minercheck/1.0)"}
+    cache_ttl_s: 3600
+    value: [{json: "Scheme+Country.A2"}]
+
+template:
+  answer: "BIN {bin}: {value}."
+  footer: "Confirmed by {agreeing_count} independent BIN databases ({agreeing_sources}) at {as_of}. Confidence {confidence}."
+  unverified: "I could not verify BIN {bin}. Reason: {reason}."
+
+tests:
+  - {id: visa-dk, inputs: {bin: "45717360"}}

@@ -1,0 +1,72 @@
+version: "1"
+kind: miner
+id: 190179
+slug: cp-independentreserve
+protocol: generic
+name: "Cp Independentreserve"
+description: "Semantic V2 miner for CRYPTO_PRICE. Fetches real-time spot and volume-weighted average prices for crypto assets across major exchanges. Capture pin answers: Must return the current price of the token asked (any quote currency is fine)."
+
+base_url: https://api.independentreserve.com
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.independentreserve.com/
+  website: https://api.independentreserve.com
+
+endpoints:
+  - path: /query
+    external_path: /Public/GetMarketSummary
+    method: GET
+    description: Query for intent CRYPTO_PRICE via Cp Independentreserve.
+    intents: [CRYPTO_PRICE]
+    params:
+      query:
+        required:
+          - name: primaryCurrencyCode
+            type: string
+            intents: ["*"]
+            description: primaryCurrencyCode
+          - name: secondaryCurrencyCode
+            type: string
+            intents: ["*"]
+            description: secondaryCurrencyCode
+
+input_schema:
+  type: object
+  required: ["primaryCurrencyCode", "secondaryCurrencyCode"]
+  properties:
+    "primaryCurrencyCode": {type: string, description: "primaryCurrencyCode", default: "xbt"}
+    "secondaryCurrencyCode": {type: string, description: "secondaryCurrencyCode", default: "usd"}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CRYPTO_PRICE
+
+on_chain:
+  description: Stores signal for CRYPTO_PRICE (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok

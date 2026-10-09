@@ -1,0 +1,66 @@
+version: "1"
+kind: miner
+id: 190195
+slug: car-zippopotam
+protocol: generic
+name: "Car Zippopotam"
+description: "Semantic V2 miner for CARRIER_SERVICEABILITY. Evaluates freight and courier delivery coverage, weight limits, and hazardous material restrictions for target routes. Capture pin answers: Must confirm that the pinned destination postcode (Norway 0150 = OSLO) is a valid, deliverable postal code and return the locality name 'Oslo' (case-insensitive"
+
+base_url: https://api.zippopotam.us
+
+auth:
+  type: none
+
+rate_limit_per_sec: 1
+cache_ttl_sec: 60
+circuit_threshold: 5
+circuit_cooldown_seconds: 30
+
+docs:
+  documentation: https://api.zippopotam.us/
+  website: https://api.zippopotam.us
+
+endpoints:
+  - path: /query
+    external_path: /no/0150
+    method: GET
+    description: Query for intent CARRIER_SERVICEABILITY via Car Zippopotam.
+    intents: [CARRIER_SERVICEABILITY]
+    params:
+      query:
+        optional:
+          - name: _
+            type: string
+            intents: ["*"]
+            description: unused placeholder
+
+input_schema:
+  type: object
+  required: []
+  properties: {}
+
+semantics:
+  signal_mapping:
+    label_field: answer
+  supported_intents:
+    - CARRIER_SERVICEABILITY
+
+on_chain:
+  description: Stores signal for CARRIER_SERVICEABILITY (Semantic V2 format-agnostic).
+  transform: direct
+  min_price_usdc: 0.01
+  fields:
+    strings:
+      - index: 0
+        name: result
+        description: Primary result
+        source_path: result
+      - index: 1
+        name: intent
+        description: Intent name
+        source_path: intent
+    integers:
+      - index: 0
+        name: ok
+        description: Success flag
+        source_path: ok
